@@ -1,0 +1,45 @@
+# CI: continuous integration checks for this repo.
+#
+# What this workflow does:
+# - Starts on every push and pull request
+# - Creates a clean Ubuntu environment
+# - Installs Python and your dependencies
+# - Checks code with Ruff
+# - Runs your tests
+
+name: CI
+
+# Trigger: run on every push and every pull request
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    # Fresh Ubuntu VM for each run (clean environment)
+    runs-on: ubuntu-latest
+
+    steps:
+      # Clone this repository into the runner workspace
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Install the uv package manager (used for Python + deps)
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      # Install the Python version used by CI
+      - name: Set up Python
+        run: uv python install 3.12
+
+      # Install project + dev dependencies from pyproject.toml / uv.lock
+      - name: Install dependencies
+        run: uv sync --dev
+
+      # Lint / static checks with Ruff
+      - name: Run Ruff
+        run: uv run ruff check .
+
+      # Run the pytest suite
+      - name: Run tests
+        run: uv run pytest
