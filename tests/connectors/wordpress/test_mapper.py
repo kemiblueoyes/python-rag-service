@@ -17,7 +17,7 @@ def test_maps_wordpress_post_to_canonical_document() -> None:
             "categories": [4],
             "tags": [12],
             "acf": {
-                "subtitle": "An example subtitle",
+                "post_subtitle": "An example subtitle",
                 "target_audience": ["Technical Writer"],
             },
         }
@@ -35,3 +35,84 @@ def test_maps_wordpress_post_to_canonical_document() -> None:
     assert document.metadata["subtitle"] == "An example subtitle"
     assert document.metadata["audience"] == ["Technical Writer"]
     assert document.metadata["category_ids"] == [4]
+
+def test_maps_yoast_schema_type_list() -> None:
+    post = WordPressPost.model_validate(
+        {
+            "id": 101,
+            "slug": "example-post",
+            "status": "publish",
+            "type": "post",
+            "link": "https://example.com/example-post/",
+            "title": {"rendered": "Example Post"},
+            "content": {"rendered": "<p>Post content.</p>"},
+            "yoast_head_json": {
+                "schema": {
+                    "@graph": [
+                        {
+                            "@type": ["Article", "BlogPosting"],
+                            "wordCount": 750,
+                            "inLanguage": "en-US",
+                        }
+                    ]
+                }
+            },
+        }
+    )
+
+    document = map_wordpress_post(post)
+
+    assert document.metadata["schema_type"] == "BlogPosting"
+    assert document.metadata["word_count"] == 750
+    assert document.metadata["language"] == "en-US"
+
+def test_empty_page_is_non_indexable_landing_page() -> None:
+    page = WordPressPost.model_validate(
+        {
+            "id": 12,
+            "slug": "home",
+            "status": "publish",
+            "type": "page",
+            "link": "https://example.com/",
+            "title": {"rendered": "Home"},
+            "content": {"rendered": ""},
+        }
+    )
+
+    document = map_wordpress_post(page)
+
+    assert document.document_role == "landing"
+    assert document.indexable is False
+
+def test_converts_audience_codes_to_labels() -> None:
+    post = WordPressPost.model_validate(
+        {
+            "id": 102,
+            "slug": "audience-example",
+            "status": "publish",
+            "type": "post",
+            "link": "https://example.com/audience-example/",
+            "title": {"rendered": "Audience Example"},
+            "content": {"rendered": "<p>Post content.</p>"},
+            "acf": {
+                "target_audience": ["TW", "IA", "DE", "KM", "DL"],
+            },
+        }
+    )
+
+    document = map_wordpress_post(post)
+
+    assert document.metadata["audience"] == [
+        "Technical Writer",
+        "Information Architect",
+        "Documentation Engineer",
+        "Knowledge Manager",
+        "Documentation Leader",
+    ]
+    assert document.metadata["audience_codes"] == [
+        "TW",
+        "IA",
+        "DE",
+        "KM",
+        "DL",
+    ]

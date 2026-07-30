@@ -5,15 +5,45 @@ from pathlib import Path
 from rag_service.config import settings
 from rag_service.connectors.wordpress.client import WordPressClient
 from rag_service.connectors.wordpress.connector import WordPressConnector
+from rag_service.indexing.change_detection import (
+    DocumentChanges,
+    detect_document_changes,
+)
+from rag_service.models.document import CanonicalDocument
 
 
-def run(output_path: Path) -> int:
-    """Retrieve WordPress content and write canonical documents to JSON."""
+def _load_previous_documents(
+    output_path: Path,
+) -> list[CanonicalDocument]:
+    """Load canonical documents saved by the previous indexing run."""
+
+    if not output_path.exists():
+        return []
+
+    payload = json.loads(
+        output_path.read_text(encoding="utf-8")
+    )
+
+    if not isinstance(payload, list):
+        raise ValueError(
+            f"Expected a document list in {output_path}"
+        )
+
+    return [
+        CanonicalDocument.model_validate(item)
+        for item in payload
+    ]
+
+
+def run(output_path: Path) -> DocumentChanges:
+    """Retrieve WordPress content and detect changes."""
 
     if not settings.wordpress_base_url:
         raise ValueError(
             "WORDPRESS_BASE_URL must be configured before indexing."
         )
+
+    previous_documents = _load_previous_documents(output_path)
 
     client = WordPressClient(
         base_url=settings.wordpress_base_url,
@@ -24,9 +54,14 @@ def run(output_path: Path) -> int:
 
     try:
         connector = WordPressConnector(client)
-        documents = connector.fetch_documents()
+        current_documents = connector.fetch_documents()
     finally:
         client.close()
+
+    changes = detect_document_changes(
+        current_documents=current_documents,
+        previous_documents=previous_documents,
+    )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -34,7 +69,7 @@ def run(output_path: Path) -> int:
         json.dumps(
             [
                 document.model_dump(mode="json")
-                for document in documents
+                for document in current_documents
             ],
             indent=2,
             ensure_ascii=False,
@@ -42,7 +77,7 @@ def run(output_path: Path) -> int:
         encoding="utf-8",
     )
 
-    return len(documents)
+    return changes
 
 
 def main() -> None:
@@ -57,12 +92,19 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-    document_count = run(args.output)
+    changes = run(args.output)
 
-    print(
-        f"Wrote {document_count} canonical documents "
-        f"to {args.output}"
+    current_count = (
+        len(changes.new)
+        + len(changes.updated)
+        + len(changes.unchanged)
     )
+
+    print(f"Wrote {current_count} canonical documents to {args.output}")
+    print(f"New: {len(changes.new)}")
+    print(f"Updated: {len(changes.updated)}")
+    print(f"Unchanged: {len(changes.unchanged)}")
+    print(f"Removed or unpublished: {len(changes.removed)}")
 
 
 if __name__ == "__main__":
