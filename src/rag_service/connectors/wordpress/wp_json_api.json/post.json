@@ -1,0 +1,378 @@
+[
+    {
+      "id": 1938,
+      "date": "2026-05-02T09:22:48",
+      "date_gmt": "2026-05-02T16:22:48",
+      "guid": {
+        "rendered": "https://doclandscape.com/?p=1938"
+      },
+      "modified": "2026-07-24T14:32:50",
+      "modified_gmt": "2026-07-24T21:32:50",
+      "slug": "how-to-choose-a-ccms",
+      "status": "publish",
+      "type": "post",
+      "link": "https://doclandscape.com/how-to-choose-a-ccms/",
+      "title": {
+        "rendered": "How to Choose a CCMS Based on Your Documentation Needs"
+      },
+      "content": {
+        "rendered": "\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cstrong\u003EThe quick version:\u003C/strong\u003E&nbsp;There is no universally &ldquo;best&rdquo; \u003Ca class=\"glossaryLink\" tabindex=\"0\" role=\"link\" href=\"https://doclandscape.com/glossary/ccms/\" aria-describedby=\"tt\" data-cmtooltip=\"cmtt_c78750f9b68bfc60844b97e4275fae8e\" data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'\u003ECCMS\u003C/a\u003E. Different documentation platforms are designed around different assumptions about structure, \u003Ca class=\"glossaryLink\" tabindex=\"0\" role=\"link\" href=\"https://doclandscape.com/glossary/governance/\" aria-describedby=\"tt\" data-cmtooltip=\"cmtt_0ab1ef3e400d3e011c40aa82b59eb520\" data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'\u003Egovernance\u003C/a\u003E, collaboration, publishing, maintenance, and scale. A system that works well for support-oriented knowledge sharing may become painful for complex product documentation over time, while a heavily structured platform may create unnecessary overhead for smaller or simpler documentation environments. The real question isn&rsquo;t which platform has the most features, it&rsquo;s whether the platform matches the actual documentation environment your organization is building.\u003C/p\u003E\n\n\n\n\u003Chr class=\"wp-block-separator has-alpha-channel-opacity\"\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cem\u003EThis article focuses primarily on end-user product documentation environments. API and developer documentation often operate under different technical and workflow constraints, including \u003Ca class=\"glossaryLink\" tabindex=\"0\" role=\"link\" href=\"https://doclandscape.com/glossary/docs-as-code/\" aria-describedby=\"tt\" data-cmtooltip=\"cmtt_3fd4ca6fddf53dafeaa6f146ddb13af4\" data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'\u003Edocs-as-code\u003C/a\u003E workflows, schema-driven publishing, and tighter integration with engineering systems.\u003C/em\u003E\u003C/p\u003E\n\n\n\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"how-documentation-teams-end-up\"\u003E\u003Cspan id=\"How_Documentation_Teams_End_Up_With_the_Wrong_CCMS\" class=\"ez-toc-section\"\u003E\u003C/span\u003E\u003Cspan id=\"How_Documentation_Teams_End_Up_With_the_Wrong_CCMS\" class=\"ez-toc-section\"\u003E\u003C/span\u003EHow Documentation Teams End Up With the Wrong \u003Ca class=\"glossaryLink\" tabindex=\"0\" role=\"link\" href=\"https://doclandscape.com/glossary/ccms/\" aria-describedby=\"tt\" data-cmtooltip=\"cmtt_c78750f9b68bfc60844b97e4275fae8e\" data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'\u003ECCMS\u003C/a\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EA lot of documentation platform decisions aren&rsquo;t made intentionally; they happen because a company already has a tool, another department uses it, or the licensing already exists and nobody wants to spend money on a replacement when the current one seems &ldquo;good enough.&rdquo;\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"when-good-enough-becomes-documentation\"\u003EWhen &ldquo;Good Enough&rdquo; Becomes the Documentation Strategy\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAt a company I previously worked for, the product documentation lived in Zendesk, possibly because it was viewed as the cheapest or most convenient option at the time. Later, when the Zendesk license renewal came up, I saw it as an opportunity to push for a more structured \u003Ca class=\"glossaryLink\"  aria-describedby=\"tt\"  data-cmtooltip=\"cmtt_c78750f9b68bfc60844b97e4275fae8e\"  href=\"https://doclandscape.com/glossary/ccms/\"  data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'  tabindex='0' role='link'\u003ECCMS\u003C/a\u003E approach because Zendesk was already showing limitations for product documentation workflows. We were writing drafts in Google Docs for review, pasting content into Zendesk for publishing, and working around limitations in structure, workflow, and versioning instead of having those capabilities built into the \u003Ca id=\"989\" href=\"https://doclandscape.com/the-living-knowledge-system/\" target=\"_blank\" rel=\"noreferrer noopener\" type=\"page\"\u003Edocumentation system\u003C/a\u003E itself.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ELeadership, however, saw the renewal conversation as an opportunity to move to Salesforce Knowledge instead because the company already had Salesforce licensing and wanted customer support content and product documentation connected inside the same ecosystem for chat and customer-facing help experiences.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EI understood the reasoning. Consolidation, shared customer experiences, existing licensing, and cost savings are legitimate organizational concerns. But the conversation exposed a larger problem that shows up in a lot of documentation environments: organizations often choose documentation systems based on operational convenience rather than the actual needs of the documentation environment they are building.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"product-documentation-support-knowledge-bases\"\u003EProduct Documentation and Support Knowledge Bases Are Not the Same Thing\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe deeper issue was not whether Zendesk or Salesforce Knowledge were &ldquo;bad&rdquo; tools. They are useful platforms for the kinds of support knowledge base environments they were primarily designed for. The issue was that product documentation often has different structural, workflow, \u003Ca class=\"glossaryLink\" tabindex=\"0\" role=\"link\" href=\"https://doclandscape.com/glossary/governance/\" aria-describedby=\"tt\" data-cmtooltip=\"cmtt_0ab1ef3e400d3e011c40aa82b59eb520\" data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'\u003Egovernance\u003C/a\u003E, and maintenance needs than support-oriented knowledge base content, and different documentation systems are designed around different assumptions about how documentation work happens.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ESome systems optimize for speed and accessibility. Others optimize for structure, reuse, \u003Ca class=\"glossaryLink\"  aria-describedby=\"tt\"  data-cmtooltip=\"cmtt_0ab1ef3e400d3e011c40aa82b59eb520\"  href=\"https://doclandscape.com/glossary/governance/\"  data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'  tabindex='0' role='link'\u003Egovernance\u003C/a\u003E, or multi-channel publishing. Some assume lightweight support-style articles. Others assume large documentation sets with complex reuse relationships and long-term maintenance requirements.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThose differences matter more over time than they usually appear to at the beginning. A documentation platform decision isn&rsquo;t just a publishing decision. It&rsquo;s also a decision about workflow, governance, review participation, reuse, maintenance, and how documentation moves through the organization.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAnd that&rsquo;s where many organizations realize too late that the system they chose for convenience was optimized for a different documentation problem than the one they actually needed to solve.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"ccms-isnt-just-writing-tool\"\u003E\u003Cspan id=\"A_CCMS_isnt_Just_a_Writing_Tool_Decision\" class=\"ez-toc-section\"\u003E\u003C/span\u003E\u003Cspan id=\"A_CCMS_isnt_Just_a_Writing_Tool_Decision\" class=\"ez-toc-section\"\u003E\u003C/span\u003EA CCMS isn&rsquo;t Just a Writing Tool Decision\u003C/h2\u003E\n\n\n\n\u003Cfigure class=\"wp-block-image size-large\"\u003E\u003Ca href=\"https://doclandscape.com/wp-content/uploads/documentaion-is-an-ecosystem.png\" target=\"_blank\" rel=\"noreferrer noopener\"\u003E\u003Cimg loading=\"lazy\" decoding=\"async\" width=\"1024\" height=\"683\" src=\"https://doclandscape.com/wp-content/uploads/documentaion-is-an-ecosystem-1024x683.png\" alt=\"\" class=\"wp-image-1941\" srcset=\"https://doclandscape.com/wp-content/uploads/documentaion-is-an-ecosystem-1024x683.png 1024w, https://doclandscape.com/wp-content/uploads/documentaion-is-an-ecosystem-300x200.png 300w, https://doclandscape.com/wp-content/uploads/documentaion-is-an-ecosystem-768x512.png 768w, https://doclandscape.com/wp-content/uploads/documentaion-is-an-ecosystem.png 1536w\" sizes=\"auto, (max-width: 1024px) 100vw, 1024px\"/\u003E\u003C/a\u003E\u003C/figure\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EA lot of CCMS conversations focus heavily on features. Can the system publish to multiple outputs? Does it support reusable content? Is there version history? Does it integrate with review workflows? Those questions matter. But they are only part of the decision.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EA documentation platform is also an operational system that shapes how documentation moves through the organization over time, including:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Ehow content gets reviewed\u003C/li\u003E\n\n\n\n\u003Cli\u003Ewho participates in documentation work\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow governance scales\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow reusable content is managed\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow updates are maintained\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow knowledge moves between teams\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow easily documentation stays aligned with a changing product\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThis is where organizations often underestimate the long-term impact of a documentation platform decision.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EA system that works well for lightweight support articles may become difficult once the documentation environment requires:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Estructured reuse\u003C/li\u003E\n\n\n\n\u003Cli\u003Estronger review workflows\u003C/li\u003E\n\n\n\n\u003Cli\u003Eformal ownership\u003C/li\u003E\n\n\n\n\u003Cli\u003Emulti-product documentation sets\u003C/li\u003E\n\n\n\n\u003Cli\u003Eversioning across releases\u003C/li\u003E\n\n\n\n\u003Cli\u003Econditional content\u003C/li\u003E\n\n\n\n\u003Cli\u003Elong-term maintenance visibility\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe opposite can also happen. A heavily structured platform can introduce unnecessary process and operational overhead for a smaller team that primarily needs fast publishing, lightweight contribution, and simple support-style content.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThat&rsquo;s why the question isn&rsquo;t simply:\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cstrong\u003EWhich platform has the most features?\u003C/strong\u003E\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe more important question is:\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cstrong\u003EWhat kind of documentation environment are we actually operating?\u003C/strong\u003E\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EEvery documentation platform carries assumptions about how documentation work happens.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ESome systems assume:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Efast publishing matters most\u003C/li\u003E\n\n\n\n\u003Cli\u003Emany contributors need lightweight access\u003C/li\u003E\n\n\n\n\u003Cli\u003Esupport workflows are central\u003C/li\u003E\n\n\n\n\u003Cli\u003Econtent is mostly article-oriented\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EOthers assume:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Ereuse matters deeply\u003C/li\u003E\n\n\n\n\u003Cli\u003Egovernance complexity will increase\u003C/li\u003E\n\n\n\n\u003Cli\u003Edocumentation sets will scale over time\u003C/li\u003E\n\n\n\n\u003Cli\u003Epublishing outputs will diversify\u003C/li\u003E\n\n\n\n\u003Cli\u003Econtent relationships need structure\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ENeither model is universally correct. But problems appear quickly when the assumptions built into the documentation system no longer match the operational reality of the documentation environment itself.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"different-ccms-categories-solve-different\"\u003E\u003Cspan id=\"Different_CCMS_Categories_Solve_Different_Problems\" class=\"ez-toc-section\"\u003E\u003C/span\u003E\u003Cspan id=\"Different_CCMS_Categories_Solve_Different_Problems\" class=\"ez-toc-section\"\u003E\u003C/span\u003EDifferent CCMS Categories Solve Different Problems\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EOrganizations often compare documentation tools as if they were all trying to solve the same problem &mdash; they aren&rsquo;t.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EDifferent categories of documentation platforms evolved in response to different operational pressures, team structures, and publishing environments. Many platforms now overlap in capabilities, but their underlying assumptions still matter.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"traditional-structured-ccms-platforms\"\u003ETraditional structured CCMS platforms\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EPlatforms like Paligo or Oxygen XML Author with a \u003Ca class=\"glossaryLink\" tabindex=\"0\" role=\"link\" href=\"https://doclandscape.com/glossary/cms/\" aria-describedby=\"tt\" data-cmtooltip=\"cmtt_a326c87f5c0f80cd7f67ade04201d269\" data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'\u003ECMS\u003C/a\u003E layer were designed around structure, reuse, governance, and long-term scalability.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThese systems are usually strongest when documentation environments involve:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Elarge documentation sets\u003C/li\u003E\n\n\n\n\u003Cli\u003Emultiple products or versions\u003C/li\u003E\n\n\n\n\u003Cli\u003Ereusable components\u003C/li\u003E\n\n\n\n\u003Cli\u003Econditional content\u003C/li\u003E\n\n\n\n\u003Cli\u003Eformal review and publishing workflows\u003C/li\u003E\n\n\n\n\u003Cli\u003Elong-term maintenance complexity\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ETheir strength is control. The tradeoff is that they can feel heavier operationally. They often require stronger process discipline, more upfront structure, and more intentional content modeling than lighter platforms.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EFor organizations with growing documentation complexity, however, that structure can become necessary rather than burdensome.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"knowledge-base-help-center-platforms\"\u003EKnowledge base and help center platforms\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EPlatforms like Zendesk Guide or Intercom Articles were designed primarily around support-oriented knowledge sharing. In some environments, they work well for product documentation too.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EFor example, Anthropic uses Intercom for Claude documentation and help content. Claude is an extremely complex product underneath, but the user-facing experience is relatively simple: a conversational interface, an API, and account-level workflows. The documentation environment is less about navigating a deeply layered application UI and more about helping users understand concepts, capabilities, limitations, usage patterns, and workflows.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIn that kind of environment, a lighter help-center-oriented platform can work well because the operational pressure is different. The documentation problem isn&rsquo;t managing a massive menu-driven product with hundreds of deeply versioned interface states. It&rsquo;s helping users understand how to use and work with a complex underlying system through relatively streamlined interfaces.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThey are usually optimized for:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Efast publishing\u003C/li\u003E\n\n\n\n\u003Cli\u003Eaccessibility\u003C/li\u003E\n\n\n\n\u003Cli\u003Elightweight contribution\u003C/li\u003E\n\n\n\n\u003Cli\u003Esupport integration\u003C/li\u003E\n\n\n\n\u003Cli\u003Earticle-based content\u003C/li\u003E\n\n\n\n\u003Cli\u003Equick updates\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThat makes them useful for many support and customer-facing workflows, though the challenge appears when organizations try to scale them into environments requiring:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Estructured reuse\u003C/li\u003E\n\n\n\n\u003Cli\u003Edeeper governance\u003C/li\u003E\n\n\n\n\u003Cli\u003Ecomplex documentation relationships\u003C/li\u003E\n\n\n\n\u003Cli\u003Elarge-scale version management\u003C/li\u003E\n\n\n\n\u003Cli\u003Emulti-product documentation ecosystems\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAt that point, teams often begin creating manual workflows outside the system to compensate for capabilities the platform was never really designed to provide.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"modern-hybrid-documentation-platforms\"\u003EModern hybrid documentation platforms\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EPlatforms like Document360 or ClickHelp attempt to balance structure with usability. They often sit between traditional structured CCMS platforms and lighter knowledge base systems.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThese platforms usually provide:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Eeasier authoring experiences\u003C/li\u003E\n\n\n\n\u003Cli\u003Eintegrated publishing\u003C/li\u003E\n\n\n\n\u003Cli\u003Emoderate governance capabilities\u003C/li\u003E\n\n\n\n\u003Cli\u003Esome structured reuse\u003C/li\u003E\n\n\n\n\u003Cli\u003Ebuilt-in analytics and feedback features\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EFor many mid-sized SaaS environments, this balance can make sense, though they may not offer the same depth of structure, reuse management, or dependency handling as more mature structured CCMS environments.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"enterprise-cms-platforms-adapted-documentation\"\u003EEnterprise \u003Ca class=\"glossaryLink\" tabindex=\"0\" role=\"link\" href=\"https://doclandscape.com/glossary/cms/\" aria-describedby=\"tt\" data-cmtooltip=\"cmtt_a326c87f5c0f80cd7f67ade04201d269\" data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'\u003ECMS\u003C/a\u003E platforms adapted for documentation\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ESome organizations use broader enterprise \u003Ca class=\"glossaryLink\"  aria-describedby=\"tt\"  data-cmtooltip=\"cmtt_a326c87f5c0f80cd7f67ade04201d269\"  href=\"https://doclandscape.com/glossary/cms/\"  data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'  tabindex='0' role='link'\u003ECMS\u003C/a\u003E platforms such as Adobe Experience Manager or Contentful for documentation delivery. These systems are often strongest when documentation exists inside a larger omnichannel content ecosystem.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ETheir strengths may include:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003EAPI-first delivery\u003C/li\u003E\n\n\n\n\u003Cli\u003Ebroader ecosystem integration\u003C/li\u003E\n\n\n\n\u003Cli\u003Eflexible content delivery models\u003C/li\u003E\n\n\n\n\u003Cli\u003Eintegration with digital experience systems\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EBut they are usually not designed specifically around documentation-team workflows.m That often means organizations must build or customize parts of the editorial and governance experience themselves.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"emerging-ai-native-documentation-environments\"\u003EEmerging AI-native documentation environments\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EA newer category of platforms is beginning to optimize around retrieval, conversational delivery, and AI-assisted workflows.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThese systems often focus more heavily on:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Econtent retrieval\u003C/li\u003E\n\n\n\n\u003Cli\u003Efragmented consumption\u003C/li\u003E\n\n\n\n\u003Cli\u003Econversational interfaces\u003C/li\u003E\n\n\n\n\u003Cli\u003EAI-assisted generation\u003C/li\u003E\n\n\n\n\u003Cli\u003Edynamic content surfacing\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThis reflects a real shift in how documentation is increasingly consumed, though many of these environments are still evolving in areas like:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Egovernance\u003C/li\u003E\n\n\n\n\u003Cli\u003Etrust\u003C/li\u003E\n\n\n\n\u003Cli\u003Elong-term maintenance\u003C/li\u003E\n\n\n\n\u003Cli\u003Edependency awareness\u003C/li\u003E\n\n\n\n\u003Cli\u003Evalidation against changing systems\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EWhich means they are often strongest as additions to a documentation ecosystem rather than complete replacements for more mature documentation infrastructure. No category is universally best.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EEach one reflects different assumptions about:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Ehow content is created\u003C/li\u003E\n\n\n\n\u003Cli\u003Ewho contributes to it\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow structured it needs to be\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow quickly it changes\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow long it must remain maintainable\u003C/li\u003E\n\n\n\n\u003Cli\u003Ehow documentation fits into the broader organization\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThat&rsquo;s why choosing a CCMS based primarily on convenience, existing licensing, or surface-level feature comparison often creates friction later. Organizations are choosing the operational model their documentation environment will inherit over time.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"where-organizations-commonly-miscalculate\"\u003E\u003Cspan id=\"Where_Organizations_Commonly_Miscalculate\" class=\"ez-toc-section\"\u003E\u003C/span\u003E\u003Cspan id=\"Where_Organizations_Commonly_Miscalculate\" class=\"ez-toc-section\"\u003E\u003C/span\u003EWhere Organizations Commonly Miscalculate\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EOne of the biggest mistakes organizations make is assuming that a unified customer experience requires a unified documentation management system. Support content, product documentation, API documentation, onboarding flows, and AI-assisted help experiences can still be connected through APIs, search, retrieval layers, and shared delivery experiences without forcing every type of documentation into the same authoring and management workflow.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAnother common mistake is choosing systems based on publishing convenience rather than long-term maintenance. Many platforms feel fine early on; the pressure appears later:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Eduplicate content\u003C/li\u003E\n\n\n\n\u003Cli\u003Egovernance \u003Ca tabindex=\"0\" role=\"link\" aria-describedby=\"tt\" data-cmtooltip=\"cmtt_28fcda418de72001ff60c8b79f91d0cc\" data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]' href=\"https://doclandscape.com/glossary/drift/\" class=\"glossaryLink\"\u003Edrift\u003C/a\u003E\u003C/li\u003E\n\n\n\n\u003Cli\u003Edifficult review workflows\u003C/li\u003E\n\n\n\n\u003Cli\u003Estale documentation\u003C/li\u003E\n\n\n\n\u003Cli\u003Escaling problems\u003C/li\u003E\n\n\n\n\u003Cli\u003Emanual workarounds outside the platform\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EOrganizations also often underestimate review friction. If engineers, PMs, support teams, or other SMEs struggle to participate in reviews because the workflow is awkward or disconnected from how they already work, documentation quality slows down quickly.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EMost platforms can technically publish documentation. The question is whether the platform still works once the documentation environment becomes larger, more collaborative, more interconnected, and harder to maintain over time.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"documentation-systems-shape-how-teams\"\u003E\u003Cspan id=\"Documentation_Systems_Shape_How_Teams_Work\" class=\"ez-toc-section\"\u003E\u003C/span\u003E\u003Cspan id=\"Documentation_Systems_Shape_How_Teams_Work\" class=\"ez-toc-section\"\u003E\u003C/span\u003EDocumentation Systems Shape How Teams Work\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EDocumentation systems aren&rsquo;t neutral. They shape how teams collaborate, how reviews happen, how governance scales, how reusable content is managed, and how easily documentation stays aligned with the product over time.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThat&rsquo;s why choosing a CCMS based primarily on convenience, existing licensing, or short-term publishing needs often creates operational friction later.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe goal isn&rsquo;t to find a universally perfect platform. The goal is to choose a system aligned with the actual documentation environment the organization is building: the complexity of the product, the structure of the content, the people involved in maintaining it, and the workflows required to keep it useful over time. Organizations aren&rsquo;t just choosing a tool; they are choosing the operational assumptions their documentation system will carry for years afterward.\u003C/p\u003E\n",
+        "protected": false
+      },
+      "excerpt": {
+        "rendered": "\u003Cp\u003EThere is no universally &ldquo;best&rdquo; CCMS. Different documentation platforms are designed around different assumptions about structure, governance, collaboration, publishing, maintenance, and scale. A system that works well for support-oriented knowledge sharing may become painful for complex product documentation over time, while a heavily structured platform may create unnecessary overhead for smaller or simpler documentation environments. The real question isn&rsquo;t which platform has the most features, it&rsquo;s whether the platform matches the actual documentation environment your organization is building.\u003C/p\u003E\n",
+        "protected": false
+      },
+      "author": 1,
+      "featured_media": 1942,
+      "comment_status": "open",
+      "ping_status": "open",
+      "sticky": false,
+      "template": "",
+      "format": "standard",
+      "meta": {
+        "_acf_changed": false,
+        "_themeisle_gutenberg_block_has_review": false,
+        "footnotes": ""
+      },
+      "categories": [5],
+      "tags": [27, 33, 31, 29, 32, 28, 35, 34, 36, 37],
+      "class_list": [
+        "post-1938",
+        "post",
+        "type-post",
+        "status-publish",
+        "format-standard",
+        "has-post-thumbnail",
+        "hentry",
+        "category-the-system",
+        "tag-ccms",
+        "tag-content-governance",
+        "tag-documentation-strategy",
+        "tag-documentation-systems",
+        "tag-documentation-workflows",
+        "tag-product-documentation",
+        "tag-saas-documentation",
+        "tag-structured-authoring",
+        "tag-technical-writing",
+        "tag-writing-tools"
+      ],
+      "acf": {
+        "target_audience": [
+          "TW"
+        ],
+        "post_subtitle": "Different documentation platforms solve different problems. Choosing the wrong one creates friction later."
+      },
+      "yoast_head": "\u003C!-- This site is optimized with the Yoast SEO plugin v28.0 - https://yoast.com/product/yoast-seo-wordpress/ --\u003E\n\u003Ctitle\u003EHow to Choose a CCMS Based on Your Documentation Needs - The Doc Landscape\u003C/title\u003E\n\u003Cmeta name=\"description\" content=\"Choosing a CMS requires careful analysis of your documentation environment. Discover key considerations for making the right choice.\" /\u003E\n\u003Cmeta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" /\u003E\n\u003Clink rel=\"canonical\" href=\"https://doclandscape.com/how-to-choose-a-ccms/\" /\u003E\n\u003Cmeta property=\"og:locale\" content=\"en_US\" /\u003E\n\u003Cmeta property=\"og:type\" content=\"article\" /\u003E\n\u003Cmeta property=\"og:title\" content=\"How to Choose a CCMS Based on Your Documentation Needs - The Doc Landscape\" /\u003E\n\u003Cmeta property=\"og:description\" content=\"Choosing a CMS requires careful analysis of your documentation environment. Discover key considerations for making the right choice.\" /\u003E\n\u003Cmeta property=\"og:url\" content=\"https://doclandscape.com/how-to-choose-a-ccms/\" /\u003E\n\u003Cmeta property=\"og:site_name\" content=\"The Doc Landscape\" /\u003E\n\u003Cmeta property=\"article:published_time\" content=\"2026-05-02T16:22:48+00:00\" /\u003E\n\u003Cmeta property=\"article:modified_time\" content=\"2026-07-24T21:32:50+00:00\" /\u003E\n\u003Cmeta property=\"og:image\" content=\"http://doclandscape.com/wp-content/uploads/choosing-a-ccms.png\" /\u003E\n\t\u003Cmeta property=\"og:image:width\" content=\"1564\" /\u003E\n\t\u003Cmeta property=\"og:image:height\" content=\"1006\" /\u003E\n\t\u003Cmeta property=\"og:image:type\" content=\"image/png\" /\u003E\n\u003Cmeta name=\"author\" content=\"Kemi Oyesiku\" /\u003E\n\u003Cmeta name=\"twitter:card\" content=\"summary_large_image\" /\u003E\n\u003Cmeta name=\"twitter:label1\" content=\"Written by\" /\u003E\n\t\u003Cmeta name=\"twitter:data1\" content=\"Kemi Oyesiku\" /\u003E\n\t\u003Cmeta name=\"twitter:label2\" content=\"Est. reading time\" /\u003E\n\t\u003Cmeta name=\"twitter:data2\" content=\"9 minutes\" /\u003E\n\u003Cscript type=\"application/ld+json\" class=\"yoast-schema-graph\"\u003E{\"@context\":\"https:\\/\\/schema.org\",\"@graph\":[{\"@type\":[\"Article\",\"BlogPosting\"],\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/#article\",\"isPartOf\":{\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/\"},\"author\":{\"name\":\"Kemi Oyesiku\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\"},\"headline\":\"How to Choose a CCMS Based on Your Documentation Needs\",\"datePublished\":\"2026-05-02T16:22:48+00:00\",\"dateModified\":\"2026-07-24T21:32:50+00:00\",\"mainEntityOfPage\":{\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/\"},\"wordCount\":1851,\"commentCount\":0,\"publisher\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\"},\"image\":{\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/#primaryimage\"},\"thumbnailUrl\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/choosing-a-ccms.png\",\"keywords\":[\"CCMS\",\"Content Governance\",\"Documentation Strategy\",\"Documentation Systems\",\"Documentation Workflows\",\"Product Documentation\",\"SaaS Documentation\",\"Structured Authoring\",\"Technical Writing\",\"writing tools\"],\"articleSection\":[\"The System\"],\"inLanguage\":\"en-US\",\"potentialAction\":[{\"@type\":\"CommentAction\",\"name\":\"Comment\",\"target\":[\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/#respond\"]}],\"audience\":[{\"@type\":\"Audience\",\"audienceType\":\"Technical Writer\"}]},{\"@type\":\"WebPage\",\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/\",\"url\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/\",\"name\":\"How to Choose a CCMS Based on Your Documentation Needs - The Doc Landscape\",\"isPartOf\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#website\"},\"primaryImageOfPage\":{\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/#primaryimage\"},\"image\":{\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/#primaryimage\"},\"thumbnailUrl\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/choosing-a-ccms.png\",\"datePublished\":\"2026-05-02T16:22:48+00:00\",\"dateModified\":\"2026-07-24T21:32:50+00:00\",\"description\":\"Choosing a CMS requires careful analysis of your documentation environment. Discover key considerations for making the right choice.\",\"breadcrumb\":{\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/#breadcrumb\"},\"inLanguage\":\"en-US\",\"potentialAction\":[{\"@type\":\"ReadAction\",\"target\":[\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/\"]}]},{\"@type\":\"ImageObject\",\"inLanguage\":\"en-US\",\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/#primaryimage\",\"url\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/choosing-a-ccms.png\",\"contentUrl\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/choosing-a-ccms.png\",\"width\":1564,\"height\":1006,\"caption\":\"Choosing a CCMS\"},{\"@type\":\"BreadcrumbList\",\"@id\":\"https:\\/\\/doclandscape.com\\/how-to-choose-a-ccms\\/#breadcrumb\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":\"https:\\/\\/doclandscape.com\\/\"},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"How to Choose a CCMS Based on Your Documentation Needs\"}]},{\"@type\":\"WebSite\",\"@id\":\"https:\\/\\/doclandscape.com\\/#website\",\"url\":\"https:\\/\\/doclandscape.com\\/\",\"name\":\"The Doc Landscape\",\"description\":\"Navigating Documentation in a Living Knowledge System\",\"publisher\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\"},\"potentialAction\":[{\"@type\":\"SearchAction\",\"target\":{\"@type\":\"EntryPoint\",\"urlTemplate\":\"https:\\/\\/doclandscape.com\\/?s={search_term_string}\"},\"query-input\":{\"@type\":\"PropertyValueSpecification\",\"valueRequired\":true,\"valueName\":\"search_term_string\"}}],\"inLanguage\":\"en-US\"},{\"@type\":\"Organization\",\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\",\"name\":\"The Doc Landscape\",\"url\":\"https:\\/\\/doclandscape.com\\/\",\"logo\":{\"@type\":\"ImageObject\",\"inLanguage\":\"en-US\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/logo\\/image\\/\",\"url\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/2026\\/02\\/the-doc-ladnscape-logo-2-26.png\",\"contentUrl\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/2026\\/02\\/the-doc-ladnscape-logo-2-26.png\",\"width\":1270,\"height\":251,\"caption\":\"The Doc Landscape\"},\"image\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/logo\\/image\\/\"},\"sameAs\":[\"https:\\/\\/www.linkedin.com\\/in\\/kemio\\/\"],\"description\":\"A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.\",\"founder\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\"}},{\"@type\":\"Person\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\",\"name\":\"Kemi Oyesiku\",\"pronouns\":\"she\\/her\",\"image\":{\"@type\":\"ImageObject\",\"inLanguage\":\"en-US\",\"@id\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"url\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"contentUrl\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"caption\":\"Kemi Oyesiku\"},\"sameAs\":[\"https:\\/\\/www.linkedin.com\\/in\\/kemio\\/\"],\"url\":\"https:\\/\\/doclandscape.com\\/author\\/kemiowritesgmail-com\\/\",\"knowsAbout\":[\"technical writing\",\"documentation engineering\",\"AI documentation\",\"SaaS documentation\",\"documentation as a living knowledge system\"],\"jobTitle\":\"Documentation Engineer and Technical Writer\"}]}\u003C/script\u003E\n\u003C!-- / Yoast SEO plugin. --\u003E",
+      "yoast_head_json": {
+        "title": "How to Choose a CCMS Based on Your Documentation Needs - The Doc Landscape",
+        "description": "Choosing a CMS requires careful analysis of your documentation environment. Discover key considerations for making the right choice.",
+        "robots": {
+          "index": "index",
+          "follow": "follow",
+          "max-snippet": "max-snippet:-1",
+          "max-image-preview": "max-image-preview:large",
+          "max-video-preview": "max-video-preview:-1"
+        },
+        "canonical": "https://doclandscape.com/how-to-choose-a-ccms/",
+        "og_locale": "en_US",
+        "og_type": "article",
+        "og_title": "How to Choose a CCMS Based on Your Documentation Needs - The Doc Landscape",
+        "og_description": "Choosing a CMS requires careful analysis of your documentation environment. Discover key considerations for making the right choice.",
+        "og_url": "https://doclandscape.com/how-to-choose-a-ccms/",
+        "og_site_name": "The Doc Landscape",
+        "article_published_time": "2026-05-02T16:22:48+00:00",
+        "article_modified_time": "2026-07-24T21:32:50+00:00",
+        "og_image": [
+          {
+            "width": 1564,
+            "height": 1006,
+            "url": "http://doclandscape.com/wp-content/uploads/choosing-a-ccms.png",
+            "type": "image/png"
+          }
+        ],
+        "author": "Kemi Oyesiku",
+        "twitter_card": "summary_large_image",
+        "twitter_misc": {
+          "Written by": "Kemi Oyesiku",
+          "Est. reading time": "9 minutes"
+        },
+        "schema": {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": [
+                "Article",
+                "BlogPosting"
+              ],
+              "@id": "https://doclandscape.com/how-to-choose-a-ccms/#article",
+              "isPartOf": {
+                "@id": "https://doclandscape.com/how-to-choose-a-ccms/"
+              },
+              "author": {
+                "name": "Kemi Oyesiku",
+                "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581"
+              },
+              "headline": "How to Choose a CCMS Based on Your Documentation Needs",
+              "datePublished": "2026-05-02T16:22:48+00:00",
+              "dateModified": "2026-07-24T21:32:50+00:00",
+              "mainEntityOfPage": {
+                "@id": "https://doclandscape.com/how-to-choose-a-ccms/"
+              },
+              "wordCount": 1851,
+              "commentCount": 0,
+              "publisher": {
+                "@id": "https://doclandscape.com/#organization"
+              },
+              "image": {
+                "@id": "https://doclandscape.com/how-to-choose-a-ccms/#primaryimage"
+              },
+              "thumbnailUrl": "https://doclandscape.com/wp-content/uploads/choosing-a-ccms.png",
+              "keywords": [
+                "CCMS",
+                "Content Governance",
+                "Documentation Strategy",
+                "Documentation Systems",
+                "Documentation Workflows",
+                "Product Documentation",
+                "SaaS Documentation",
+                "Structured Authoring",
+                "Technical Writing",
+                "writing tools"
+              ],
+              "articleSection": [
+                "The System"
+              ],
+              "inLanguage": "en-US",
+              "potentialAction": [
+                {
+                  "@type": "CommentAction",
+                  "name": "Comment",
+                  "target": [
+                    "https://doclandscape.com/how-to-choose-a-ccms/#respond"
+                  ]
+                }
+              ],
+              "audience": [
+                {
+                  "@type": "Audience",
+                  "audienceType": "Technical Writer"
+                }
+              ]
+            },
+            {
+              "@type": "WebPage",
+              "@id": "https://doclandscape.com/how-to-choose-a-ccms/",
+              "url": "https://doclandscape.com/how-to-choose-a-ccms/",
+              "name": "How to Choose a CCMS Based on Your Documentation Needs - The Doc Landscape",
+              "isPartOf": {
+                "@id": "https://doclandscape.com/#website"
+              },
+              "primaryImageOfPage": {
+                "@id": "https://doclandscape.com/how-to-choose-a-ccms/#primaryimage"
+              },
+              "image": {
+                "@id": "https://doclandscape.com/how-to-choose-a-ccms/#primaryimage"
+              },
+              "thumbnailUrl": "https://doclandscape.com/wp-content/uploads/choosing-a-ccms.png",
+              "datePublished": "2026-05-02T16:22:48+00:00",
+              "dateModified": "2026-07-24T21:32:50+00:00",
+              "description": "Choosing a CMS requires careful analysis of your documentation environment. Discover key considerations for making the right choice.",
+              "breadcrumb": {
+                "@id": "https://doclandscape.com/how-to-choose-a-ccms/#breadcrumb"
+              },
+              "inLanguage": "en-US",
+              "potentialAction": [
+                {
+                  "@type": "ReadAction",
+                  "target": [
+                    "https://doclandscape.com/how-to-choose-a-ccms/"
+                  ]
+                }
+              ]
+            },
+            {
+              "@type": "ImageObject",
+              "inLanguage": "en-US",
+              "@id": "https://doclandscape.com/how-to-choose-a-ccms/#primaryimage",
+              "url": "https://doclandscape.com/wp-content/uploads/choosing-a-ccms.png",
+              "contentUrl": "https://doclandscape.com/wp-content/uploads/choosing-a-ccms.png",
+              "width": 1564,
+              "height": 1006,
+              "caption": "Choosing a CCMS"
+            },
+            {
+              "@type": "BreadcrumbList",
+              "@id": "https://doclandscape.com/how-to-choose-a-ccms/#breadcrumb",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://doclandscape.com/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "How to Choose a CCMS Based on Your Documentation Needs"
+                }
+              ]
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://doclandscape.com/#website",
+              "url": "https://doclandscape.com/",
+              "name": "The Doc Landscape",
+              "description": "Navigating Documentation in a Living Knowledge System",
+              "publisher": {
+                "@id": "https://doclandscape.com/#organization"
+              },
+              "potentialAction": [
+                {
+                  "@type": "SearchAction",
+                  "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "https://doclandscape.com/?s={search_term_string}"
+                  },
+                  "query-input": {
+                    "@type": "PropertyValueSpecification",
+                    "valueRequired": true,
+                    "valueName": "search_term_string"
+                  }
+                }
+              ],
+              "inLanguage": "en-US"
+            },
+            {
+              "@type": "Organization",
+              "@id": "https://doclandscape.com/#organization",
+              "name": "The Doc Landscape",
+              "url": "https://doclandscape.com/",
+              "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://doclandscape.com/#/schema/logo/image/",
+                "url": "https://doclandscape.com/wp-content/uploads/2026/02/the-doc-ladnscape-logo-2-26.png",
+                "contentUrl": "https://doclandscape.com/wp-content/uploads/2026/02/the-doc-ladnscape-logo-2-26.png",
+                "width": 1270,
+                "height": 251,
+                "caption": "The Doc Landscape"
+              },
+              "image": {
+                "@id": "https://doclandscape.com/#/schema/logo/image/"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/in/kemio/"
+              ],
+              "description": "A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.",
+              "founder": {
+                "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581"
+              }
+            },
+            {
+              "@type": "Person",
+              "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581",
+              "name": "Kemi Oyesiku",
+              "pronouns": "she/her",
+              "image": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "url": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "contentUrl": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "caption": "Kemi Oyesiku"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/in/kemio/"
+              ],
+              "url": "https://doclandscape.com/author/kemiowritesgmail-com/",
+              "knowsAbout": [
+                "technical writing",
+                "documentation engineering",
+                "AI documentation",
+                "SaaS documentation",
+                "documentation as a living knowledge system"
+              ],
+              "jobTitle": "Documentation Engineer and Technical Writer"
+            }
+          ]
+        }
+      },
+      "_links": {
+        "self": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/posts/1938",
+            "targetHints": {
+              "allow": [
+                "GET"
+              ]
+            }
+          }
+        ],
+        "collection": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/posts"
+          }
+        ],
+        "about": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/types/post"
+          }
+        ],
+        "author": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/users/1"
+          }
+        ],
+        "replies": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/comments?post=1938"
+          }
+        ],
+        "version-history": [
+          {
+            "count": 17,
+            "href": "https://doclandscape.com/wp-json/wp/v2/posts/1938/revisions"
+          }
+        ],
+        "predecessor-version": [
+          {
+            "id": 2586,
+            "href": "https://doclandscape.com/wp-json/wp/v2/posts/1938/revisions/2586"
+          }
+        ],
+        "wp:featuredmedia": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/media/1942"
+          }
+        ],
+        "wp:attachment": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/media?parent=1938"
+          }
+        ],
+        "wp:term": [
+          {
+            "taxonomy": "category",
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/categories?post=1938"
+          },
+          {
+            "taxonomy": "post_tag",
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/tags?post=1938"
+          }
+        ],
+        "curies": [
+          {
+            "name": "wp",
+            "href": "https://api.w.org/{rel}",
+            "templated": true
+          }
+        ]
+      }
+    }
+  ]

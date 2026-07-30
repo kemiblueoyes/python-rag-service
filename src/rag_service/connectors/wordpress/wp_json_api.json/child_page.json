@@ -1,0 +1,316 @@
+[
+    {
+      "id": 136,
+      "date": "2026-01-31T01:40:15",
+      "date_gmt": "2026-01-31T08:40:15",
+      "guid": {
+        "rendered": "https://doclandscape.com/?page_id=136"
+      },
+      "modified": "2026-05-06T12:27:43",
+      "modified_gmt": "2026-05-06T19:27:43",
+      "slug": "ai-assistants-copilots-and-agents",
+      "status": "publish",
+      "type": "page",
+      "link": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/",
+      "title": {
+        "rendered": "What Are AI Assistants, Copilots, and Agents?"
+      },
+      "content": {
+        "rendered": "\u003Ch2 class=\"wp-block-heading\" id=\"what-do-ai-assistants-copilots\"\u003E\u003Cstrong\u003EWhat Do AI Assistants, Copilots, and Agents Have in Common?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAI assistants, copilots, and agents are AI-powered features embedded within an existing product. They support users by interpreting context, assisting with tasks, or acting on their behalf inside a defined workflow. The differences between them are primarily about how much autonomy the system has and not what it is trying to accomplish.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-difference-between-ai-assistant\"\u003E\u003Cstrong\u003EWhat Is the Difference Between an AI Assistant, a Copilot, and an Agent?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAI assistants, copilots, and agents represent different interaction models within the same product category, distinguished by how much initiative the system is allowed to take.\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003EAssistants\u003C/strong\u003E prioritize guidance and suggestions. The user leads; the system responds.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003ECopilots\u003C/strong\u003E assist with execution inside a specific workflow. The system works with you to produce or modify something in place, but waits for your direction.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EAgents\u003C/strong\u003E act more autonomously to achieve a goal. The system can take a goal and do the work, possibly while you&rsquo;re not watching.\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAutonomy increases across the spectrum. As it does, the potential for consequential, hard-to-reverse action increases too.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"assistant-vs-copilot-vs-agent\"\u003E\u003Cstrong\u003EAssistant vs. Copilot vs. Agent: Key Distinctions\u003C/strong\u003E\u003C/h3\u003E\n\n\n\n\u003Cfigure class=\"wp-block-table\"\u003E\u003Ctable class=\"has-fixed-layout\"\u003E\u003Ctbody\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cstrong\u003EDimension\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003E\u003Cstrong\u003EAssistant\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003E\u003Cstrong\u003ECopilot\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003E\u003Cstrong\u003EAgent\u003C/strong\u003E\u003C/td\u003E\u003C/tr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cstrong\u003EPrimary role\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003EGuidance and suggestions\u003C/td\u003E\u003Ctd\u003EAssisted execution\u003C/td\u003E\u003Ctd\u003EGoal completion\u003C/td\u003E\u003C/tr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cstrong\u003EInitiation\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003EUser-led\u003C/td\u003E\u003Ctd\u003EUser-led\u003C/td\u003E\u003Ctd\u003EUser- or system-initiated\u003C/td\u003E\u003C/tr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cstrong\u003EAutonomy\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003ELow\u003C/td\u003E\u003Ctd\u003ELow&ndash;medium\u003C/td\u003E\u003Ctd\u003EMedium&ndash;high\u003C/td\u003E\u003C/tr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cstrong\u003EContext scope\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003EConversational or local\u003C/td\u003E\u003Ctd\u003ETool- or workflow-specific\u003C/td\u003E\u003Ctd\u003EWorkspace or system-wide\u003C/td\u003E\u003C/tr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cstrong\u003EActs without user input\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003ENo\u003C/td\u003E\u003Ctd\u003ENo\u003C/td\u003E\u003Ctd\u003EYes (within bounds)\u003C/td\u003E\u003C/tr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cstrong\u003ETypical risk level\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003ELow\u003C/td\u003E\u003Ctd\u003EMedium\u003C/td\u003E\u003Ctd\u003EHigh\u003C/td\u003E\u003C/tr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cstrong\u003EDocumentation emphasis\u003C/strong\u003E\u003C/td\u003E\u003Ctd\u003EExpectations, variability\u003C/td\u003E\u003Ctd\u003EIn-context behavior\u003C/td\u003E\u003Ctd\u003ETrust, permissions, failure modes\u003C/td\u003E\u003C/tr\u003E\u003C/tbody\u003E\u003C/table\u003E\u003C/figure\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-working-definition-ai-assistant\"\u003E\u003Cstrong\u003EWhat Is a Working Definition of an AI Assistant, Copilot, or Agent?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cstrong\u003EAn AI assistant, copilot, or agent is an AI-powered feature embedded within an existing product that supports users by interpreting context, assisting with tasks, or acting on their behalf within a defined workflow.\u003C/strong\u003E\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EWhat defines this category isn&rsquo;t the model type, but the interaction pattern.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-key-characteristics-ai-assistants\"\u003E\u003Cstrong\u003EWhat Are the Key Characteristics of AI Assistants, Copilots, and Agents?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAI assistants, copilots, and agents typically share the following characteristics:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003EEmbedded directly within another product (editor, IDE, dashboard, platform)\u003C/li\u003E\n\n\n\n\u003Cli\u003EDesigned to support task completion, not open-ended conversation\u003C/li\u003E\n\n\n\n\u003Cli\u003EOperate on contextual inputs such as content, state, data, and permissions\u003C/li\u003E\n\n\n\n\u003Cli\u003EMay suggest, generate, modify, or take actions\u003C/li\u003E\n\n\n\n\u003Cli\u003EExposed through UI patterns such as inline controls, menus, side panels, or chat\u003C/li\u003E\n\n\n\n\u003Cli\u003ERely on underlying AI systems (models, data, orchestration, safeguards)\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-do-users-expect-from\"\u003E\u003Cstrong\u003EWhat Do Users Expect From AI Assistants, Copilots, and Agents?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUsers generally expect these features to speed up repetitive or complex work, &ldquo;understand&rdquo; what they&rsquo;re working on, and behave appropriately within the current context. They also expect the system to be predictable about when it acts versus when it waits for confirmation.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThese expectations directly shape trust and adoption &mdash; and they&rsquo;re the reason documentation for this category must set expectations, not just describe features.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"ai-agent-same-ai-assistant\"\u003E\u003Cstrong\u003EIs an \u003Ca class=\"glossaryLink\"  aria-describedby=\"tt\"  data-cmtooltip=\"cmtt_b1098785f11066be1439c2a32cc50bb3\"  href=\"https://doclandscape.com/glossary/ai-agent/\"  data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'  tabindex='0' role='link'\u003EAI Agent\u003C/a\u003E the Same as an AI Assistant?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ENo. An agent isn&rsquo;t a separate product category. It is the high-autonomy end of the AI assistant and copilot spectrum.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ELike assistants and copilots, agents are embedded within an existing product, task-oriented, and experienced as helpers rather than standalone systems. What distinguishes agents is how independently they can operate, not what they are for.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThat independence also changes the stakes. Because agents can affect external state, such as modifying files, triggering workflows, and sending communications, their actions may be difficult or impossible to reverse. That shapes how they need to be documented, governed, and trusted.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-examples-ai-assistants-copilots\"\u003E\u003Cstrong\u003EWhat Are Examples of AI Assistants, Copilots, and Agents in Real Products?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"ai-assistants-embedded-low-autonomy\"\u003E\u003Cstrong\u003EAI Assistants (embedded, low autonomy)\u003C/strong\u003E\u003C/h3\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003ESlack AI\u003C/strong\u003E: Summarizes channels and threads, answers questions from workspace history, and helps users catch up on conversations.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EOtter.ai\u003C/strong\u003E: Transcribes and summarizes meetings.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EConfluence AI\u003C/strong\u003E: Summarizes pages, surfaces related content, and answers questions across a documentation space.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EChatGPT\u003C/strong\u003E: Used for reasoning, drafting, reframing, and exploring approaches across domains.\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EDocumentation focus: capabilities, limitations, variability, appropriate use cases.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"ai-copilots-embedded-execution-focused\"\u003E\u003Cstrong\u003EAI Copilots (embedded, execution-focused)\u003C/strong\u003E\u003C/h3\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003ENotion AI\u003C/strong\u003E: Drafts, rewrites, restructures, and extracts action items directly in docs and databases.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EMicrosoft Copilot for Word\u003C/strong\u003E: Assists with drafting, editing, summarizing, and restructuring long documents.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EFigma Make\u003C/strong\u003E: Translates design intent into UI/code artifacts.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EAdobe Firefly\u003C/strong\u003E: Assists with generating and editing images and design assets within Adobe tools.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003ECursor AI\u003C/strong\u003E: A code editor that assists inside a development workflow, with limited agent-like behaviors but full human control.\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EDocumentation focus: in-context behavior, affordances, user control, and guardrails.\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"ai-agents-embedded-higher-autonomy\"\u003E\u003Cstrong\u003EAI Agents (embedded, higher autonomy)\u003C/strong\u003E\u003C/h3\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003EServiceNow AI Agents\u003C/strong\u003E: Embedded in enterprise workflows to route tickets, propose resolutions, and escalate issues based on triggers and policies.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EAtlassian Rovo Agents\u003C/strong\u003E: Embedded in Jira and Confluence, these agents can autonomously execute tasks such as triaging issues, updating project status, and routing work based on defined goals.\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EDocumentation focus: permissions, autonomy boundaries, trust signals, and failure recovery.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"why-does-category-create-specific\"\u003E\u003Cstrong\u003EWhy Does This Category Create Specific Documentation Challenges?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAI assistants, copilots, and agents share a documentation challenge that most other software features don&rsquo;t: their behavior varies. The same input doesn&rsquo;t always produce the same output. Context changes what the system does. And at the agent end of the spectrum, the system can take actions the user didn&rsquo;t explicitly request.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThat means documentation for this category must go beyond describing features. It must help users understand what tasks the feature is suited for, how context influences behavior, when results may vary, when the system will act independently, and what to do when something goes wrong.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-documentation-priorities-each-interaction\"\u003E\u003Cstrong\u003EWhat Are the Documentation Priorities for Each Interaction Model?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EDocumentation emphasis shifts as autonomy increases:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003EAssistants\u003C/strong\u003E: expectation-setting, variability, appropriate use cases\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003ECopilots\u003C/strong\u003E: in-context behavior, affordances, guardrails\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EAgents\u003C/strong\u003E: trust boundaries, permissions, auditability, failure modes\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe higher the autonomy, the more documentation needs to address trust rather than just functionality.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"how-do-ai-assistants-copilots\"\u003E\u003Cstrong\u003EHow Do AI Assistants, Copilots, and Agents Relate to Other AI Categories?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAI assistants, copilots, and agents overlap with other AI categories in ways that matter for documentation:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003EThey may use conversational interfaces, but conversation isn&rsquo;t the product.\u003C/li\u003E\n\n\n\n\u003Cli\u003EThey often rely on search or retrieval systems for context, but are not search tools.\u003C/li\u003E\n\n\n\n\u003Cli\u003EThey may trigger automation, but are not full workflow automation engines.\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding these boundaries prevents misclassification when documenting AI-enabled products.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"how-can-you-quickly-identify\"\u003E\u003Cstrong\u003EHow Can You Quickly Identify Which Model You&rsquo;re Documenting?\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThese rules of thumb are memory aids, not definitions:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003EAI Assistant\u003C/strong\u003E &rarr; If the system responds when you ask but never does the work for you, it&rsquo;s an assistant.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EAI Copilot\u003C/strong\u003E &rarr; If the system works with you to produce or modify something in place but waits for your direction and approval, it&rsquo;s a copilot.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EAI Agent\u003C/strong\u003E &rarr; If the system can take a goal and do the work for you &mdash; possibly while you&rsquo;re not watching &mdash; it&rsquo;s an agent.\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EA simpler framing: \u003Cstrong\u003E&ldquo;Talk to me&rdquo; / &ldquo;Help me do this&rdquo; / &ldquo;Handle this for me.&rdquo;\u003C/strong\u003E\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-read-next\"\u003E\u003Cstrong\u003EWhat to Read Next\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIf you are documenting one of these systems, continue to\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-ai-assistants-copilots-and-agents/\"\u003E \u003Cstrong\u003EDocumenting AI Assistants, Copilots, and Agents\u003C/strong\u003E\u003C/a\u003E for writing guidance.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIf you are documenting \u003Ca class=\"glossaryLink\"  aria-describedby=\"tt\"  data-cmtooltip=\"cmtt_bbae5ce354ba03ae8eb482b8c0354466\"  href=\"https://doclandscape.com/glossary/agentic-ai/\"  data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'  tabindex='0' role='link'\u003Eagentic AI\u003C/a\u003E systems specifically:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003EStart with\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/what-makes-ai-systems-agentic/\"\u003E \u003Cstrong\u003EWhat Makes AI Systems Agentic?\u003C/strong\u003E\u003C/a\u003E\u003C/li\u003E\n\n\n\n\u003Cli\u003EContinue to\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-agentic-ai-systems/\"\u003E \u003Cstrong\u003EDocumenting Agentic AI Systems\u003C/strong\u003E\u003C/a\u003E\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Chr class=\"wp-block-separator has-alpha-channel-opacity\"\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cem\u003EPart of the\u003C/em\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/\"\u003E\u003Cem\u003E \u003C/em\u003E\u003Cem\u003EWriting About AI\u003C/em\u003E\u003C/a\u003E\u003Cem\u003E series on The Doc Landscape.\u003C/em\u003E\u003C/p\u003E\n",
+        "protected": false
+      },
+      "excerpt": {
+        "rendered": "\u003Cp\u003EWhat Do AI Assistants, Copilots, and Agents Have in Common? AI assistants, copilots, and agents are AI-powered features embedded within an existing product. They support users by interpreting context, assisting with tasks, or acting on their behalf inside a defined workflow. The differences between them are primarily about how much autonomy the system has and [&hellip;]\u003C/p\u003E\n",
+        "protected": false
+      },
+      "author": 1,
+      "featured_media": 0,
+      "parent": 132,
+      "menu_order": 1,
+      "comment_status": "closed",
+      "ping_status": "closed",
+      "template": "toc-page",
+      "meta": {
+        "_acf_changed": false,
+        "_themeisle_gutenberg_block_has_review": false,
+        "footnotes": ""
+      },
+      "class_list": [
+        "post-136",
+        "page",
+        "type-page",
+        "status-publish",
+        "hentry"
+      ],
+      "acf": {
+        "target_audience": [
+          "TW",
+          "DL"
+        ],
+        "post_subtitle": "Understanding Embedded AI Systems That Assist, Suggest, and Act Within Existing Products"
+      },
+      "yoast_head": "\u003C!-- This site is optimized with the Yoast SEO plugin v28.0 - https://yoast.com/product/yoast-seo-wordpress/ --\u003E\n\u003Ctitle\u003EWhat Are AI Assistants, Copilots, and Agents? - The Doc Landscape\u003C/title\u003E\n\u003Cmeta name=\"description\" content=\"Understand AI assistants vs copilots vs agents and how these AI product types differ in behavior, scope, and user interaction.\" /\u003E\n\u003Cmeta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" /\u003E\n\u003Clink rel=\"canonical\" href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/\" /\u003E\n\u003Cmeta property=\"og:locale\" content=\"en_US\" /\u003E\n\u003Cmeta property=\"og:type\" content=\"article\" /\u003E\n\u003Cmeta property=\"og:title\" content=\"What Are AI Assistants, Copilots, and Agents? - The Doc Landscape\" /\u003E\n\u003Cmeta property=\"og:description\" content=\"Understand AI assistants vs copilots vs agents and how these AI product types differ in behavior, scope, and user interaction.\" /\u003E\n\u003Cmeta property=\"og:url\" content=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/\" /\u003E\n\u003Cmeta property=\"og:site_name\" content=\"The Doc Landscape\" /\u003E\n\u003Cmeta property=\"article:modified_time\" content=\"2026-05-06T19:27:43+00:00\" /\u003E\n\u003Cmeta property=\"og:image\" content=\"https://doclandscape.com/wp-content/uploads/square-doc-landscape-logo.png\" /\u003E\n\t\u003Cmeta property=\"og:image:width\" content=\"845\" /\u003E\n\t\u003Cmeta property=\"og:image:height\" content=\"529\" /\u003E\n\t\u003Cmeta property=\"og:image:type\" content=\"image/png\" /\u003E\n\u003Cmeta name=\"twitter:card\" content=\"summary_large_image\" /\u003E\n\u003Cmeta name=\"twitter:label1\" content=\"Est. reading time\" /\u003E\n\t\u003Cmeta name=\"twitter:data1\" content=\"6 minutes\" /\u003E\n\u003Cscript type=\"application/ld+json\" class=\"yoast-schema-graph\"\u003E{\"@context\":\"https:\\/\\/schema.org\",\"@graph\":[{\"@type\":\"TechArticle\",\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/ai-assistants-copilots-and-agents\\/#article\",\"isPartOf\":{\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/ai-assistants-copilots-and-agents\\/\"},\"author\":{\"name\":\"Kemi Oyesiku\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\"},\"headline\":\"What Are AI Assistants, Copilots, and Agents?\",\"datePublished\":\"2026-01-31T08:40:15+00:00\",\"dateModified\":\"2026-05-06T19:27:43+00:00\",\"mainEntityOfPage\":{\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/ai-assistants-copilots-and-agents\\/\"},\"wordCount\":1177,\"publisher\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\"},\"inLanguage\":\"en-US\",\"audience\":[{\"@type\":\"Audience\",\"audienceType\":\"Technical Writer\"},{\"@type\":\"Audience\",\"audienceType\":\"Documentation Leader\"}]},{\"@type\":\"WebPage\",\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/ai-assistants-copilots-and-agents\\/\",\"url\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/ai-assistants-copilots-and-agents\\/\",\"name\":\"What Are AI Assistants, Copilots, and Agents? - The Doc Landscape\",\"isPartOf\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#website\"},\"datePublished\":\"2026-01-31T08:40:15+00:00\",\"dateModified\":\"2026-05-06T19:27:43+00:00\",\"description\":\"Understand AI assistants vs copilots vs agents and how these AI product types differ in behavior, scope, and user interaction.\",\"breadcrumb\":{\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/ai-assistants-copilots-and-agents\\/#breadcrumb\"},\"inLanguage\":\"en-US\",\"potentialAction\":[{\"@type\":\"ReadAction\",\"target\":[\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/ai-assistants-copilots-and-agents\\/\"]}]},{\"@type\":\"BreadcrumbList\",\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/ai-assistants-copilots-and-agents\\/#breadcrumb\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":\"https:\\/\\/doclandscape.com\\/\"},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Writing About AI\",\"item\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/\"},{\"@type\":\"ListItem\",\"position\":3,\"name\":\"AI Product Landscape\",\"item\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/ai-product-landscape\\/\"},{\"@type\":\"ListItem\",\"position\":4,\"name\":\"What Are AI Assistants, Copilots, and Agents?\"}]},{\"@type\":\"WebSite\",\"@id\":\"https:\\/\\/doclandscape.com\\/#website\",\"url\":\"https:\\/\\/doclandscape.com\\/\",\"name\":\"The Doc Landscape\",\"description\":\"Navigating Documentation in a Living Knowledge System\",\"publisher\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\"},\"potentialAction\":[{\"@type\":\"SearchAction\",\"target\":{\"@type\":\"EntryPoint\",\"urlTemplate\":\"https:\\/\\/doclandscape.com\\/?s={search_term_string}\"},\"query-input\":{\"@type\":\"PropertyValueSpecification\",\"valueRequired\":true,\"valueName\":\"search_term_string\"}}],\"inLanguage\":\"en-US\"},{\"@type\":\"Organization\",\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\",\"name\":\"The Doc Landscape\",\"url\":\"https:\\/\\/doclandscape.com\\/\",\"logo\":{\"@type\":\"ImageObject\",\"inLanguage\":\"en-US\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/logo\\/image\\/\",\"url\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/2026\\/02\\/the-doc-ladnscape-logo-2-26.png\",\"contentUrl\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/2026\\/02\\/the-doc-ladnscape-logo-2-26.png\",\"width\":1270,\"height\":251,\"caption\":\"The Doc Landscape\"},\"image\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/logo\\/image\\/\"},\"sameAs\":[\"https:\\/\\/www.linkedin.com\\/in\\/kemio\\/\"],\"description\":\"A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.\",\"founder\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\"}},{\"@type\":\"Person\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\",\"name\":\"Kemi Oyesiku\",\"pronouns\":\"she\\/her\",\"image\":{\"@type\":\"ImageObject\",\"inLanguage\":\"en-US\",\"@id\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"url\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"contentUrl\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"caption\":\"Kemi Oyesiku\"},\"sameAs\":[\"https:\\/\\/www.linkedin.com\\/in\\/kemio\\/\"],\"url\":\"https:\\/\\/doclandscape.com\\/author\\/kemiowritesgmail-com\\/\",\"knowsAbout\":[\"technical writing\",\"documentation engineering\",\"AI documentation\",\"SaaS documentation\",\"documentation as a living knowledge system\"],\"jobTitle\":\"Documentation Engineer and Technical Writer\"}]}\u003C/script\u003E\n\u003C!-- / Yoast SEO plugin. --\u003E",
+      "yoast_head_json": {
+        "title": "What Are AI Assistants, Copilots, and Agents? - The Doc Landscape",
+        "description": "Understand AI assistants vs copilots vs agents and how these AI product types differ in behavior, scope, and user interaction.",
+        "robots": {
+          "index": "index",
+          "follow": "follow",
+          "max-snippet": "max-snippet:-1",
+          "max-image-preview": "max-image-preview:large",
+          "max-video-preview": "max-video-preview:-1"
+        },
+        "canonical": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/",
+        "og_locale": "en_US",
+        "og_type": "article",
+        "og_title": "What Are AI Assistants, Copilots, and Agents? - The Doc Landscape",
+        "og_description": "Understand AI assistants vs copilots vs agents and how these AI product types differ in behavior, scope, and user interaction.",
+        "og_url": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/",
+        "og_site_name": "The Doc Landscape",
+        "article_modified_time": "2026-05-06T19:27:43+00:00",
+        "og_image": [
+          {
+            "width": 845,
+            "height": 529,
+            "url": "https://doclandscape.com/wp-content/uploads/square-doc-landscape-logo.png",
+            "type": "image/png"
+          }
+        ],
+        "twitter_card": "summary_large_image",
+        "twitter_misc": {
+          "Est. reading time": "6 minutes"
+        },
+        "schema": {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "TechArticle",
+              "@id": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/#article",
+              "isPartOf": {
+                "@id": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/"
+              },
+              "author": {
+                "name": "Kemi Oyesiku",
+                "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581"
+              },
+              "headline": "What Are AI Assistants, Copilots, and Agents?",
+              "datePublished": "2026-01-31T08:40:15+00:00",
+              "dateModified": "2026-05-06T19:27:43+00:00",
+              "mainEntityOfPage": {
+                "@id": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/"
+              },
+              "wordCount": 1177,
+              "publisher": {
+                "@id": "https://doclandscape.com/#organization"
+              },
+              "inLanguage": "en-US",
+              "audience": [
+                {
+                  "@type": "Audience",
+                  "audienceType": "Technical Writer"
+                },
+                {
+                  "@type": "Audience",
+                  "audienceType": "Documentation Leader"
+                }
+              ]
+            },
+            {
+              "@type": "WebPage",
+              "@id": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/",
+              "url": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/",
+              "name": "What Are AI Assistants, Copilots, and Agents? - The Doc Landscape",
+              "isPartOf": {
+                "@id": "https://doclandscape.com/#website"
+              },
+              "datePublished": "2026-01-31T08:40:15+00:00",
+              "dateModified": "2026-05-06T19:27:43+00:00",
+              "description": "Understand AI assistants vs copilots vs agents and how these AI product types differ in behavior, scope, and user interaction.",
+              "breadcrumb": {
+                "@id": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/#breadcrumb"
+              },
+              "inLanguage": "en-US",
+              "potentialAction": [
+                {
+                  "@type": "ReadAction",
+                  "target": [
+                    "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/"
+                  ]
+                }
+              ]
+            },
+            {
+              "@type": "BreadcrumbList",
+              "@id": "https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/#breadcrumb",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://doclandscape.com/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Writing About AI",
+                  "item": "https://doclandscape.com/writing-about-ai/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": "AI Product Landscape",
+                  "item": "https://doclandscape.com/writing-about-ai/ai-product-landscape/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 4,
+                  "name": "What Are AI Assistants, Copilots, and Agents?"
+                }
+              ]
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://doclandscape.com/#website",
+              "url": "https://doclandscape.com/",
+              "name": "The Doc Landscape",
+              "description": "Navigating Documentation in a Living Knowledge System",
+              "publisher": {
+                "@id": "https://doclandscape.com/#organization"
+              },
+              "potentialAction": [
+                {
+                  "@type": "SearchAction",
+                  "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "https://doclandscape.com/?s={search_term_string}"
+                  },
+                  "query-input": {
+                    "@type": "PropertyValueSpecification",
+                    "valueRequired": true,
+                    "valueName": "search_term_string"
+                  }
+                }
+              ],
+              "inLanguage": "en-US"
+            },
+            {
+              "@type": "Organization",
+              "@id": "https://doclandscape.com/#organization",
+              "name": "The Doc Landscape",
+              "url": "https://doclandscape.com/",
+              "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://doclandscape.com/#/schema/logo/image/",
+                "url": "https://doclandscape.com/wp-content/uploads/2026/02/the-doc-ladnscape-logo-2-26.png",
+                "contentUrl": "https://doclandscape.com/wp-content/uploads/2026/02/the-doc-ladnscape-logo-2-26.png",
+                "width": 1270,
+                "height": 251,
+                "caption": "The Doc Landscape"
+              },
+              "image": {
+                "@id": "https://doclandscape.com/#/schema/logo/image/"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/in/kemio/"
+              ],
+              "description": "A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.",
+              "founder": {
+                "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581"
+              }
+            },
+            {
+              "@type": "Person",
+              "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581",
+              "name": "Kemi Oyesiku",
+              "pronouns": "she/her",
+              "image": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "url": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "contentUrl": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "caption": "Kemi Oyesiku"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/in/kemio/"
+              ],
+              "url": "https://doclandscape.com/author/kemiowritesgmail-com/",
+              "knowsAbout": [
+                "technical writing",
+                "documentation engineering",
+                "AI documentation",
+                "SaaS documentation",
+                "documentation as a living knowledge system"
+              ],
+              "jobTitle": "Documentation Engineer and Technical Writer"
+            }
+          ]
+        }
+      },
+      "_links": {
+        "self": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/136",
+            "targetHints": {
+              "allow": [
+                "GET"
+              ]
+            }
+          }
+        ],
+        "collection": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages"
+          }
+        ],
+        "about": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/types/page"
+          }
+        ],
+        "author": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/users/1"
+          }
+        ],
+        "replies": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/comments?post=136"
+          }
+        ],
+        "version-history": [
+          {
+            "count": 24,
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/136/revisions"
+          }
+        ],
+        "predecessor-version": [
+          {
+            "id": 2222,
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/136/revisions/2222"
+          }
+        ],
+        "up": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/132"
+          }
+        ],
+        "wp:attachment": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/media?parent=136"
+          }
+        ],
+        "curies": [
+          {
+            "name": "wp",
+            "href": "https://api.w.org/{rel}",
+            "templated": true
+          }
+        ]
+      }
+    }
+  ]

@@ -1,0 +1,100 @@
+{
+    "@context": "https:\/\/schema.org",
+    "@graph": [
+        {
+            "@type": [
+                "WebPage",
+                "AboutPage"
+            ],
+            "@id": "https:\/\/doclandscape.com\/about\/",
+            "url": "https:\/\/doclandscape.com\/about\/",
+            "name": "About The Doc Landscape",
+            "isPartOf": {
+                "@id": "https:\/\/doclandscape.com\/#website"
+            },
+            "datePublished": "2026-01-30T23:33:12+00:00",
+            "dateModified": "2026-05-12T20:12:25+00:00",
+            "description": "The Doc Landscape is a reference platform for technical writers working in modern software environments.",
+            "breadcrumb": {
+                "@id": "https:\/\/doclandscape.com\/about\/#breadcrumb"
+            },
+            "inLanguage": "en-US",
+            "potentialAction": [
+                {
+                    "@type": "ReadAction",
+                    "target": [
+                        "https:\/\/doclandscape.com\/about\/"
+                    ]
+                }
+            ]
+        },
+        {
+            "@type": "BreadcrumbList",
+            "@id": "https:\/\/doclandscape.com\/about\/#breadcrumb",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https:\/\/doclandscape.com\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "About"
+                }
+            ]
+        },
+        {
+            "@type": "WebSite",
+            "@id": "https:\/\/doclandscape.com\/#website",
+            "url": "https:\/\/doclandscape.com\/",
+            "name": "The Doc Landscape",
+            "description": "Navigating Documentation in a Living Knowledge System",
+            "publisher": {
+                "@id": "https:\/\/doclandscape.com\/#organization"
+            },
+            "potentialAction": [
+                {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https:\/\/doclandscape.com\/?s={search_term_string}"
+                    },
+                    "query-input": {
+                        "@type": "PropertyValueSpecification",
+                        "valueRequired": true,
+                        "valueName": "search_term_string"
+                    }
+                }
+            ],
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "Organization",
+            "@id": "https:\/\/doclandscape.com\/#organization",
+            "name": "The Doc Landscape",
+            "url": "https:\/\/doclandscape.com\/",
+            "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/logo\/image\/",
+                "url": "https:\/\/doclandscape.com\/wp-content\/uploads\/2026\/02\/the-doc-ladnscape-logo-2-26.png",
+                "contentUrl": "https:\/\/doclandscape.com\/wp-content\/uploads\/2026\/02\/the-doc-ladnscape-logo-2-26.png",
+                "width": 1270,
+                "height": 251,
+                "caption": "The Doc Landscape"
+            },
+            "image": {
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/logo\/image\/"
+            },
+            "sameAs": [
+                "https:\/\/www.linkedin.com\/in\/kemio\/"
+            ],
+            "description": "A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.",
+            "founder": {
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/person\/cf2d74e78b4865d165f1d8455de8b581"
+            }
+        }
+    ]
+}

@@ -1,0 +1,297 @@
+{
+    "@context": "https:\/\/schema.org",
+    "@graph": [
+        {
+            "@type": "Article",
+            "@id": "https:\/\/doclandscape.com\/writing-about-ai\/#article",
+            "isPartOf": {
+                "@id": "https:\/\/doclandscape.com\/writing-about-ai\/"
+            },
+            "author": {
+                "name": "Kemi Oyesiku",
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/person\/cf2d74e78b4865d165f1d8455de8b581"
+            },
+            "headline": "Writing About AI",
+            "datePublished": "2026-01-30T23:09:44+00:00",
+            "dateModified": "2026-06-01T23:11:54+00:00",
+            "mainEntityOfPage": {
+                "@id": "https:\/\/doclandscape.com\/writing-about-ai\/"
+            },
+            "wordCount": 1150,
+            "publisher": {
+                "@id": "https:\/\/doclandscape.com\/#organization"
+            },
+            "inLanguage": "en-US",
+            "audience": [
+                {
+                    "@type": "Audience",
+                    "audienceType": "Technical Writer"
+                }
+            ]
+        },
+        {
+            "@type": "WebPage",
+            "@id": "https:\/\/doclandscape.com\/writing-about-ai\/",
+            "url": "https:\/\/doclandscape.com\/writing-about-ai\/",
+            "name": "Writing About AI: How to Document AI Products and Features - The Doc Landscape",
+            "isPartOf": {
+                "@id": "https:\/\/doclandscape.com\/#website"
+            },
+            "datePublished": "2026-01-30T23:09:44+00:00",
+            "dateModified": "2026-06-01T23:11:54+00:00",
+            "description": "Writing About AI is a series about how to document AI products and AI-powered features clearly and responsibly.",
+            "breadcrumb": {
+                "@id": "https:\/\/doclandscape.com\/writing-about-ai\/#breadcrumb"
+            },
+            "inLanguage": "en-US",
+            "potentialAction": [
+                {
+                    "@type": "ReadAction",
+                    "target": [
+                        "https:\/\/doclandscape.com\/writing-about-ai\/"
+                    ]
+                }
+            ]
+        },
+        {
+            "@type": "BreadcrumbList",
+            "@id": "https:\/\/doclandscape.com\/writing-about-ai\/#breadcrumb",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https:\/\/doclandscape.com\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Writing About AI"
+                }
+            ]
+        },
+        {
+            "@type": "WebSite",
+            "@id": "https:\/\/doclandscape.com\/#website",
+            "url": "https:\/\/doclandscape.com\/",
+            "name": "The Doc Landscape",
+            "description": "Navigating Documentation in a Living Knowledge System",
+            "publisher": {
+                "@id": "https:\/\/doclandscape.com\/#organization"
+            },
+            "potentialAction": [
+                {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https:\/\/doclandscape.com\/?s={search_term_string}"
+                    },
+                    "query-input": {
+                        "@type": "PropertyValueSpecification",
+                        "valueRequired": true,
+                        "valueName": "search_term_string"
+                    }
+                }
+            ],
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "Organization",
+            "@id": "https:\/\/doclandscape.com\/#organization",
+            "name": "The Doc Landscape",
+            "url": "https:\/\/doclandscape.com\/",
+            "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/logo\/image\/",
+                "url": "https:\/\/doclandscape.com\/wp-content\/uploads\/2026\/02\/the-doc-ladnscape-logo-2-26.png",
+                "contentUrl": "https:\/\/doclandscape.com\/wp-content\/uploads\/2026\/02\/the-doc-ladnscape-logo-2-26.png",
+                "width": 1270,
+                "height": 251,
+                "caption": "The Doc Landscape"
+            },
+            "image": {
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/logo\/image\/"
+            },
+            "sameAs": [
+                "https:\/\/www.linkedin.com\/in\/kemio\/"
+            ],
+            "description": "A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.",
+            "founder": {
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/person\/cf2d74e78b4865d165f1d8455de8b581"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https:\/\/doclandscape.com\/#\/schema\/person\/cf2d74e78b4865d165f1d8455de8b581",
+            "name": "Kemi Oyesiku",
+            "pronouns": "she\/her",
+            "image": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https:\/\/secure.gravatar.com\/avatar\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "url": "https:\/\/secure.gravatar.com\/avatar\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "contentUrl": "https:\/\/secure.gravatar.com\/avatar\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "caption": "Kemi Oyesiku"
+            },
+            "sameAs": [
+                "https:\/\/www.linkedin.com\/in\/kemio\/"
+            ],
+            "url": "https:\/\/doclandscape.com\/author\/kemiowritesgmail-com\/",
+            "knowsAbout": [
+                "technical writing",
+                "documentation engineering",
+                "AI documentation",
+                "SaaS documentation",
+                "documentation as a living knowledge system"
+            ],
+            "jobTitle": "Documentation Engineer and Technical Writer"
+        },
+        {
+            "@type": "ItemList",
+            "name": "Writing About AI Series",
+            "description": "Articles on documenting AI products and AI-powered features for technical writers.",
+            "numberOfItems": 23,
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Getting Started Writing About AI",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/getting-started-writing-about-ai\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Understanding AI Through Goals, Tools, and Overlap",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/understanding-ai-through-goals-tools-and-overlap\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "AI Product Landscape",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 4,
+                    "name": "What Are AI Assistants, Copilots, and Agents?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/ai-assistants-copilots-and-agents\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 5,
+                    "name": "What Is Generative AI?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/generative-ai\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 6,
+                    "name": "What Is Conversational AI?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/conversational-ai\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 7,
+                    "name": "What Is Predictive AI?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/predictive-ai\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 8,
+                    "name": "What Is AI Search and Retrieval?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/ai-search-and-retrieval\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 9,
+                    "name": "What Is AI Workflow Automation?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/ai-workflow-automation\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 10,
+                    "name": "What Are AI Personalization Systems?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/ai-personalization-systems\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 11,
+                    "name": "What Are AI Safety and Guardrails?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/ai-safety-guardrails\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 12,
+                    "name": "What Makes AI Systems Agentic?",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-product-landscape\/what-makes-ai-systems-agentic\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 13,
+                    "name": "Understanding AI Safety &amp; Guardrails Across Audiences",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/understanding-ai-safety-guardrails-across-audiences\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 14,
+                    "name": "AI Documentation Guides",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 15,
+                    "name": "Documenting AI Assistants, Copilots, and Agents",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-ai-assistants-copilots-and-agents\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 16,
+                    "name": "Documenting Generative AI",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-generative-ai\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 17,
+                    "name": "Documenting Conversational AI",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-conversational-ai\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 18,
+                    "name": "Documenting Predictive AI",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-predictive-ai\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 19,
+                    "name": "Documenting AI Search and Retrieval",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-ai-search-retrieval\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 20,
+                    "name": "Documenting AI Workflow Automation",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-workflow-automation-ai\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 21,
+                    "name": "Documenting AI Personalization Systems",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-ai-personalization-systems\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 22,
+                    "name": "Documenting AI Safety and Guardrails",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-ai-safety-guardrails\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 23,
+                    "name": "Documenting Agentic AI Systems",
+                    "url": "https:\/\/doclandscape.com\/writing-about-ai\/ai-documentation-guides\/documenting-agentic-ai-systems\/"
+                }
+            ]
+        }
+    ]
+}

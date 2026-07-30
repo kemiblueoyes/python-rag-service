@@ -1,0 +1,295 @@
+[
+    {
+      "id": 17,
+      "date": "2026-01-30T16:09:44",
+      "date_gmt": "2026-01-30T23:09:44",
+      "guid": {
+        "rendered": "https://doclandscape.com/?page_id=17"
+      },
+      "modified": "2026-06-01T16:11:54",
+      "modified_gmt": "2026-06-01T23:11:54",
+      "slug": "writing-about-ai",
+      "status": "publish",
+      "type": "page",
+      "link": "https://doclandscape.com/writing-about-ai/",
+      "title": {
+        "rendered": "Writing About AI"
+      },
+      "content": {
+        "rendered": "\u003Ch2 class=\"wp-block-heading\" id=\"why-documenting-ai-different-from\"\u003EWhy Is Documenting AI Different From Documenting Other Software?\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EAI documentation frequently falls short because traditional documentation practices were designed for \u003Ca class=\"glossaryLink\"  aria-describedby=\"tt\"  data-cmtooltip=\"cmtt_f7a3685398bc3b7176ba6bfbe3908e11\"  href=\"https://doclandscape.com/glossary/deterministic/\"  data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'  tabindex='0' role='link'\u003Edeterministic\u003C/a\u003E systems: systems that do the same thing every time, return predictable outputs, and can be fully described by listing their states and transitions. AI systems don&rsquo;t work that way. They produce outputs that vary, fail silently, and behave differently depending on inputs that users can&rsquo;t always see or control.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EWhen you apply deterministic documentation patterns to non-deterministic systems, you get docs that are technically accurate and practically misleading. Users follow the steps. The product doesn&rsquo;t do what the steps implied. Trust erodes not in the documentation, but in the product.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EI created this series to help close that gap.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-does-good-ai-documentation\"\u003EWhat Does Good AI Documentation Actually Do?\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cstrong\u003EAI documentation isn&rsquo;t a specialized niche. It&rsquo;s a new set of constraints on a job that already existed.\u003C/strong\u003E\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EWriting clearly about what a system does, why it behaves the way it does, and what users should expect from it. That&rsquo;s always been the job. AI makes it harder because the answers to those questions are less stable, less certain, and less visible than they are for conventional software.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThree things shape how this series approaches that challenge:\u003C/p\u003E\n\n\n\n\u003Col class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003EDocumentation shapes what users believe about AI &mdash; whether you intend it to or not.\u003C/strong\u003E Every word you choose about an AI feature teaches users how to model it. &ldquo;The AI will suggest&rdquo; implies fallibility. &ldquo;The AI generates&rdquo; implies production. &ldquo;The AI decides&rdquo; implies authority. None of these are neutral. Writers who don&rsquo;t think carefully about language become accidental translators of AI behavior, often inaccurate ones.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EAI features don&rsquo;t need to be demystified. They need to be described accurately.\u003C/strong\u003E There&rsquo;s a tendency in AI documentation to either oversimplify (&ldquo;it learns from your data&rdquo;) or over-explain (&ldquo;using transformer-based large language model architecture&rdquo;). Neither serves users. The question isn&rsquo;t how much to say about the underlying system but what users actually need to know to act confidently and set appropriate expectations.\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003EThe limits matter as much as the capabilities.\u003C/strong\u003E Most AI documentation focuses heavily on what a feature can do and says very little about what it can&rsquo;t, what it won&rsquo;t, or what it might get wrong. That imbalance is a documentation failure that transfers risk from the product to the user. Honest documentation of AI behavior is the foundation of user trust, not a threat to it.\u003C/li\u003E\n\u003C/ol\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThis series doesn&rsquo;t promote AI or argue for its value. It exists to help writers explain AI systems as they actually behave in real products.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"who-writing-about-ai-series\"\u003EWho Is the Writing About AI Series For?\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThis series is for technical writers who are documenting products or features that use AI  regardless of whether they have a background in machine learning. You don&rsquo;t need to understand how a model is trained. You do need to explain what it does, how it behaves, and what users should and shouldn&rsquo;t expect from it.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIt&rsquo;s also useful if you&rsquo;re encountering AI concepts in your documentation work for the first time and need a framework for thinking about them before you start writing.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-series-does-not-cover\"\u003EWhat This Series Does Not Cover\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThis series does not focus on how AI is built, trained, or evaluated. It excludes machine learning theory, AI tools for documentation, and product-specific API references. These topics remain intentionally out of scope&mdash;not because they lack value, but because they belong to distinct professional domains.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"how-writing-about-ai-series\"\u003EHow Is the Writing About AI Series Organized?\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe series moves from conceptual \u003Ca class=\"glossaryLink\"  aria-describedby=\"tt\"  data-cmtooltip=\"cmtt_d627d423de21da0ef912b732f76cb7db\"  href=\"https://doclandscape.com/glossary/grounding/\"  data-gt-translate-attributes='[{\"attribute\":\"data-cmtooltip\", \"format\":\"html\"}]'  tabindex='0' role='link'\u003Egrounding\u003C/a\u003E to practical application across three layers:\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cstrong\u003EConceptual articles\u003C/strong\u003E help you think about AI at the product and system level before you write a single sentence of documentation.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cstrong\u003EAI Product Landscape articles\u003C/strong\u003E describe the major categories of AI features, such as what they are, how they behave from a user&rsquo;s perspective, and where the documentation challenges are specific to each type.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cstrong\u003EAI Documentation Guides\u003C/strong\u003E are the applied layer. How to actually write about each category in practice, what to include, what to avoid, and how to handle the parts of AI behavior that don&rsquo;t fit standard documentation patterns.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EYou can read in order or go directly to the category you&rsquo;re working on.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-articles-series\"\u003EWhat Articles Are in the Series?\u003C/h2\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"getting-started-writing-about-ai\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/getting-started-writing-about-ai/\"\u003EGetting Started Writing About AI\u003C/a\u003E\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EA guide to navigating the Writing About AI series\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"understanding-ai-through-goals-tools\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/understanding-ai-through-goals-tools-and-overlap/\" type=\"page\" id=\"134\"\u003EUnderstanding AI Through Goals, Tools, and Overlap\u003C/a\u003E\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EWhy AI is so hard to define\u003C/p\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"ai-product-landscape\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/\" type=\"page\" id=\"132\"\u003EAI Product Landscape\u003C/a\u003E\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EA Technical Writer&rsquo;s Guide to the AI Feature Categories That Matter\u003C/p\u003E\n\n\n\n\u003Cdiv class=\"wp-block-group is-layout-flow wp-block-group-is-layout-flow\" style=\"padding-left:var(--wp--preset--spacing--50)\"\u003E\n\u003Ch4 class=\"wp-block-heading\" id=\"what-ai-assistants-copilots-agents\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-assistants-copilots-and-agents/\"\u003EWhat Are AI Assistants, Copilots, and Agents?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EWhat They Are and Why the Distinctions Matter for Documentation\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"what-generative-ai\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/generative-ai/\"\u003EWhat Is Generative AI?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding AI systems that generate new content from context or input\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"what-conversational-ai\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/conversational-ai/\"\u003EWhat Is Conversational AI?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding AI systems where dialogue is the primary interface\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"what-predictive-ai\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/predictive-ai/\" type=\"page\" id=\"701\"\u003EWhat Is Predictive AI?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding AI systems that estimate future outcomes and likelihoods\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"what-ai-search-retrieval\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-search-and-retrieval/\"\u003EWhat Is AI Search and Retrieval?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding AI systems that find and surface relevant information\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"what-ai-workflow-automation\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-workflow-automation/\"\u003EWhat Is AI Workflow Automation?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding AI systems that trigger and execute actions across processes\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"what-ai-personalization-systems\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-personalization-systems/\"\u003EWhat Are AI Personalization Systems?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding AI systems that adapt experiences to individual users\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"what-ai-safety-guardrails\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/ai-safety-guardrails/\"\u003EWhat Are AI Safety and Guardrails?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding systems that limit, filter, and constrain AI behavior\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"what-makes-ai-systems-agentic\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/what-makes-ai-systems-agentic/\"\u003EWhat Makes AI Systems Agentic?\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EUnderstanding how AI systems plan, sequence, and execute across tools\u003C/p\u003E\n\u003C/div\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"understanding-ai-safety-guardrails-across\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/understanding-ai-safety-guardrails-across-audiences/\"\u003EUnderstanding AI Safety and Guardrails Across Audiences\u003C/a\u003E\u003C/h3\u003E\n\n\n\n\u003Ch3 class=\"wp-block-heading\" id=\"ai-documentation-guides\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/\" type=\"page\" id=\"141\"\u003EAI Documentation Guides\u003C/a\u003E\u003C/h3\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\" style=\"padding-left:0\"\u003E\u003Cem\u003EHow to write about each AI category in practice.\u003C/em\u003E\u003C/p\u003E\n\n\n\n\u003Cdiv class=\"wp-block-group is-layout-flow wp-block-group-is-layout-flow\" style=\"padding-left:var(--wp--preset--spacing--50)\"\u003E\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-ai-assistants-copilots-agents\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-ai-assistants-copilots-and-agents/\"\u003EDocumenting AI Assistants, Copilots, and Agents\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EHow to document AI systems that assist, suggest, and sometimes act within a user&rsquo;s workflow\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-generative-ai\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-generative-ai/\"\u003EDocumenting Generative AI\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EHow to write about systems that generate new content and don&rsquo;t behave the same way every time\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-conversational-ai\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-conversational-ai/\"\u003EDocumenting Conversational AI\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EHow to write about systems where dialogue shapes expectations\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-predictive-ai\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-predictive-ai/\"\u003EDocumenting Predictive AI\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EHow to write about systems that estimate outcomes, not answers\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-ai-search-retrieval\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-ai-search-retrieval/\"\u003EDocumenting AI Search and Retrieval\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EHow to write about systems that surface information, not answers\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-ai-workflow-automation\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-workflow-automation-ai/\"\u003EDocumenting AI Workflow Automation\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EHow to write about systems that take actions on a user&rsquo;s behalf\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-ai-personalization-systems\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-ai-personalization-systems/\"\u003EDocumenting AI Personalization Systems\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EHow to write about systems that change what users see over time\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-ai-safety-guardrails\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-ai-safety-guardrails/\"\u003EDocumenting AI Safety and Guardrails\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EHow to document limits, refusals, and enforcement clearly and usefully\u003C/p\u003E\n\n\n\n\u003Ch4 class=\"wp-block-heading\" id=\"documenting-agentic-ai-systems\"\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-documentation-guides/documenting-agentic-ai-systems/\"\u003EDocumenting Agentic AI Systems\u003C/a\u003E\u003C/h4\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EMaking execution models and boundaries visible\u003C/p\u003E\n\u003C/div\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"where-should-i-start-writing\"\u003EWhere Should I Start in the Writing About AI Series?\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIf you&rsquo;re new to this series, begin with \u003Cstrong\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/getting-started-writing-about-ai/\"\u003EGetting Started Writing About AI\u003C/a\u003E\u003C/strong\u003E.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIf you already know what type of AI feature you&rsquo;re documenting, go directly to the relevant \u003Cstrong\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/ai-product-landscape/\"\u003EAI Product Landscape\u003C/a\u003E\u003C/strong\u003E article and its paired documentation guide.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIf you&rsquo;re looking for general technical writing principles that apply across all documentation work, see \u003Cstrong\u003E\u003Ca href=\"https://doclandscape.com/technical-writing-best-practices/\"\u003ETechnical Writing Best Practices\u003C/a\u003E\u003C/strong\u003E.\u003C/p\u003E\n\n\n\n\u003Chr class=\"wp-block-separator has-alpha-channel-opacity\"\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003E\u003Cem\u003EThe Doc Landscape is a reference platform for technical writers navigating modern software environments. This series is written from practitioner experience &mdash; not theory.\u003C/em\u003E\u003C/p\u003E\n",
+        "protected": false
+      },
+      "excerpt": {
+        "rendered": "\u003Cp\u003EWhy Is Documenting AI Different From Documenting Other Software? AI documentation frequently falls short because traditional documentation practices were designed for deterministic systems: systems that do the same thing every time, return predictable outputs, and can be fully described by listing their states and transitions. AI systems don&rsquo;t work that way. They produce outputs that [&hellip;]\u003C/p\u003E\n",
+        "protected": false
+      },
+      "author": 1,
+      "featured_media": 0,
+      "parent": 0,
+      "menu_order": 0,
+      "comment_status": "closed",
+      "ping_status": "closed",
+      "template": "toc-page",
+      "meta": {
+        "_acf_changed": false,
+        "_themeisle_gutenberg_block_has_review": false,
+        "footnotes": ""
+      },
+      "class_list": [
+        "post-17",
+        "page",
+        "type-page",
+        "status-publish",
+        "hentry"
+      ],
+      "acf": {
+        "aeo_page_name": "Writing About AI Series",
+        "aeo_page_description": "Articles on documenting AI products and AI-powered features for technical writers.",
+        "target_audience": [
+          "TW"
+        ],
+        "post_subtitle": "How to write about AI systems as they actually behave"
+      },
+      "yoast_head": "\u003C!-- This site is optimized with the Yoast SEO plugin v28.0 - https://yoast.com/product/yoast-seo-wordpress/ --\u003E\n\u003Ctitle\u003EWriting About AI: How to Document AI Products and Features - The Doc Landscape\u003C/title\u003E\n\u003Cmeta name=\"description\" content=\"Writing About AI is a series about how to document AI products and AI-powered features clearly and responsibly.\" /\u003E\n\u003Cmeta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" /\u003E\n\u003Clink rel=\"canonical\" href=\"https://doclandscape.com/writing-about-ai/\" /\u003E\n\u003Cmeta property=\"og:locale\" content=\"en_US\" /\u003E\n\u003Cmeta property=\"og:type\" content=\"article\" /\u003E\n\u003Cmeta property=\"og:title\" content=\"Writing About AI: How to Document AI Products and Features - The Doc Landscape\" /\u003E\n\u003Cmeta property=\"og:description\" content=\"Writing About AI is a series about how to document AI products and AI-powered features clearly and responsibly.\" /\u003E\n\u003Cmeta property=\"og:url\" content=\"https://doclandscape.com/writing-about-ai/\" /\u003E\n\u003Cmeta property=\"og:site_name\" content=\"The Doc Landscape\" /\u003E\n\u003Cmeta property=\"article:modified_time\" content=\"2026-06-01T23:11:54+00:00\" /\u003E\n\u003Cmeta property=\"og:image\" content=\"http://doclandscape.com/wp-content/uploads/2026/02/writing-about-ai-2.png\" /\u003E\n\t\u003Cmeta property=\"og:image:width\" content=\"1049\" /\u003E\n\t\u003Cmeta property=\"og:image:height\" content=\"709\" /\u003E\n\t\u003Cmeta property=\"og:image:type\" content=\"image/png\" /\u003E\n\u003Cmeta name=\"twitter:card\" content=\"summary_large_image\" /\u003E\n\u003Cmeta name=\"twitter:label1\" content=\"Est. reading time\" /\u003E\n\t\u003Cmeta name=\"twitter:data1\" content=\"5 minutes\" /\u003E\n\u003Cscript type=\"application/ld+json\" class=\"yoast-schema-graph\"\u003E{\"@context\":\"https:\\/\\/schema.org\",\"@graph\":[{\"@type\":\"Article\",\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/#article\",\"isPartOf\":{\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/\"},\"author\":{\"name\":\"Kemi Oyesiku\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\"},\"headline\":\"Writing About AI\",\"datePublished\":\"2026-01-30T23:09:44+00:00\",\"dateModified\":\"2026-06-01T23:11:54+00:00\",\"mainEntityOfPage\":{\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/\"},\"wordCount\":1150,\"publisher\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\"},\"inLanguage\":\"en-US\",\"audience\":[{\"@type\":\"Audience\",\"audienceType\":\"Technical Writer\"}]},{\"@type\":\"WebPage\",\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/\",\"url\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/\",\"name\":\"Writing About AI: How to Document AI Products and Features - The Doc Landscape\",\"isPartOf\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#website\"},\"datePublished\":\"2026-01-30T23:09:44+00:00\",\"dateModified\":\"2026-06-01T23:11:54+00:00\",\"description\":\"Writing About AI is a series about how to document AI products and AI-powered features clearly and responsibly.\",\"breadcrumb\":{\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/#breadcrumb\"},\"inLanguage\":\"en-US\",\"potentialAction\":[{\"@type\":\"ReadAction\",\"target\":[\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/\"]}]},{\"@type\":\"BreadcrumbList\",\"@id\":\"https:\\/\\/doclandscape.com\\/writing-about-ai\\/#breadcrumb\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":\"https:\\/\\/doclandscape.com\\/\"},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Writing About AI\"}]},{\"@type\":\"WebSite\",\"@id\":\"https:\\/\\/doclandscape.com\\/#website\",\"url\":\"https:\\/\\/doclandscape.com\\/\",\"name\":\"The Doc Landscape\",\"description\":\"Navigating Documentation in a Living Knowledge System\",\"publisher\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\"},\"potentialAction\":[{\"@type\":\"SearchAction\",\"target\":{\"@type\":\"EntryPoint\",\"urlTemplate\":\"https:\\/\\/doclandscape.com\\/?s={search_term_string}\"},\"query-input\":{\"@type\":\"PropertyValueSpecification\",\"valueRequired\":true,\"valueName\":\"search_term_string\"}}],\"inLanguage\":\"en-US\"},{\"@type\":\"Organization\",\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\",\"name\":\"The Doc Landscape\",\"url\":\"https:\\/\\/doclandscape.com\\/\",\"logo\":{\"@type\":\"ImageObject\",\"inLanguage\":\"en-US\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/logo\\/image\\/\",\"url\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/2026\\/02\\/the-doc-ladnscape-logo-2-26.png\",\"contentUrl\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/2026\\/02\\/the-doc-ladnscape-logo-2-26.png\",\"width\":1270,\"height\":251,\"caption\":\"The Doc Landscape\"},\"image\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/logo\\/image\\/\"},\"sameAs\":[\"https:\\/\\/www.linkedin.com\\/in\\/kemio\\/\"],\"description\":\"A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.\",\"founder\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\"}},{\"@type\":\"Person\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\",\"name\":\"Kemi Oyesiku\",\"pronouns\":\"she\\/her\",\"image\":{\"@type\":\"ImageObject\",\"inLanguage\":\"en-US\",\"@id\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"url\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"contentUrl\":\"https:\\/\\/secure.gravatar.com\\/avatar\\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g\",\"caption\":\"Kemi Oyesiku\"},\"sameAs\":[\"https:\\/\\/www.linkedin.com\\/in\\/kemio\\/\"],\"url\":\"https:\\/\\/doclandscape.com\\/author\\/kemiowritesgmail-com\\/\",\"knowsAbout\":[\"technical writing\",\"documentation engineering\",\"AI documentation\",\"SaaS documentation\",\"documentation as a living knowledge system\"],\"jobTitle\":\"Documentation Engineer and Technical Writer\"}]}\u003C/script\u003E\n\u003C!-- / Yoast SEO plugin. --\u003E",
+      "yoast_head_json": {
+        "title": "Writing About AI: How to Document AI Products and Features - The Doc Landscape",
+        "description": "Writing About AI is a series about how to document AI products and AI-powered features clearly and responsibly.",
+        "robots": {
+          "index": "index",
+          "follow": "follow",
+          "max-snippet": "max-snippet:-1",
+          "max-image-preview": "max-image-preview:large",
+          "max-video-preview": "max-video-preview:-1"
+        },
+        "canonical": "https://doclandscape.com/writing-about-ai/",
+        "og_locale": "en_US",
+        "og_type": "article",
+        "og_title": "Writing About AI: How to Document AI Products and Features - The Doc Landscape",
+        "og_description": "Writing About AI is a series about how to document AI products and AI-powered features clearly and responsibly.",
+        "og_url": "https://doclandscape.com/writing-about-ai/",
+        "og_site_name": "The Doc Landscape",
+        "article_modified_time": "2026-06-01T23:11:54+00:00",
+        "og_image": [
+          {
+            "width": 1049,
+            "height": 709,
+            "url": "http://doclandscape.com/wp-content/uploads/2026/02/writing-about-ai-2.png",
+            "type": "image/png"
+          }
+        ],
+        "twitter_card": "summary_large_image",
+        "twitter_misc": {
+          "Est. reading time": "5 minutes"
+        },
+        "schema": {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Article",
+              "@id": "https://doclandscape.com/writing-about-ai/#article",
+              "isPartOf": {
+                "@id": "https://doclandscape.com/writing-about-ai/"
+              },
+              "author": {
+                "name": "Kemi Oyesiku",
+                "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581"
+              },
+              "headline": "Writing About AI",
+              "datePublished": "2026-01-30T23:09:44+00:00",
+              "dateModified": "2026-06-01T23:11:54+00:00",
+              "mainEntityOfPage": {
+                "@id": "https://doclandscape.com/writing-about-ai/"
+              },
+              "wordCount": 1150,
+              "publisher": {
+                "@id": "https://doclandscape.com/#organization"
+              },
+              "inLanguage": "en-US",
+              "audience": [
+                {
+                  "@type": "Audience",
+                  "audienceType": "Technical Writer"
+                }
+              ]
+            },
+            {
+              "@type": "WebPage",
+              "@id": "https://doclandscape.com/writing-about-ai/",
+              "url": "https://doclandscape.com/writing-about-ai/",
+              "name": "Writing About AI: How to Document AI Products and Features - The Doc Landscape",
+              "isPartOf": {
+                "@id": "https://doclandscape.com/#website"
+              },
+              "datePublished": "2026-01-30T23:09:44+00:00",
+              "dateModified": "2026-06-01T23:11:54+00:00",
+              "description": "Writing About AI is a series about how to document AI products and AI-powered features clearly and responsibly.",
+              "breadcrumb": {
+                "@id": "https://doclandscape.com/writing-about-ai/#breadcrumb"
+              },
+              "inLanguage": "en-US",
+              "potentialAction": [
+                {
+                  "@type": "ReadAction",
+                  "target": [
+                    "https://doclandscape.com/writing-about-ai/"
+                  ]
+                }
+              ]
+            },
+            {
+              "@type": "BreadcrumbList",
+              "@id": "https://doclandscape.com/writing-about-ai/#breadcrumb",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://doclandscape.com/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Writing About AI"
+                }
+              ]
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://doclandscape.com/#website",
+              "url": "https://doclandscape.com/",
+              "name": "The Doc Landscape",
+              "description": "Navigating Documentation in a Living Knowledge System",
+              "publisher": {
+                "@id": "https://doclandscape.com/#organization"
+              },
+              "potentialAction": [
+                {
+                  "@type": "SearchAction",
+                  "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "https://doclandscape.com/?s={search_term_string}"
+                  },
+                  "query-input": {
+                    "@type": "PropertyValueSpecification",
+                    "valueRequired": true,
+                    "valueName": "search_term_string"
+                  }
+                }
+              ],
+              "inLanguage": "en-US"
+            },
+            {
+              "@type": "Organization",
+              "@id": "https://doclandscape.com/#organization",
+              "name": "The Doc Landscape",
+              "url": "https://doclandscape.com/",
+              "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://doclandscape.com/#/schema/logo/image/",
+                "url": "https://doclandscape.com/wp-content/uploads/2026/02/the-doc-ladnscape-logo-2-26.png",
+                "contentUrl": "https://doclandscape.com/wp-content/uploads/2026/02/the-doc-ladnscape-logo-2-26.png",
+                "width": 1270,
+                "height": 251,
+                "caption": "The Doc Landscape"
+              },
+              "image": {
+                "@id": "https://doclandscape.com/#/schema/logo/image/"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/in/kemio/"
+              ],
+              "description": "A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.",
+              "founder": {
+                "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581"
+              }
+            },
+            {
+              "@type": "Person",
+              "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581",
+              "name": "Kemi Oyesiku",
+              "pronouns": "she/her",
+              "image": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "url": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "contentUrl": "https://secure.gravatar.com/avatar/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "caption": "Kemi Oyesiku"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/in/kemio/"
+              ],
+              "url": "https://doclandscape.com/author/kemiowritesgmail-com/",
+              "knowsAbout": [
+                "technical writing",
+                "documentation engineering",
+                "AI documentation",
+                "SaaS documentation",
+                "documentation as a living knowledge system"
+              ],
+              "jobTitle": "Documentation Engineer and Technical Writer"
+            }
+          ]
+        }
+      },
+      "_links": {
+        "self": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/17",
+            "targetHints": {
+              "allow": [
+                "GET"
+              ]
+            }
+          }
+        ],
+        "collection": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages"
+          }
+        ],
+        "about": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/types/page"
+          }
+        ],
+        "author": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/users/1"
+          }
+        ],
+        "replies": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/comments?post=17"
+          }
+        ],
+        "version-history": [
+          {
+            "count": 51,
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/17/revisions"
+          }
+        ],
+        "predecessor-version": [
+          {
+            "id": 2508,
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/17/revisions/2508"
+          }
+        ],
+        "wp:attachment": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/media?parent=17"
+          }
+        ],
+        "curies": [
+          {
+            "name": "wp",
+            "href": "https://api.w.org/{rel}",
+            "templated": true
+          }
+        ]
+      }
+    }
+  ]

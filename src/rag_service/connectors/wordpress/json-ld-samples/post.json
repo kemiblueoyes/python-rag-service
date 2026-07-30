@@ -1,0 +1,206 @@
+{
+    "@context": "https:\/\/schema.org",
+    "@graph": [
+        {
+            "@type": [
+                "Article",
+                "BlogPosting"
+            ],
+            "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/#article",
+            "isPartOf": {
+                "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/"
+            },
+            "author": {
+                "name": "Kemi Oyesiku",
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/person\/cf2d74e78b4865d165f1d8455de8b581"
+            },
+            "headline": "How to Choose a CCMS Based on Your Documentation Needs",
+            "datePublished": "2026-05-02T16:22:48+00:00",
+            "dateModified": "2026-07-24T21:32:50+00:00",
+            "mainEntityOfPage": {
+                "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/"
+            },
+            "wordCount": 1851,
+            "commentCount": 0,
+            "publisher": {
+                "@id": "https:\/\/doclandscape.com\/#organization"
+            },
+            "image": {
+                "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/#primaryimage"
+            },
+            "thumbnailUrl": "https:\/\/doclandscape.com\/wp-content\/uploads\/choosing-a-ccms.png",
+            "keywords": [
+                "CCMS",
+                "Content Governance",
+                "Documentation Strategy",
+                "Documentation Systems",
+                "Documentation Workflows",
+                "Product Documentation",
+                "SaaS Documentation",
+                "Structured Authoring",
+                "Technical Writing",
+                "writing tools"
+            ],
+            "articleSection": [
+                "The System"
+            ],
+            "inLanguage": "en-US",
+            "potentialAction": [
+                {
+                    "@type": "CommentAction",
+                    "name": "Comment",
+                    "target": [
+                        "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/#respond"
+                    ]
+                }
+            ],
+            "audience": [
+                {
+                    "@type": "Audience",
+                    "audienceType": "Technical Writer"
+                }
+            ]
+        },
+        {
+            "@type": "WebPage",
+            "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/",
+            "url": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/",
+            "name": "How to Choose a CCMS Based on Your Documentation Needs - The Doc Landscape",
+            "isPartOf": {
+                "@id": "https:\/\/doclandscape.com\/#website"
+            },
+            "primaryImageOfPage": {
+                "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/#primaryimage"
+            },
+            "image": {
+                "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/#primaryimage"
+            },
+            "thumbnailUrl": "https:\/\/doclandscape.com\/wp-content\/uploads\/choosing-a-ccms.png",
+            "datePublished": "2026-05-02T16:22:48+00:00",
+            "dateModified": "2026-07-24T21:32:50+00:00",
+            "description": "Choosing a CMS requires careful analysis of your documentation environment. Discover key considerations for making the right choice.",
+            "breadcrumb": {
+                "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/#breadcrumb"
+            },
+            "inLanguage": "en-US",
+            "potentialAction": [
+                {
+                    "@type": "ReadAction",
+                    "target": [
+                        "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/"
+                    ]
+                }
+            ]
+        },
+        {
+            "@type": "ImageObject",
+            "inLanguage": "en-US",
+            "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/#primaryimage",
+            "url": "https:\/\/doclandscape.com\/wp-content\/uploads\/choosing-a-ccms.png",
+            "contentUrl": "https:\/\/doclandscape.com\/wp-content\/uploads\/choosing-a-ccms.png",
+            "width": 1564,
+            "height": 1006,
+            "caption": "Choosing a CCMS"
+        },
+        {
+            "@type": "BreadcrumbList",
+            "@id": "https:\/\/doclandscape.com\/how-to-choose-a-ccms\/#breadcrumb",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https:\/\/doclandscape.com\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Reflections",
+                    "item": "https:\/\/doclandscape.com\/reflections\/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "How to Choose a CCMS Based on Your Documentation Needs"
+                }
+            ]
+        },
+        {
+            "@type": "WebSite",
+            "@id": "https:\/\/doclandscape.com\/#website",
+            "url": "https:\/\/doclandscape.com\/",
+            "name": "The Doc Landscape",
+            "description": "Navigating Documentation in a Living Knowledge System",
+            "publisher": {
+                "@id": "https:\/\/doclandscape.com\/#organization"
+            },
+            "potentialAction": [
+                {
+                    "@type": "SearchAction",
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": "https:\/\/doclandscape.com\/?s={search_term_string}"
+                    },
+                    "query-input": {
+                        "@type": "PropertyValueSpecification",
+                        "valueRequired": true,
+                        "valueName": "search_term_string"
+                    }
+                }
+            ],
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "Organization",
+            "@id": "https:\/\/doclandscape.com\/#organization",
+            "name": "The Doc Landscape",
+            "url": "https:\/\/doclandscape.com\/",
+            "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/logo\/image\/",
+                "url": "https:\/\/doclandscape.com\/wp-content\/uploads\/2026\/02\/the-doc-ladnscape-logo-2-26.png",
+                "contentUrl": "https:\/\/doclandscape.com\/wp-content\/uploads\/2026\/02\/the-doc-ladnscape-logo-2-26.png",
+                "width": 1270,
+                "height": 251,
+                "caption": "The Doc Landscape"
+            },
+            "image": {
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/logo\/image\/"
+            },
+            "sameAs": [
+                "https:\/\/www.linkedin.com\/in\/kemio\/"
+            ],
+            "description": "A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.",
+            "founder": {
+                "@id": "https:\/\/doclandscape.com\/#\/schema\/person\/cf2d74e78b4865d165f1d8455de8b581"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https:\/\/doclandscape.com\/#\/schema\/person\/cf2d74e78b4865d165f1d8455de8b581",
+            "name": "Kemi Oyesiku",
+            "pronouns": "she\/her",
+            "image": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https:\/\/secure.gravatar.com\/avatar\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "url": "https:\/\/secure.gravatar.com\/avatar\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "contentUrl": "https:\/\/secure.gravatar.com\/avatar\/4609b38255f51dd0f8de73167dc90767595a2ab6d666a3605d967a870792be4d?s=96&d=mm&r=g",
+                "caption": "Kemi Oyesiku"
+            },
+            "sameAs": [
+                "https:\/\/www.linkedin.com\/in\/kemio\/"
+            ],
+            "url": "https:\/\/doclandscape.com\/author\/kemiowritesgmail-com\/",
+            "knowsAbout": [
+                "technical writing",
+                "documentation engineering",
+                "AI documentation",
+                "SaaS documentation",
+                "documentation as a living knowledge system"
+            ],
+            "jobTitle": "Documentation Engineer and Technical Writer"
+        }
+    ]
+}

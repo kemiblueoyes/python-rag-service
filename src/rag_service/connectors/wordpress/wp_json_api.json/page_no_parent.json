@@ -1,0 +1,242 @@
+[
+    {
+      "id": 35,
+      "date": "2026-01-30T16:33:12",
+      "date_gmt": "2026-01-30T23:33:12",
+      "guid": {
+        "rendered": "https://doclandscape.com/about-page/"
+      },
+      "modified": "2026-05-12T13:12:25",
+      "modified_gmt": "2026-05-12T20:12:25",
+      "slug": "about",
+      "status": "publish",
+      "type": "page",
+      "link": "https://doclandscape.com/about/",
+      "title": {
+        "rendered": "About"
+      },
+      "content": {
+        "rendered": "\u003Cdiv class=\"wp-block-group alignfull has-raft-bg-alt-background-color has-background is-layout-constrained wp-container-core-group-is-layout-8622b771 wp-block-group-is-layout-constrained\" style=\"margin-top:0;margin-bottom:0;padding-top:40px;padding-right:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--80);padding-left:var(--wp--preset--spacing--40)\"\u003E\n\u003Ch1 class=\"wp-block-heading alignwide has-text-align-center\"\u003EAbout\u003C/h1\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe Doc Landscape is a reference platform for technical writers working in modern software environments.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIt focuses on approaching documentation as a living knowledge system. Something that supports development, onboarding, support, decision-making, and, increasingly, automation. Documentation here isn&rsquo;t treated as a final deliverable you ship and move on from. It&rsquo;s part of how software systems function over time.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003ETechnical writers today work in conditions that make this shift impossible to ignore. Software systems evolve quickly. Teams are distributed and asynchronous. Internal knowledge accumulates across tools and is often poorly organized. AI systems now retrieve, summarize, and reuse documentation in ways that change how it needs to be written and structured. Organizations are embedding AI into everyday workflows to increase productivity, accelerate output, and reduce manual effort across teams.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EIf this already sounds familiar, you&rsquo;re probably here because you&rsquo;ve felt the gap between writing documentation and keeping knowledge usable once it starts moving. \u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThis platform exists to help you work within those realities with more clarity and intention.\u003C/p\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"what-youll-find-here\"\u003E\u003Cstrong\u003EWhat You&rsquo;ll Find Here\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe Doc Landscape brings together two kinds of content:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003EStructured series\u003C/strong\u003E, which provide focused, reference-style guidance:\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003E\u003Cstrong\u003E\u003Ca href=\"https://doclandscape.com/the-living-knowledge-system/\" type=\"page\" id=\"989\"\u003EThe Living Knowledge System\u003C/a\u003E:\u003C/strong\u003E  Maps the full knowledge architecture that documentation lives within: its lifecycle stages, knowledge tiers, audiences, and the places where knowledge quietly breaks down&nbsp;\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/\" type=\"page\" id=\"17\"\u003EWritin\u003C/a\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/\" type=\"page\" id=\"17\" target=\"_blank\" rel=\"noreferrer noopener\"\u003Eg\u003C/a\u003E\u003Ca href=\"https://doclandscape.com/writing-about-ai/\" type=\"page\" id=\"17\"\u003EAbout AI\u003C/a\u003E:\u003C/strong\u003E Helps writers document AI products and AI-powered features clearly and responsibly \u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003E\u003Ca href=\"https://doclandscape.com/technical-writing-best-practices/\" type=\"page\" id=\"118\"\u003ETechnical Writing Best Practices\u003C/a\u003E:\u003C/strong\u003E Provides foundational documentation practices that hold up as systems evolve\u003C/li\u003E\n\u003C/ul\u003E\n\u003C/li\u003E\n\n\n\n\u003Cli\u003E\u003Cstrong\u003E\u003Ca href=\"https://doclandscape.com/reflections/\" type=\"page\" id=\"10\"\u003EReflective blog posts\u003C/a\u003E\u003C/strong\u003E, which explore how documentation work is changing and what that means for roles, responsibilities, and judgment.\u003C/li\u003E\n\u003C/ul\u003E\n\n\n\n\u003Ch2 class=\"wp-block-heading\" id=\"who-platform\"\u003E\u003Cstrong\u003EWho This Platform Is For\u003C/strong\u003E\u003C/h2\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe Doc Landscape is for you if documentation plays a meaningful role in how your organization builds or operates software.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThat includes:\u003C/p\u003E\n\n\n\n\u003Cul class=\"wp-block-list\"\u003E\n\u003Cli\u003Etechnical writers documenting traditional or  AI-enabled software products\u003C/li\u003E\n\n\n\n\u003Cli\u003Edocumentation engineers working on structure, reuse, and lifecycle concerns\u003C/li\u003E\n\n\n\n\u003Cli\u003Econtent designers focused on onboarding, clarity, and trust\u003C/li\u003E\n\u003C/ul\u003E\n\u003C/div\u003E\n\n\n\n\u003Cdiv class=\"wp-block-group alignfull has-raft-fg-alt-background-color has-background is-layout-constrained wp-container-core-group-is-layout-ce164f03 wp-block-group-is-layout-constrained\" style=\"margin-top:0;margin-bottom:0;padding-top:var(--wp--preset--spacing--80);padding-right:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--80);padding-left:var(--wp--preset--spacing--40)\"\u003E\n\u003Ch2 class=\"wp-block-heading has-text-align-center\" id=\"about-me\"\u003EAbout me\u003C/h2\u003E\n\n\n\n\u003Cdiv class=\"wp-block-columns alignwide is-layout-flex wp-container-core-columns-is-layout-7e8ea151 wp-block-columns-is-layout-flex\" style=\"margin-top:0;margin-bottom:0\"\u003E\n\u003Cdiv class=\"wp-block-column is-layout-flow wp-container-core-column-is-layout-23912308 wp-block-column-is-layout-flow\"\u003E\n\u003Ch3 class=\"wp-block-heading has-text-align-center has-medium-font-size\" id=\"kemi-oyesiku\"\u003EKemi Oyesiku\u003C/h3\u003E\n\n\n\n\u003Cul class=\"wp-block-social-links aligncenter is-style-logos-only is-layout-flex wp-container-core-social-links-is-layout-f9be20c9 wp-block-social-links-is-layout-flex\"\u003E\u003Cli class=\"wp-social-link wp-social-link-linkedin wp-block-social-link\"\u003E\u003Ca rel=\"noopener nofollow\" target=\"_blank\" href=\"https://www.linkedin.com/in/kemio/\" class=\"wp-block-social-link-anchor\"\u003E\u003Csvg width=\"24\" height=\"24\" viewbox=\"0 0 24 24\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\"\u003E\u003Cpath d=\"M19.7,3H4.3C3.582,3,3,3.582,3,4.3v15.4C3,20.418,3.582,21,4.3,21h15.4c0.718,0,1.3-0.582,1.3-1.3V4.3 C21,3.582,20.418,3,19.7,3z M8.339,18.338H5.667v-8.59h2.672V18.338z M7.004,8.574c-0.857,0-1.549-0.694-1.549-1.548 c0-0.855,0.691-1.548,1.549-1.548c0.854,0,1.547,0.694,1.547,1.548C8.551,7.881,7.858,8.574,7.004,8.574z M18.339,18.338h-2.669 v-4.177c0-0.996-0.017-2.278-1.387-2.278c-1.389,0-1.601,1.086-1.601,2.206v4.249h-2.667v-8.59h2.559v1.174h0.037 c0.356-0.675,1.227-1.387,2.526-1.387c2.703,0,3.203,1.779,3.203,4.092V18.338z\"\u003E\u003C/path\u003E\u003C/svg\u003E\u003Cspan class=\"wp-block-social-link-label screen-reader-text\"\u003ELinkedIn\u003C/span\u003E\u003C/a\u003E\u003C/li\u003E\u003C/ul\u003E\n\u003C/div\u003E\n\u003C/div\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EThe Doc Landscape reflects how I approach documentation work in modern software teams.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EMy background is in SaaS products, where documentation supports features, APIs, workflows, and constant change. I focus on creating documentation that stays useful as systems evolve, especially when multiple teams and moving parts are involved.\u003C/p\u003E\n\n\n\n\u003Cp class=\"wp-block-paragraph\"\u003EEarlier in my career, I worked as a web designer and front-end developer. That perspective still informs my work. I tend to see documentation as part of a larger system that needs to function reliably, not just read well in isolation.\u003C/p\u003E\n\u003C/div\u003E\n",
+        "protected": false
+      },
+      "excerpt": {
+        "rendered": "\u003Cp\u003EAbout The Doc Landscape is a reference platform for technical writers working in modern software environments. It focuses on approaching documentation as a living knowledge system. Something that supports development, onboarding, support, decision-making, and, increasingly, automation. Documentation here isn&rsquo;t treated as a final deliverable you ship and move on from. It&rsquo;s part of how software [&hellip;]\u003C/p\u003E\n",
+        "protected": false
+      },
+      "author": 1,
+      "featured_media": 0,
+      "parent": 0,
+      "menu_order": 0,
+      "comment_status": "closed",
+      "ping_status": "closed",
+      "template": "template-plain",
+      "meta": {
+        "_acf_changed": false,
+        "_themeisle_gutenberg_block_has_review": false,
+        "footnotes": ""
+      },
+      "class_list": [
+        "post-35",
+        "page",
+        "type-page",
+        "status-publish",
+        "hentry"
+      ],
+      "acf": {
+        "target_audience": [
+          "TW"
+        ],
+        "post_subtitle": ""
+      },
+      "yoast_head": "\u003C!-- This site is optimized with the Yoast SEO plugin v28.0 - https://yoast.com/product/yoast-seo-wordpress/ --\u003E\n\u003Ctitle\u003EAbout The Doc Landscape\u003C/title\u003E\n\u003Cmeta name=\"description\" content=\"The Doc Landscape is a reference platform for technical writers working in modern software environments.\" /\u003E\n\u003Cmeta name=\"robots\" content=\"index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1\" /\u003E\n\u003Clink rel=\"canonical\" href=\"https://doclandscape.com/about/\" /\u003E\n\u003Cmeta property=\"og:locale\" content=\"en_US\" /\u003E\n\u003Cmeta property=\"og:type\" content=\"article\" /\u003E\n\u003Cmeta property=\"og:title\" content=\"About The Doc Landscape\" /\u003E\n\u003Cmeta property=\"og:description\" content=\"The Doc Landscape is a reference platform for technical writers working in modern software environments.\" /\u003E\n\u003Cmeta property=\"og:url\" content=\"https://doclandscape.com/about/\" /\u003E\n\u003Cmeta property=\"og:site_name\" content=\"The Doc Landscape\" /\u003E\n\u003Cmeta property=\"article:modified_time\" content=\"2026-05-12T20:12:25+00:00\" /\u003E\n\u003Cmeta property=\"og:image\" content=\"https://doclandscape.com/wp-content/uploads/square-doc-landscape-logo.png\" /\u003E\n\t\u003Cmeta property=\"og:image:width\" content=\"845\" /\u003E\n\t\u003Cmeta property=\"og:image:height\" content=\"529\" /\u003E\n\t\u003Cmeta property=\"og:image:type\" content=\"image/png\" /\u003E\n\u003Cmeta name=\"twitter:card\" content=\"summary_large_image\" /\u003E\n\u003Cmeta name=\"twitter:label1\" content=\"Est. reading time\" /\u003E\n\t\u003Cmeta name=\"twitter:data1\" content=\"2 minutes\" /\u003E\n\u003Cscript type=\"application/ld+json\" class=\"yoast-schema-graph\"\u003E{\"@context\":\"https:\\/\\/schema.org\",\"@graph\":[{\"@type\":[\"WebPage\",\"AboutPage\"],\"@id\":\"https:\\/\\/doclandscape.com\\/about\\/\",\"url\":\"https:\\/\\/doclandscape.com\\/about\\/\",\"name\":\"About The Doc Landscape\",\"isPartOf\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#website\"},\"datePublished\":\"2026-01-30T23:33:12+00:00\",\"dateModified\":\"2026-05-12T20:12:25+00:00\",\"description\":\"The Doc Landscape is a reference platform for technical writers working in modern software environments.\",\"breadcrumb\":{\"@id\":\"https:\\/\\/doclandscape.com\\/about\\/#breadcrumb\"},\"inLanguage\":\"en-US\",\"potentialAction\":[{\"@type\":\"ReadAction\",\"target\":[\"https:\\/\\/doclandscape.com\\/about\\/\"]}]},{\"@type\":\"BreadcrumbList\",\"@id\":\"https:\\/\\/doclandscape.com\\/about\\/#breadcrumb\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":\"https:\\/\\/doclandscape.com\\/\"},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"About\"}]},{\"@type\":\"WebSite\",\"@id\":\"https:\\/\\/doclandscape.com\\/#website\",\"url\":\"https:\\/\\/doclandscape.com\\/\",\"name\":\"The Doc Landscape\",\"description\":\"Navigating Documentation in a Living Knowledge System\",\"publisher\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\"},\"potentialAction\":[{\"@type\":\"SearchAction\",\"target\":{\"@type\":\"EntryPoint\",\"urlTemplate\":\"https:\\/\\/doclandscape.com\\/?s={search_term_string}\"},\"query-input\":{\"@type\":\"PropertyValueSpecification\",\"valueRequired\":true,\"valueName\":\"search_term_string\"}}],\"inLanguage\":\"en-US\"},{\"@type\":\"Organization\",\"@id\":\"https:\\/\\/doclandscape.com\\/#organization\",\"name\":\"The Doc Landscape\",\"url\":\"https:\\/\\/doclandscape.com\\/\",\"logo\":{\"@type\":\"ImageObject\",\"inLanguage\":\"en-US\",\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/logo\\/image\\/\",\"url\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/2026\\/02\\/the-doc-ladnscape-logo-2-26.png\",\"contentUrl\":\"https:\\/\\/doclandscape.com\\/wp-content\\/uploads\\/2026\\/02\\/the-doc-ladnscape-logo-2-26.png\",\"width\":1270,\"height\":251,\"caption\":\"The Doc Landscape\"},\"image\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/logo\\/image\\/\"},\"sameAs\":[\"https:\\/\\/www.linkedin.com\\/in\\/kemio\\/\"],\"description\":\"A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.\",\"founder\":{\"@id\":\"https:\\/\\/doclandscape.com\\/#\\/schema\\/person\\/cf2d74e78b4865d165f1d8455de8b581\"}}]}\u003C/script\u003E\n\u003C!-- / Yoast SEO plugin. --\u003E",
+      "yoast_head_json": {
+        "title": "About The Doc Landscape",
+        "description": "The Doc Landscape is a reference platform for technical writers working in modern software environments.",
+        "robots": {
+          "index": "index",
+          "follow": "follow",
+          "max-snippet": "max-snippet:-1",
+          "max-image-preview": "max-image-preview:large",
+          "max-video-preview": "max-video-preview:-1"
+        },
+        "canonical": "https://doclandscape.com/about/",
+        "og_locale": "en_US",
+        "og_type": "article",
+        "og_title": "About The Doc Landscape",
+        "og_description": "The Doc Landscape is a reference platform for technical writers working in modern software environments.",
+        "og_url": "https://doclandscape.com/about/",
+        "og_site_name": "The Doc Landscape",
+        "article_modified_time": "2026-05-12T20:12:25+00:00",
+        "og_image": [
+          {
+            "width": 845,
+            "height": 529,
+            "url": "https://doclandscape.com/wp-content/uploads/square-doc-landscape-logo.png",
+            "type": "image/png"
+          }
+        ],
+        "twitter_card": "summary_large_image",
+        "twitter_misc": {
+          "Est. reading time": "2 minutes"
+        },
+        "schema": {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": [
+                "WebPage",
+                "AboutPage"
+              ],
+              "@id": "https://doclandscape.com/about/",
+              "url": "https://doclandscape.com/about/",
+              "name": "About The Doc Landscape",
+              "isPartOf": {
+                "@id": "https://doclandscape.com/#website"
+              },
+              "datePublished": "2026-01-30T23:33:12+00:00",
+              "dateModified": "2026-05-12T20:12:25+00:00",
+              "description": "The Doc Landscape is a reference platform for technical writers working in modern software environments.",
+              "breadcrumb": {
+                "@id": "https://doclandscape.com/about/#breadcrumb"
+              },
+              "inLanguage": "en-US",
+              "potentialAction": [
+                {
+                  "@type": "ReadAction",
+                  "target": [
+                    "https://doclandscape.com/about/"
+                  ]
+                }
+              ]
+            },
+            {
+              "@type": "BreadcrumbList",
+              "@id": "https://doclandscape.com/about/#breadcrumb",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://doclandscape.com/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "About"
+                }
+              ]
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://doclandscape.com/#website",
+              "url": "https://doclandscape.com/",
+              "name": "The Doc Landscape",
+              "description": "Navigating Documentation in a Living Knowledge System",
+              "publisher": {
+                "@id": "https://doclandscape.com/#organization"
+              },
+              "potentialAction": [
+                {
+                  "@type": "SearchAction",
+                  "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "https://doclandscape.com/?s={search_term_string}"
+                  },
+                  "query-input": {
+                    "@type": "PropertyValueSpecification",
+                    "valueRequired": true,
+                    "valueName": "search_term_string"
+                  }
+                }
+              ],
+              "inLanguage": "en-US"
+            },
+            {
+              "@type": "Organization",
+              "@id": "https://doclandscape.com/#organization",
+              "name": "The Doc Landscape",
+              "url": "https://doclandscape.com/",
+              "logo": {
+                "@type": "ImageObject",
+                "inLanguage": "en-US",
+                "@id": "https://doclandscape.com/#/schema/logo/image/",
+                "url": "https://doclandscape.com/wp-content/uploads/2026/02/the-doc-ladnscape-logo-2-26.png",
+                "contentUrl": "https://doclandscape.com/wp-content/uploads/2026/02/the-doc-ladnscape-logo-2-26.png",
+                "width": 1270,
+                "height": 251,
+                "caption": "The Doc Landscape"
+              },
+              "image": {
+                "@id": "https://doclandscape.com/#/schema/logo/image/"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/in/kemio/"
+              ],
+              "description": "A reference platform for technical writers navigating documentation as a living knowledge system — across evolving systems, modern software teams, and AI-enabled products and features.",
+              "founder": {
+                "@id": "https://doclandscape.com/#/schema/person/cf2d74e78b4865d165f1d8455de8b581"
+              }
+            }
+          ]
+        }
+      },
+      "_links": {
+        "self": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/35",
+            "targetHints": {
+              "allow": [
+                "GET"
+              ]
+            }
+          }
+        ],
+        "collection": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages"
+          }
+        ],
+        "about": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/types/page"
+          }
+        ],
+        "author": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/users/1"
+          }
+        ],
+        "replies": [
+          {
+            "embeddable": true,
+            "href": "https://doclandscape.com/wp-json/wp/v2/comments?post=35"
+          }
+        ],
+        "version-history": [
+          {
+            "count": 29,
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/35/revisions"
+          }
+        ],
+        "predecessor-version": [
+          {
+            "id": 2343,
+            "href": "https://doclandscape.com/wp-json/wp/v2/pages/35/revisions/2343"
+          }
+        ],
+        "wp:attachment": [
+          {
+            "href": "https://doclandscape.com/wp-json/wp/v2/media?parent=35"
+          }
+        ],
+        "curies": [
+          {
+            "name": "wp",
+            "href": "https://api.w.org/{rel}",
+            "templated": true
+          }
+        ]
+      }
+    }
+  ]
