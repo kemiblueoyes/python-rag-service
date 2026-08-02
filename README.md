@@ -133,7 +133,6 @@ uv run mypy
 
 ```text
 .
-├── data/
 ├── docs/
 │   └── design/
 ├── src/
