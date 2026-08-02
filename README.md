@@ -11,21 +11,7 @@ The core retrieval and answer-generation logic remains independent of WordPress 
 
 ## Project status
 
-This project is currently in **Phase 1: Project foundation**.
-
-The repository currently includes:
-
-* the initial Python project structure
-* FastAPI application setup
-* environment-based configuration
-* a health-check endpoint
-* automated tests
-* linting and formatting with Ruff
-* static type checking with MyPy
-* continuous integration with GitHub Actions
-* initial architecture and planning documentation
-
-Retrieval, indexing, embeddings, and answer generation have not yet been implemented.
+Active development. See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 
 ## Planned capabilities
 
@@ -101,6 +87,22 @@ FastAPI's generated API documentation is available at:
 http://127.0.0.1:8000/docs
 ```
 
+## WordPress indexing
+
+Set the WordPress site URL in `.env`:
+
+```dotenv
+WORDPRESS_BASE_URL=https://doclandscape.com
+```
+Also ensure `.env.example` contains that variable.
+
+Retrieve WordPress content and generate canonical documents:
+
+```bash
+uv run python -m rag_service.commands.index_wordpress
+```
+The command writes the current canonical documents to data/wordpress-documents.json. Each run compares the current documents with the previous output and reports documents that are new, updated, unchanged, or removed.
+
 ## Development checks
 
 Run the tests:
@@ -131,23 +133,29 @@ uv run mypy
 
 ```text
 .
+├── data/
 ├── docs/
 │   └── design/
 ├── src/
 │   └── rag_service/
 │       ├── api/
+│       ├── commands/
 │       ├── connectors/
+│       │   └── wordpress/
+│       ├── indexing/
 │       ├── models/
 │       ├── processing/
 │       ├── retrieval/
 │       └── config.py
 ├── tests/
+│   ├── connectors/
+│   ├── indexing/
+│   ├── test_config.py
+│   └── test_health.py
 ├── .env.example
 ├── pyproject.toml
 └── README.md
 ```
-
-The directories represent the intended architectural boundaries. Some will remain empty until their corresponding implementation phase begins.
 
 ## Documentation
 
