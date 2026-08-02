@@ -1,3 +1,10 @@
+"""Platform-neutral document model used across the indexing pipeline.
+
+Connectors map source-specific content into ``CanonicalDocument`` so later
+stages (change detection, cleaning, chunking, embedding) never depend on
+WordPress or other CMS response shapes.
+"""
+
 from datetime import datetime
 from typing import Any, Literal
 
