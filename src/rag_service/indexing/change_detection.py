@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from rag_service.models.document import CanonicalDocument
+from rag_service.models.canonical_document import CanonicalDocument
 
 
 @dataclass

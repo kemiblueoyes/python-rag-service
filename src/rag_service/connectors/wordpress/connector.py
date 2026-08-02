@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from rag_service.models.document import CanonicalDocument
+from rag_service.models.canonical_document import CanonicalDocument
 
 from .client import WordPressClient
 from .mapper import map_wordpress_post

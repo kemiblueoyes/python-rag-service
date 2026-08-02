@@ -9,7 +9,7 @@ from rag_service.indexing.change_detection import (
     DocumentChanges,
     detect_document_changes,
 )
-from rag_service.models.document import CanonicalDocument
+from rag_service.models.canonical_document import CanonicalDocument
 
 
 def _load_previous_documents(

@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from rag_service.models.document import CanonicalDocument
+from rag_service.models.canonical_document import CanonicalDocument
 
 from .models import WordPressPost
 
