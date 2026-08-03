@@ -2,7 +2,6 @@
 from bs4 import BeautifulSoup, Tag
 
 from rag_service.processing.models import ContentBlock
-
 from rag_service.processing.normalize import normalize_html
 
 
