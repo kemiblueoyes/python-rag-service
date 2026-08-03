@@ -96,12 +96,18 @@ WORDPRESS_BASE_URL=https://doclandscape.com
 ```
 Also ensure `.env.example` contains that variable.
 
-Retrieve WordPress content and generate canonical documents:
+Retrieve WordPress content and generate canonical documents and retrieval-ready
+chunks:
 
 ```bash
 uv run python -m rag_service.commands.index_wordpress
 ```
-The command writes the current canonical documents to data/wordpress-documents.json. Each run compares the current documents with the previous output and reports documents that are new, updated, unchanged, or removed.
+The command writes canonical documents to `data/wordpress-documents.json` and
+retrieval-ready chunks to `data/wordpress-chunks.json`. Each run compares the
+current documents with the previous canonical output and reports documents that
+are new, updated, unchanged, or removed. Only indexable content documents are
+chunked; WordPress accordions are passed to the generic processing pipeline as
+preserved HTML components.
 
 ## Development checks
 

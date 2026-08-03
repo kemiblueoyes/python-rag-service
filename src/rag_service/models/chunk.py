@@ -20,6 +20,9 @@ class DocumentChunk(BaseModel):
     text: str
     heading_path: list[str] = Field(default_factory=list)
     sequence: int
+    block_types: list[str] = Field(default_factory=list)
+    block_metadata: list[dict[str, Any]] = Field(default_factory=list)
+    anchor: str | None = None
 
     metadata: dict[str, Any] = Field(default_factory=dict)
 

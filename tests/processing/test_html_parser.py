@@ -1,4 +1,11 @@
+from bs4 import Tag
+
 from rag_service.processing.html_parser import parse_html
+
+
+def preserve_interactive_panel(element: Tag) -> bool:
+    classes = {str(value) for value in element.get_attribute_list("class")}
+    return "interactive-panel" in classes
 
 
 def test_parse_html_preserves_block_order() -> None:
@@ -81,3 +88,89 @@ def test_parse_html_ignores_empty_elements() -> None:
 
 def test_parse_html_returns_empty_list_for_empty_html() -> None:
     assert parse_html("") == []
+
+
+def test_parse_html_preserves_table_content() -> None:
+    html = """
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>Chunking</td>
+            <td>Splits documents into retrieval units.</td>
+        </tr>
+    </table>
+    """
+
+    blocks = parse_html(html)
+
+    assert len(blocks) == 1
+    assert blocks[0].block_type == "table"
+    assert "Chunking" in blocks[0].text
+    assert "Splits documents into retrieval units." in blocks[0].text
+    assert "html" in blocks[0].metadata
+    assert "<table>" in blocks[0].metadata["html"]
+
+
+def test_parse_html_preserves_a_component_selected_by_policy() -> None:
+    html = """
+    <div class="interactive-panel">
+        <h3>Knowledge Systems in Software Companies</h3>
+        <div class="interactive-panel-body">
+            <div class="infographic-body">
+                <p>Product knowledge flows through documentation systems.</p>
+            </div>
+        </div>
+    </div>
+    """
+
+    blocks = parse_html(html, preserve_block=preserve_interactive_panel)
+
+    assert len(blocks) == 1
+    assert blocks[0].block_type == "html_block"
+    assert "Knowledge Systems in Software Companies" in blocks[0].text
+    assert "Product knowledge flows through documentation systems." in blocks[0].text
+    assert "html" in blocks[0].metadata
+    assert "interactive-panel" in blocks[0].metadata["class"]
+
+
+def test_parse_html_does_not_duplicate_preserved_component_children() -> None:
+    html = """
+    <p>Before component.</p>
+
+    <div class="interactive-panel">
+        <h3>Diagram title</h3>
+        <div class="interactive-panel-body">
+            <div class="diagram-body">
+                <p>Diagram content.</p>
+            </div>
+        </div>
+    </div>
+
+    <p>After component.</p>
+    """
+
+    blocks = parse_html(html, preserve_block=preserve_interactive_panel)
+
+    assert [block.block_type for block in blocks] == [
+        "paragraph",
+        "html_block",
+        "paragraph",
+    ]
+
+    assert blocks[1].text.count("Diagram content.") == 1
+
+
+def test_parse_html_does_not_assume_unknown_components_are_preserved() -> None:
+    html = """
+    <div class="source-specific-component">
+        <h3>Component heading</h3>
+        <p>Component content.</p>
+    </div>
+    """
+
+    blocks = parse_html(html)
+
+    assert [block.block_type for block in blocks] == ["heading", "paragraph"]

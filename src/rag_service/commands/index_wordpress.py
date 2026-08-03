@@ -5,11 +5,16 @@ from pathlib import Path
 from rag_service.config import settings
 from rag_service.connectors.wordpress.client import WordPressClient
 from rag_service.connectors.wordpress.connector import WordPressConnector
+from rag_service.connectors.wordpress.content_policy import (
+    is_preserved_wordpress_block,
+)
 from rag_service.indexing.change_detection import (
     DocumentChanges,
     detect_document_changes,
 )
 from rag_service.models.canonical_document import CanonicalDocument
+from rag_service.models.chunk import DocumentChunk
+from rag_service.processing.pipeline import process_documents
 
 
 def _load_previous_documents(
@@ -20,28 +25,37 @@ def _load_previous_documents(
     if not output_path.exists():
         return []
 
-    payload = json.loads(
-        output_path.read_text(encoding="utf-8")
-    )
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
 
     if not isinstance(payload, list):
-        raise ValueError(
-            f"Expected a document list in {output_path}"
-        )
+        raise ValueError(f"Expected a document list in {output_path}")
 
-    return [
-        CanonicalDocument.model_validate(item)
-        for item in payload
-    ]
+    return [CanonicalDocument.model_validate(item) for item in payload]
 
 
-def run(output_path: Path) -> DocumentChanges:
-    """Retrieve WordPress content and detect changes."""
+def _write_models(
+    output_path: Path,
+    models: list[CanonicalDocument] | list[DocumentChunk],
+) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(
+            [model.model_dump(mode="json") for model in models],
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+
+def run(
+    output_path: Path,
+    chunk_output_path: Path | None = None,
+) -> DocumentChanges:
+    """Retrieve WordPress content, detect changes, and generate chunks."""
 
     if not settings.wordpress_base_url:
-        raise ValueError(
-            "WORDPRESS_BASE_URL must be configured before indexing."
-        )
+        raise ValueError("WORDPRESS_BASE_URL must be configured before indexing.")
 
     previous_documents = _load_previous_documents(output_path)
 
@@ -63,44 +77,40 @@ def run(output_path: Path) -> DocumentChanges:
         previous_documents=previous_documents,
     )
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    _write_models(output_path, current_documents)
 
-    output_path.write_text(
-        json.dumps(
-            [
-                document.model_dump(mode="json")
-                for document in current_documents
-            ],
-            indent=2,
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
+    if chunk_output_path is not None:
+        chunks = process_documents(
+            current_documents,
+            preserve_block=is_preserved_wordpress_block,
+        )
+        _write_models(chunk_output_path, chunks)
 
     return changes
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Retrieve and map WordPress content."
-    )
+    parser = argparse.ArgumentParser(description="Retrieve and map WordPress content.")
     parser.add_argument(
         "--output",
         type=Path,
         default=Path("data/wordpress-documents.json"),
         help="Destination for the canonical document JSON.",
     )
-
-    args = parser.parse_args()
-    changes = run(args.output)
-
-    current_count = (
-        len(changes.new)
-        + len(changes.updated)
-        + len(changes.unchanged)
+    parser.add_argument(
+        "--chunks-output",
+        type=Path,
+        default=Path("data/wordpress-chunks.json"),
+        help="Destination for the retrieval-ready chunk JSON.",
     )
 
+    args = parser.parse_args()
+    changes = run(args.output, args.chunks_output)
+
+    current_count = len(changes.new) + len(changes.updated) + len(changes.unchanged)
+
     print(f"Wrote {current_count} canonical documents to {args.output}")
+    print(f"Wrote retrieval-ready chunks to {args.chunks_output}")
     print(f"New: {len(changes.new)}")
     print(f"Updated: {len(changes.updated)}")
     print(f"Unchanged: {len(changes.unchanged)}")
