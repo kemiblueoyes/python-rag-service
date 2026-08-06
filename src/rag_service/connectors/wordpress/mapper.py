@@ -1,16 +1,64 @@
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import Any, Literal
 
 from rag_service.models.canonical_document import CanonicalDocument
 
 from .models import WordPressPost
 
-AUDIENCE_LABELS = {
-    "TW": "Technical Writer",
-    "IA": "Information Architect",
-    "DE": "Documentation Engineer",
-    "KM": "Knowledge Manager",
-    "DL": "Documentation Leader",
-}
+
+@dataclass(frozen=True)
+class WordPressMetadataMapping:
+    """Map a custom WordPress field into canonical document metadata."""
+
+    source: Literal["acf", "meta"]
+    source_key: str
+    target_key: str
+    value_map: Mapping[str, str] | None = None
+
+
+def _map_custom_value(
+    value: Any,
+    value_map: Mapping[str, str] | None,
+) -> Any:
+    """Translate scalar or list values without changing their shape."""
+
+    if value_map is None:
+        return value
+
+    if isinstance(value, list):
+        return [
+            value_map.get(item, item) if isinstance(item, str) else item
+            for item in value
+        ]
+
+    if isinstance(value, str):
+        return value_map.get(value, value)
+
+    return value
+
+
+def _extract_custom_metadata(
+    post: WordPressPost,
+    mappings: Sequence[WordPressMetadataMapping],
+) -> dict[str, Any]:
+    """Extract configured ACF or REST metadata fields."""
+
+    metadata: dict[str, Any] = {}
+
+    for mapping in mappings:
+        source_fields = post.acf if mapping.source == "acf" else post.meta
+
+        if mapping.source_key not in source_fields:
+            continue
+
+        metadata[mapping.target_key] = _map_custom_value(
+            source_fields[mapping.source_key],
+            mapping.value_map,
+        )
+
+    return metadata
+
 
 def _extract_schema_metadata(
     yoast_head_json: dict[str, Any] | None,
@@ -41,11 +89,7 @@ def _extract_schema_metadata(
         if isinstance(raw_node_type, str):
             node_types = {raw_node_type}
         elif isinstance(raw_node_type, list):
-            node_types = {
-                value
-                for value in raw_node_type
-                if isinstance(value, str)
-            }
+            node_types = {value for value in raw_node_type if isinstance(value, str)}
         else:
             node_types = set()
 
@@ -80,7 +124,10 @@ def _extract_schema_metadata(
     return metadata
 
 
-def map_wordpress_post(post: WordPressPost) -> CanonicalDocument:
+def map_wordpress_post(
+    post: WordPressPost,
+    metadata_mappings: Sequence[WordPressMetadataMapping] = (),
+) -> CanonicalDocument:
     """Convert a WordPress REST API record into a canonical document."""
 
     metadata: dict[str, Any] = {
@@ -93,41 +140,14 @@ def map_wordpress_post(post: WordPressPost) -> CanonicalDocument:
         "menu_order": post.menu_order,
     }
 
-    subtitle = post.acf.get("post_subtitle")
-    if subtitle:
-        metadata["subtitle"] = subtitle
-
-    target_audience = post.acf.get("target_audience", [])
-
-    if target_audience:
-        metadata["audience"] = [
-            AUDIENCE_LABELS.get(value, value)
-            for value in target_audience
-        ]
-        metadata["audience_codes"] = target_audience
-
-    aeo_page_name = post.acf.get("aeo_page_name")
-    if aeo_page_name:
-        metadata["aeo_page_name"] = aeo_page_name
-
-    aeo_page_description = post.acf.get("aeo_page_description")
-    if aeo_page_description:
-        metadata["aeo_page_description"] = aeo_page_description
-
     schema_metadata = _extract_schema_metadata(post.yoast_head_json)
-
-    # Prefer the original ACF audience values when both sources provide them.
-    if "audience" in metadata:
-        schema_metadata.pop("audience", None)
-
     metadata.update(schema_metadata)
+    metadata.update(_extract_custom_metadata(post, metadata_mappings))
 
     has_body_content = bool(post.content.rendered.strip())
 
     document_role: Literal["content", "landing", "archive"] = (
-        "landing"
-        if post.type == "page" and not has_body_content
-        else "content"
+        "landing" if post.type == "page" and not has_body_content else "content"
     )
 
     indexable = post.status == "publish" and has_body_content

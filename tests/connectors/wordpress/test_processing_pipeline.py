@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from rag_service.connectors.wordpress.content_policy import (
-    is_preserved_wordpress_block,
+    build_wordpress_block_preserver,
 )
 from rag_service.connectors.wordpress.mapper import map_wordpress_post
 from rag_service.connectors.wordpress.models import WordPressPost
@@ -12,6 +12,7 @@ FIXTURE_PATH = (
     Path(__file__).parents[3]
     / "src/rag_service/connectors/wordpress/wp_json_api.json/child_page.json"
 )
+PRESERVE_WORDPRESS_ACCORDION = build_wordpress_block_preserver({"wp-block-accordion"})
 
 
 def test_processes_real_wordpress_fixture_consistently() -> None:
@@ -20,11 +21,11 @@ def test_processes_real_wordpress_fixture_consistently() -> None:
 
     first_run = process_document(
         document,
-        preserve_block=is_preserved_wordpress_block,
+        preserve_block=PRESERVE_WORDPRESS_ACCORDION,
     )
     second_run = process_document(
         document,
-        preserve_block=is_preserved_wordpress_block,
+        preserve_block=PRESERVE_WORDPRESS_ACCORDION,
     )
 
     assert first_run
@@ -66,7 +67,7 @@ def test_preserves_wordpress_accordion_as_one_chunk_block() -> None:
 
     chunks = process_document(
         document,
-        preserve_block=is_preserved_wordpress_block,
+        preserve_block=PRESERVE_WORDPRESS_ACCORDION,
         max_chars=10,
     )
 

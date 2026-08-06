@@ -6,7 +6,7 @@ from rag_service.config import settings
 from rag_service.connectors.wordpress.client import WordPressClient
 from rag_service.connectors.wordpress.connector import WordPressConnector
 from rag_service.connectors.wordpress.content_policy import (
-    is_preserved_wordpress_block,
+    build_wordpress_block_preserver,
 )
 from rag_service.indexing.change_detection import (
     DocumentChanges,
@@ -15,6 +15,7 @@ from rag_service.indexing.change_detection import (
 from rag_service.models.canonical_document import CanonicalDocument
 from rag_service.models.chunk import DocumentChunk
 from rag_service.processing.pipeline import process_documents
+from rag_service.profiles.wordpress import get_wordpress_profile
 
 
 def _load_previous_documents(
@@ -58,16 +59,21 @@ def run(
         raise ValueError("WORDPRESS_BASE_URL must be configured before indexing.")
 
     previous_documents = _load_previous_documents(output_path)
+    profile = get_wordpress_profile(settings.wordpress_profile)
 
     client = WordPressClient(
         base_url=settings.wordpress_base_url,
         api_path=settings.wordpress_api_path,
         timeout=settings.wordpress_request_timeout,
         page_size=settings.wordpress_page_size,
+        collections=settings.wordpress_collections,
     )
 
     try:
-        connector = WordPressConnector(client)
+        connector = WordPressConnector(
+            client,
+            profile=profile,
+        )
         current_documents = connector.fetch_documents()
     finally:
         client.close()
@@ -82,7 +88,9 @@ def run(
     if chunk_output_path is not None:
         chunks = process_documents(
             current_documents,
-            preserve_block=is_preserved_wordpress_block,
+            preserve_block=build_wordpress_block_preserver(
+                profile.preserved_block_classes
+            ),
         )
         _write_models(chunk_output_path, chunks)
 

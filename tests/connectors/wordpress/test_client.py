@@ -62,7 +62,7 @@ def test_fetch_posts_handles_pagination() -> None:
     assert len(requests) == 2
 
 
-def test_fetch_all_retrieves_supported_content_types() -> None:
+def test_fetch_all_retrieves_default_collections() -> None:
     def handler(request: httpx2.Request) -> httpx2.Response:
         endpoint = request.url.path.rsplit("/", maxsplit=1)[-1]
 
@@ -70,8 +70,6 @@ def test_fetch_all_retrieves_supported_content_types() -> None:
             payload = [make_wordpress_record(1, "post")]
         elif endpoint == "pages":
             payload = [make_wordpress_record(2, "page")]
-        elif endpoint == "glossary":
-            payload = [make_wordpress_record(3, "glossary")]
         else:
             return httpx2.Response(404)
 
@@ -91,8 +89,37 @@ def test_fetch_all_retrieves_supported_content_types() -> None:
 
         records = client.fetch_all()
 
-    assert [record.type for record in records] == ["post", "page", "glossary"]
-    assert [record.id for record in records] == [1, 2, 3]
+    assert [record.type for record in records] == ["post", "page"]
+    assert [record.id for record in records] == [1, 2]
+
+
+def test_fetch_all_retrieves_configured_custom_collection() -> None:
+    requested_endpoints: list[str] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        endpoint = request.url.path.rsplit("/", maxsplit=1)[-1]
+        requested_endpoints.append(endpoint)
+
+        return httpx2.Response(
+            200,
+            headers={"X-WP-TotalPages": "1"},
+            json=[make_wordpress_record(3, "glossary")],
+        )
+
+    transport = httpx2.MockTransport(handler)
+
+    with httpx2.Client(transport=transport) as http_client:
+        client = WordPressClient(
+            base_url="https://example.com",
+            collections=("glossary",),
+            http_client=http_client,
+        )
+
+        records = client.fetch_all()
+
+    assert requested_endpoints == ["glossary"]
+    assert [record.type for record in records] == ["glossary"]
+    assert [record.id for record in records] == [3]
 
 
 def test_fetch_collection_raises_for_http_error() -> None:

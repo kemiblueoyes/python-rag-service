@@ -6,12 +6,15 @@ from .models import WordPressPost
 class WordPressClient:
     """Retrieve post-like records from the WordPress REST API."""
 
+    DEFAULT_COLLECTIONS: tuple[str, ...] = ("posts", "pages")
+
     def __init__(
         self,
         base_url: str,
         api_path: str = "/wp-json/wp/v2",
         timeout: float = 10.0,
         page_size: int = 100,
+        collections: tuple[str, ...] = DEFAULT_COLLECTIONS,
         http_client: httpx2.Client | None = None,
     ) -> None:
         if not base_url:
@@ -21,6 +24,7 @@ class WordPressClient:
             f"{base_url.rstrip('/')}/{api_path.strip('/')}"
         )
         self.page_size = page_size
+        self.collections = collections
         self._owns_client = http_client is None
         self._client = http_client or httpx2.Client(timeout=timeout)
 
@@ -70,15 +74,13 @@ class WordPressClient:
     def fetch_pages(self) -> list[WordPressPost]:
         return self.fetch_collection("pages")
 
-    def fetch_glossary(self) -> list[WordPressPost]:
-        return self.fetch_collection("glossary")
-
     def fetch_all(self) -> list[WordPressPost]:
-        return (
-            self.fetch_posts()
-            + self.fetch_pages()
-            + self.fetch_glossary()
-    )
+        records: list[WordPressPost] = []
+
+        for collection in self.collections:
+            records.extend(self.fetch_collection(collection))
+
+        return records
 
     def close(self) -> None:
         if self._owns_client:

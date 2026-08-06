@@ -11,3 +11,15 @@ def test_wordpress_settings_have_expected_defaults() -> None:
     assert settings.wordpress_api_path == "/wp-json/wp/v2"
     assert settings.wordpress_request_timeout == 10.0
     assert settings.wordpress_page_size == 100
+    assert settings.wordpress_collections == ("posts", "pages")
+    assert settings.wordpress_profile == "default"
+
+
+def test_wordpress_collections_can_include_custom_post_types() -> None:
+    settings = Settings(
+        wordpress_base_url="https://example.com",
+        wordpress_collections=("posts", "pages", "glossary"),
+        _env_file=None,
+    )
+
+    assert settings.wordpress_collections == ("posts", "pages", "glossary")

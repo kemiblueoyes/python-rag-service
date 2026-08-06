@@ -1,11 +1,11 @@
 from bs4 import BeautifulSoup, Tag
-from pytest import MonkeyPatch
 
-from rag_service.connectors.wordpress import content_policy
 from rag_service.connectors.wordpress.content_policy import (
-    is_preserved_wordpress_block,
+    build_wordpress_block_preserver,
 )
 from rag_service.processing.html_parser import parse_html
+
+PRESERVED_CLASSES = frozenset({"wp-block-accordion"})
 
 
 def test_recognizes_wordpress_accordion() -> None:
@@ -15,7 +15,8 @@ def test_recognizes_wordpress_accordion() -> None:
     element = soup.div
 
     assert isinstance(element, Tag)
-    assert is_preserved_wordpress_block(element)
+    preserve_block = build_wordpress_block_preserver(PRESERVED_CLASSES)
+    assert preserve_block(element)
 
 
 def test_does_not_match_unrelated_wordpress_block() -> None:
@@ -23,22 +24,19 @@ def test_does_not_match_unrelated_wordpress_block() -> None:
     element = soup.div
 
     assert isinstance(element, Tag)
-    assert not is_preserved_wordpress_block(element)
+    preserve_block = build_wordpress_block_preserver(PRESERVED_CLASSES)
+    assert not preserve_block(element)
 
 
-def test_recognizes_any_class_added_to_the_policy(
-    monkeypatch: MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(
-        content_policy,
-        "WORDPRESS_PRESERVED_BLOCK_CLASSES",
-        frozenset({"wp-block-accordion", "wp-block-tabs"}),
-    )
+def test_recognizes_any_configured_class() -> None:
     soup = BeautifulSoup('<div class="wp-block-tabs extra-class"></div>', "html.parser")
     element = soup.div
 
     assert isinstance(element, Tag)
-    assert content_policy.is_preserved_wordpress_block(element)
+    preserve_block = build_wordpress_block_preserver(
+        {"wp-block-accordion", "wp-block-tabs"}
+    )
+    assert preserve_block(element)
 
 
 def test_wordpress_policy_preserves_accordion_during_parsing() -> None:
@@ -51,7 +49,10 @@ def test_wordpress_policy_preserves_accordion_during_parsing() -> None:
     <p>After accordion.</p>
     """
 
-    blocks = parse_html(html, preserve_block=is_preserved_wordpress_block)
+    blocks = parse_html(
+        html,
+        preserve_block=build_wordpress_block_preserver(PRESERVED_CLASSES),
+    )
 
     assert [block.block_type for block in blocks] == [
         "paragraph",

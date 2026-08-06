@@ -1,5 +1,16 @@
-from rag_service.connectors.wordpress.mapper import map_wordpress_post
+from rag_service.connectors.wordpress.mapper import (
+    WordPressMetadataMapping,
+    map_wordpress_post,
+)
 from rag_service.connectors.wordpress.models import WordPressPost
+
+AUDIENCE_LABELS = {
+    "TW": "Technical Writer",
+    "IA": "Information Architect",
+    "DE": "Documentation Engineer",
+    "KM": "Knowledge Manager",
+    "DL": "Documentation Leader",
+}
 
 
 def test_maps_wordpress_post_to_canonical_document() -> None:
@@ -23,7 +34,21 @@ def test_maps_wordpress_post_to_canonical_document() -> None:
         }
     )
 
-    document = map_wordpress_post(post)
+    document = map_wordpress_post(
+        post,
+        metadata_mappings=(
+            WordPressMetadataMapping(
+                source="acf",
+                source_key="post_subtitle",
+                target_key="subtitle",
+            ),
+            WordPressMetadataMapping(
+                source="acf",
+                source_key="target_audience",
+                target_key="audience",
+            ),
+        ),
+    )
 
     assert document.document_id == "wordpress:post:142"
     assert document.source == "wordpress"
@@ -35,6 +60,7 @@ def test_maps_wordpress_post_to_canonical_document() -> None:
     assert document.metadata["subtitle"] == "An example subtitle"
     assert document.metadata["audience"] == ["Technical Writer"]
     assert document.metadata["category_ids"] == [4]
+
 
 def test_maps_yoast_schema_type_list() -> None:
     post = WordPressPost.model_validate(
@@ -66,6 +92,7 @@ def test_maps_yoast_schema_type_list() -> None:
     assert document.metadata["word_count"] == 750
     assert document.metadata["language"] == "en-US"
 
+
 def test_empty_page_is_non_indexable_landing_page() -> None:
     page = WordPressPost.model_validate(
         {
@@ -84,6 +111,7 @@ def test_empty_page_is_non_indexable_landing_page() -> None:
     assert document.document_role == "landing"
     assert document.indexable is False
 
+
 def test_converts_audience_codes_to_labels() -> None:
     post = WordPressPost.model_validate(
         {
@@ -100,7 +128,22 @@ def test_converts_audience_codes_to_labels() -> None:
         }
     )
 
-    document = map_wordpress_post(post)
+    document = map_wordpress_post(
+        post,
+        metadata_mappings=(
+            WordPressMetadataMapping(
+                source="acf",
+                source_key="target_audience",
+                target_key="audience",
+                value_map=AUDIENCE_LABELS,
+            ),
+            WordPressMetadataMapping(
+                source="acf",
+                source_key="target_audience",
+                target_key="audience_codes",
+            ),
+        ),
+    )
 
     assert document.metadata["audience"] == [
         "Technical Writer",
@@ -116,3 +159,31 @@ def test_converts_audience_codes_to_labels() -> None:
         "KM",
         "DL",
     ]
+
+
+def test_preserves_multiple_values_from_wordpress_meta() -> None:
+    post = WordPressPost.model_validate(
+        {
+            "id": 103,
+            "slug": "products-example",
+            "status": "publish",
+            "type": "post",
+            "link": "https://example.com/products-example/",
+            "title": {"rendered": "Products Example"},
+            "content": {"rendered": "<p>Post content.</p>"},
+            "meta": {"applicable_products": ["editor", "api", "cli"]},
+        }
+    )
+
+    document = map_wordpress_post(
+        post,
+        metadata_mappings=(
+            WordPressMetadataMapping(
+                source="meta",
+                source_key="applicable_products",
+                target_key="products",
+            ),
+        ),
+    )
+
+    assert document.metadata["products"] == ["editor", "api", "cli"]
