@@ -64,7 +64,7 @@ def test_writes_canonical_documents_and_processed_chunks(
     document_path = tmp_path / "documents.json"
     chunk_path = tmp_path / "chunks.json"
 
-    changes = index_wordpress.run(document_path, chunk_path)
+    result = index_wordpress.run(document_path, chunk_path)
 
     client_factory.assert_called_once_with(
         base_url="https://example.test",
@@ -79,7 +79,8 @@ def test_writes_canonical_documents_and_processed_chunks(
     document_payload = json.loads(document_path.read_text(encoding="utf-8"))
     chunk_payload = json.loads(chunk_path.read_text(encoding="utf-8"))
 
-    assert changes.new == [document]
+    assert result.changes.new == [document]
+    assert result.vector_index is None
     assert document_payload[0]["document_id"] == document.document_id
     assert chunk_payload[0]["document_id"] == document.document_id
     assert chunk_payload[0]["heading_path"] == ["Components"]

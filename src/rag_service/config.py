@@ -14,6 +14,19 @@ class Settings(BaseSettings):
     wordpress_collections: tuple[str, ...] = ("posts", "pages")
     wordpress_profile: str = "default"
 
+    # Embeddings
+    embedding_provider: str = "voyage"
+    embedding_model: str = "voyage-4-lite"
+    embedding_dimension: int = 1024
+    embedding_batch_size: int = 128
+    voyage_api_key: str | None = None
+
+    # Vector storage
+    vector_database: str = "qdrant"
+    qdrant_url: str = "http://localhost:6333"
+    qdrant_api_key: str | None = None
+    qdrant_collection: str = "rag_chunks"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

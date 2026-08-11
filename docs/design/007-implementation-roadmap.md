@@ -260,6 +260,36 @@ Improve maintainability, reliability, and extensibility.
 
 - Stable portfolio-quality implementation
 
+## Phase 13 - Operational automation
+
+### Objectives
+
+Automate the operational lifecycle around content indexing, validation, and
+failure reporting without moving retrieval or indexing logic out of the Python
+service.
+
+### Deliverables
+
+- n8n workflow configuration
+- Automated indexing trigger
+- Incremental indexing orchestration
+- Post-index retrieval evaluation
+- Evaluation threshold checks
+- Indexing and evaluation failure handling
+- Notification (slack or email) or reporting workflow
+- Jira issue creation for retrieval regressions (create a Jira issue when a
+  retrieval regression exceeds whatever threshold we eventually establish)
+- Workflow run logging
+- Automation architecture/workflow documentation
+
+### Exit criteria
+
+- Content changes can trigger the existing indexing workflow automatically
+- Retrieval evaluation runs after successful indexing
+- Failed indexing or retrieval-quality checks produce an actionable
+  notification
+- Automation remains independent of the core RAG logic
+
 ## Stretch goals
 
 The following enhancements are intentionally deferred until the core system is complete:

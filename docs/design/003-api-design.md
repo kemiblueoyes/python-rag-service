@@ -1,5 +1,7 @@
 # API design
 
+**NOTE: This is in a draft and will be finalized once that phase in the implementation road map is complete.**
+
 ## Overview
 
 The service exposes two public endpoints:

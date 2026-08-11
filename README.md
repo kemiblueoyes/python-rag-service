@@ -11,9 +11,26 @@ The core retrieval and answer-generation logic remains independent of WordPress 
 
 ## Project status
 
-Active development. See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
+Active development. The content pipeline can retrieve WordPress documents,
+normalize and chunk them, generate Voyage embeddings, and maintain a Qdrant
+vector index. The public search and answer APIs are not implemented yet.
 
-## Planned capabilities
+See the implementation roadmap in
+`docs/design/007-implementation-roadmap.md`.
+
+## Current capabilities
+
+* WordPress REST API connector with configurable site profiles
+* Platform-neutral canonical document model
+* HTML cleanup and heading-aware chunking
+* Stable document and chunk identifiers
+* Voyage AI document and query embeddings
+* Qdrant vector and chunk-metadata storage
+* Full vector-index rebuilds
+* Incremental handling of new, updated, unchanged, and removed documents
+* Live embedding, storage, search, and filtering smoke test
+
+## Planned public APIs
 
 The completed service will support two public endpoints:
 
@@ -24,7 +41,7 @@ Content indexing will run through an internal command or administrative process 
 
 ## Architecture
 
-The system will contain:
+The system contains or will contain:
 
 * a WordPress connector that retrieves and maps source content
 * a canonical document model
@@ -61,6 +78,9 @@ Create a local environment file:
 cp .env.example .env
 ```
 
+Add environment-specific URLs and credentials to `.env`. Never commit this
+file or place real API keys in `.env.example`.
+
 Run the application:
 
 ```bash
@@ -87,7 +107,36 @@ FastAPI's generated API documentation is available at:
 http://127.0.0.1:8000/docs
 ```
 
-## WordPress indexing
+## Indexing
+
+### Provider configuration
+
+The indexing pipeline uses
+[Voyage AI](https://www.voyageai.com/) to create embeddings and
+[Qdrant](https://qdrant.tech/) to store and search them. Before indexing,
+create a Voyage API key and a Qdrant cluster with a database API key that has
+manage/write access.
+
+Configure the providers in `.env`:
+
+```dotenv
+EMBEDDING_PROVIDER=voyage
+EMBEDDING_MODEL=voyage-4-lite
+EMBEDDING_DIMENSION=1024
+EMBEDDING_BATCH_SIZE=128
+VOYAGE_API_KEY=your-voyage-api-key
+
+VECTOR_DATABASE=qdrant
+QDRANT_URL=https://your-cluster.cloud.qdrant.io
+QDRANT_API_KEY=your-qdrant-api-key
+QDRANT_COLLECTION=rag_chunks
+```
+
+`EMBEDDING_DIMENSION` must match the configured model's output. The default
+`voyage-4-lite` configuration produces 1,024-number vectors. The Qdrant
+adapter creates the collection and its required payload indexes when needed.
+
+### WordPress configuration
 
 Set the WordPress site URL, REST collections, and connector profile in `.env`:
 
@@ -110,18 +159,73 @@ meaning of its page hierarchy. It maps standard WordPress fields, extracts
 supported Yoast schema metadata when available, and records immediate page
 parent relationships.
 
-Retrieve WordPress content and generate canonical documents and retrieval-ready
-chunks:
+### Initial vector-index build
+
+Run a full rebuild the first time the Qdrant collection is populated:
+
+```bash
+uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
+```
+
+A rebuild retrieves current WordPress content, processes every eligible
+document, generates new embeddings, and replaces the corresponding Qdrant
+points. It also writes:
+
+* canonical documents to `data/wordpress-documents.json`
+* retrieval-ready chunks to `data/wordpress-chunks.json`
+
+Run a full rebuild after changing the embedding model, embedding dimension,
+chunking rules, or stored payload structure.
+
+### Incremental indexing
+
+For normal indexing after the initial build, run:
 
 ```bash
 uv run python -m rag_service.commands.index_wordpress
 ```
-The command writes canonical documents to `data/wordpress-documents.json` and
-retrieval-ready chunks to `data/wordpress-chunks.json`. Each run compares the
-current documents with the previous canonical output and reports documents that
-are new, updated, unchanged, or removed. Only indexable content documents are
-chunked; WordPress accordions are passed to the generic processing pipeline as
-preserved HTML components.
+
+Each run compares current documents with the snapshot from the last successful
+run:
+
+* New documents are processed, embedded, and stored.
+* Updated documents have their old chunks removed before current chunks are
+  stored.
+* Unchanged documents are not sent to Voyage or rewritten in Qdrant.
+* Removed or unpublished documents have all their chunks removed from Qdrant.
+
+The local snapshot is updated only after vector synchronization succeeds. If
+Voyage or Qdrant fails, the next run can detect and retry the same changes.
+
+Only indexable content documents are chunked. WordPress accordions configured
+by the active connector profile are passed to the generic processing pipeline
+as preserved HTML components.
+
+### Live retrieval smoke test
+
+The smoke test verifies one complete path through Voyage and Qdrant:
+
+```text
+sample chunk → document embedding → Qdrant storage
+related question → query embedding → Qdrant search and filtering
+```
+
+Use a dedicated collection so test data cannot mix with indexed documentation:
+
+```dotenv
+QDRANT_COLLECTION=rag_chunks_smoke_test
+```
+
+Then run:
+
+```bash
+uv run python -m rag_service.commands.smoke_retrieval
+```
+
+The command prints the retrieved title, text, similarity score, and filter
+results. It intentionally leaves the test point in Qdrant for inspection. The
+test collection can be deleted from Qdrant after inspection. Restore
+`QDRANT_COLLECTION=rag_chunks` before running WordPress indexing.
 
 ### WordPress connector profiles
 
@@ -236,15 +340,20 @@ uv run mypy
 │       ├── commands/
 │       ├── connectors/
 │       │   └── wordpress/
+│       ├── embeddings/
 │       ├── indexing/
 │       ├── models/
 │       ├── processing/
 │       ├── profiles/
 │       ├── retrieval/
+│       ├── vectorstores/
 │       └── config.py
 ├── tests/
+│   ├── commands/
 │   ├── connectors/
+│   ├── embeddings/
 │   ├── indexing/
+│   ├── vectorstores/
 │   ├── test_config.py
 │   └── test_health.py
 ├── .env.example
@@ -260,6 +369,7 @@ Current documents include:
 
 * Project vision and goals
 * High-level architecture
+* API Design (draft)
 * Implementation roadmap
 
 Additional design sections will be written and expanded as their implementation phases begin.

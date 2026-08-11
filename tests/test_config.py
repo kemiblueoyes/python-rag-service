@@ -23,3 +23,15 @@ def test_wordpress_collections_can_include_custom_post_types() -> None:
     )
 
     assert settings.wordpress_collections == ("posts", "pages", "glossary")
+
+
+def test_retrieval_provider_settings_have_expected_defaults() -> None:
+    settings = Settings(_env_file=None)
+
+    assert settings.embedding_provider == "voyage"
+    assert settings.embedding_model == "voyage-4-lite"
+    assert settings.embedding_dimension == 1024
+    assert settings.embedding_batch_size == 128
+    assert settings.vector_database == "qdrant"
+    assert settings.qdrant_url == "http://localhost:6333"
+    assert settings.qdrant_collection == "rag_chunks"

@@ -1,5 +1,6 @@
 import argparse
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 from rag_service.config import settings
@@ -8,14 +9,23 @@ from rag_service.connectors.wordpress.connector import WordPressConnector
 from rag_service.connectors.wordpress.content_policy import (
     build_wordpress_block_preserver,
 )
+from rag_service.embeddings import EmbeddingProvider, create_embedding_provider
 from rag_service.indexing.change_detection import (
     DocumentChanges,
     detect_document_changes,
 )
+from rag_service.indexing.vector_index import VectorIndexStats, sync_vector_index
 from rag_service.models.canonical_document import CanonicalDocument
 from rag_service.models.chunk import DocumentChunk
 from rag_service.processing.pipeline import process_documents
 from rag_service.profiles.wordpress import get_wordpress_profile
+from rag_service.vectorstores import VectorStore, create_vector_store
+
+
+@dataclass(frozen=True, slots=True)
+class WordPressIndexResult:
+    changes: DocumentChanges
+    vector_index: VectorIndexStats | None
 
 
 def _load_previous_documents(
@@ -52,8 +62,13 @@ def _write_models(
 def run(
     output_path: Path,
     chunk_output_path: Path | None = None,
-) -> DocumentChanges:
-    """Retrieve WordPress content, detect changes, and generate chunks."""
+    *,
+    embedding_provider: EmbeddingProvider | None = None,
+    vector_store: VectorStore | None = None,
+    rebuild_vector_index: bool = False,
+    embedding_batch_size: int = 128,
+) -> WordPressIndexResult:
+    """Retrieve WordPress content and update its retrieval artifacts."""
 
     if not settings.wordpress_base_url:
         raise ValueError("WORDPRESS_BASE_URL must be configured before indexing.")
@@ -83,18 +98,41 @@ def run(
         previous_documents=previous_documents,
     )
 
-    _write_models(output_path, current_documents)
+    should_sync_vectors = embedding_provider is not None or vector_store is not None
+    if (embedding_provider is None) != (vector_store is None):
+        raise ValueError(
+            "Embedding provider and vector store must be supplied together."
+        )
 
-    if chunk_output_path is not None:
+    chunks: list[DocumentChunk] = []
+    if chunk_output_path is not None or should_sync_vectors:
         chunks = process_documents(
             current_documents,
             preserve_block=build_wordpress_block_preserver(
                 profile.preserved_block_classes
             ),
         )
+
+    vector_index_stats = None
+    if embedding_provider is not None and vector_store is not None:
+        vector_index_stats = sync_vector_index(
+            changes,
+            chunks,
+            embedding_provider,
+            vector_store,
+            batch_size=embedding_batch_size,
+            rebuild=rebuild_vector_index,
+        )
+
+    # The snapshot represents the last successfully synchronized index.
+    _write_models(output_path, current_documents)
+    if chunk_output_path is not None:
         _write_models(chunk_output_path, chunks)
 
-    return changes
+    return WordPressIndexResult(
+        changes=changes,
+        vector_index=vector_index_stats,
+    )
 
 
 def main() -> None:
@@ -111,9 +149,22 @@ def main() -> None:
         default=Path("data/wordpress-chunks.json"),
         help="Destination for the retrieval-ready chunk JSON.",
     )
+    parser.add_argument(
+        "--rebuild-vector-index",
+        action="store_true",
+        help="Re-embed and replace every current document in the vector index.",
+    )
 
     args = parser.parse_args()
-    changes = run(args.output, args.chunks_output)
+    result = run(
+        args.output,
+        args.chunks_output,
+        embedding_provider=create_embedding_provider(settings),
+        vector_store=create_vector_store(settings),
+        rebuild_vector_index=args.rebuild_vector_index,
+        embedding_batch_size=settings.embedding_batch_size,
+    )
+    changes = result.changes
 
     current_count = len(changes.new) + len(changes.updated) + len(changes.unchanged)
 
@@ -123,6 +174,13 @@ def main() -> None:
     print(f"Updated: {len(changes.updated)}")
     print(f"Unchanged: {len(changes.unchanged)}")
     print(f"Removed or unpublished: {len(changes.removed)}")
+    if result.vector_index is not None:
+        print(
+            "Vector index synchronized: "
+            f"{result.vector_index.documents_indexed} documents and "
+            f"{result.vector_index.chunks_indexed} chunks indexed; "
+            f"{result.vector_index.documents_deleted} documents cleared."
+        )
 
 
 if __name__ == "__main__":
