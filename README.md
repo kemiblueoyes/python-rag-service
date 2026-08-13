@@ -12,8 +12,9 @@ The core retrieval and answer-generation logic remains independent of WordPress 
 ## Project status
 
 Active development. The content pipeline can retrieve WordPress documents,
-normalize and chunk them, generate Voyage embeddings, and maintain a Qdrant
-vector index. The public search and answer APIs are not implemented yet.
+normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector
+index, and retrieve ranked chunks through a shared retrieval service. The
+public search and answer APIs are not implemented yet.
 
 See the implementation roadmap in
 `docs/design/007-implementation-roadmap.md`.
@@ -28,7 +29,13 @@ See the implementation roadmap in
 * Qdrant vector and chunk-metadata storage
 * Full vector-index rebuilds
 * Incremental handling of new, updated, unchanged, and removed documents
+* Shared retrieval service for future search and answer endpoints
+* Query validation and supported metadata filtering
+* Similarity ranking with duplicate removal
+* Configurable minimum retrieval score for weak-result filtering
+* Retrieval-service factory for application-wide dependency wiring
 * Live embedding, storage, search, and filtering smoke test
+* Live retrieval-service smoke tests against indexed WordPress content
 
 ## Planned public APIs
 
@@ -48,7 +55,8 @@ The system contains or will contain:
 * content normalization and heading-aware chunking
 * embedding generation
 * vector storage and semantic retrieval
-* shared retrieval logic
+* shared retrieval logic with validation, filtering, ranking, duplicate removal,
+and minimum-score filtering
 * answer generation and citation validation
 * a WordPress client for displaying search results and answers
 
@@ -130,11 +138,17 @@ VECTOR_DATABASE=qdrant
 QDRANT_URL=https://your-cluster.cloud.qdrant.io
 QDRANT_API_KEY=your-qdrant-api-key
 QDRANT_COLLECTION=rag_chunks
+
+RETRIEVAL_MIN_SCORE=0.50
 ```
 
 `EMBEDDING_DIMENSION` must match the configured model's output. The default
 `voyage-4-lite` configuration produces 1,024-number vectors. The Qdrant
 adapter creates the collection and its required payload indexes when needed.
+
+`RETRIEVAL_MIN_SCORE` sets the minimum similarity score a retrieved chunk must
+meet before the retrieval service returns it. The current baseline is `0.50` and
+can be adjusted later as retrieval evaluation becomes more systematic.
 
 ### WordPress configuration
 
@@ -201,7 +215,7 @@ Only indexable content documents are chunked. WordPress accordions configured
 by the active connector profile are passed to the generic processing pipeline
 as preserved HTML components.
 
-### Live retrieval smoke test
+### Live embedding and storage smoke test
 
 The smoke test verifies one complete path through Voyage and Qdrant:
 
@@ -226,6 +240,65 @@ The command prints the retrieved title, text, similarity score, and filter
 results. It intentionally leaves the test point in Qdrant for inspection. The
 test collection can be deleted from Qdrant after inspection. Restore
 `QDRANT_COLLECTION=rag_chunks` before running WordPress indexing.
+
+## Retrieval service
+
+The shared retrieval service is the internal search pipeline that will be reused by
+both `POST /v1/search` and `POST /v1/answer`. `RetrievalService`:
+
+* validates non-empty queries and retrieval limits
+* validates supported metadata filters
+* generates query embeddings with the configured embedding provider
+* searches the configured vector store
+* preserves vector-similarity ranking
+* removes duplicate chunks by `chunk_id`
+* removes results below `RETRIEVAL_MIN_SCORE`
+
+The current supported retrieval filters are:
+
+* `document_id`
+* `source`
+* `source_id`
+* `content_type`
+
+The retrieval service is created through a factory so API endpoints can reuse the
+same configured pipeline without wiring the embedding provider, vector store, and
+minimum score independently.
+
+Requests with a blank query, a limit below 1, an unsupported filter,
+or an invalid filter value are rejected before provider calls are made.
+
+The default minimum similarity score is `0.50`. Override it in `.env` when
+needed:
+
+```dotenv
+RETRIEVAL_MIN_SCORE=0.50
+```
+
+### Live retrieval-service smoke test
+
+
+The retrieval smoke test runs a set of deliberately different queries against the
+indexed WordPress collection, including in-domain and out-of-domain questions. It
+verifies that results preserve similarity ranking and that weak results are removed
+by the configured minimum score.
+
+Make sure `QDRANT_COLLECTION` points to the indexed documentation collection, then
+run:
+
+```bash
+uv run python -m rag_service.commands.smoke_retrieval_service
+```
+
+The command writes a reviewable Markdown report to:
+
+```text
+data/retrieval_smoke_results.md
+```
+
+The report includes each query, returned result count, similarity scores, titles,
+heading paths, URLs, chunk IDs, and chunk text. Queries for which no result meets
+the minimum score are recorded as zero-result passes.
 
 ### WordPress connector profiles
 
@@ -353,6 +426,7 @@ uv run mypy
 │   ├── connectors/
 │   ├── embeddings/
 │   ├── indexing/
+│   ├── retrieval/
 │   ├── vectorstores/
 │   ├── test_config.py
 │   └── test_health.py
