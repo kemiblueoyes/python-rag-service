@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from rag_service.commands.smoke_retrieval import SMOKE_CHUNK_ID, run
+from rag_service.commands.smoke_embedding_storage import SMOKE_CHUNK_ID, run
 from rag_service.vectorstores import SearchResult, VectorRecord
 
 

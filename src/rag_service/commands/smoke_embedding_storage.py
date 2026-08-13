@@ -1,3 +1,5 @@
+"""Smoke test the embedding and vector-store path (upsert, search, filters)."""
+
 from dataclasses import dataclass
 
 from rag_service.config import settings

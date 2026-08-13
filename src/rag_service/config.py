@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     qdrant_api_key: str | None = None
     qdrant_collection: str = "rag_chunks"
 
+    # Retrieval
+    retrieval_min_score: float = 0.50
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

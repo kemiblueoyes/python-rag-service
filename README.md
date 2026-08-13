@@ -219,7 +219,7 @@ QDRANT_COLLECTION=rag_chunks_smoke_test
 Then run:
 
 ```bash
-uv run python -m rag_service.commands.smoke_retrieval
+uv run python -m rag_service.commands.smoke_embedding_storage
 ```
 
 The command prints the retrieved title, text, similarity score, and filter
