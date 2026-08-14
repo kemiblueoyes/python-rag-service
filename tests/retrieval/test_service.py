@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from rag_service.models.chunk import DocumentChunk
+from rag_service.retrieval.errors import RetrievalUnavailableError
 from rag_service.retrieval.models import RetrievalRequest, RetrievalResult
 from rag_service.retrieval.service import RetrievalService
 from rag_service.vectorstores.base import SearchResult
@@ -379,3 +380,49 @@ def test_retrieval_minimum_score_is_configurable() -> None:
     )
 
     assert results == []
+
+def test_retrieve_wraps_embedding_provider_failure() -> None:
+    embedding_provider = MagicMock()
+    embedding_provider.embed_query.side_effect = RuntimeError(
+        "Voyage unavailable"
+    )
+
+    vector_store = MagicMock()
+
+    service = RetrievalService(
+        embedding_provider=embedding_provider,
+        vector_store=vector_store,
+    )
+
+    with pytest.raises(
+        RetrievalUnavailableError,
+        match="Retrieval could not be completed",
+    ):
+        service.retrieve(
+            RetrievalRequest(query="What is RAG?")
+        )
+
+    vector_store.search.assert_not_called()
+
+
+def test_retrieve_wraps_vector_store_failure() -> None:
+    embedding_provider = MagicMock()
+    embedding_provider.embed_query.return_value = [0.1, 0.2]
+
+    vector_store = MagicMock()
+    vector_store.search.side_effect = RuntimeError(
+        "Qdrant unavailable"
+    )
+
+    service = RetrievalService(
+        embedding_provider=embedding_provider,
+        vector_store=vector_store,
+    )
+
+    with pytest.raises(
+        RetrievalUnavailableError,
+        match="Retrieval could not be completed",
+    ):
+        service.retrieve(
+            RetrievalRequest(query="What is RAG?")
+        )

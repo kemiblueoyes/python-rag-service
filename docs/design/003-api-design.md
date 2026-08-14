@@ -21,7 +21,7 @@ Retrieves relevant document chunks without generating an answer.
 {
   "query": "How does metadata improve retrieval?",
   "filters": {
-    "site_id": "the-doc-landscape"
+    "source_id": "the-doc-landscape"
   },
   "limit": 5
 }
@@ -46,7 +46,7 @@ Retrieves relevant chunks and generates a grounded answer with validated sources
 {
   "query": "Why does inconsistent terminology cause retrieval failures?",
   "filters": {
-    "site_id": "the-doc-landscape"
+    "source_id": "the-doc-landscape"
   }
 }
 ```

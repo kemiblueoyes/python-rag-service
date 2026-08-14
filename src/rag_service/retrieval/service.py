@@ -1,4 +1,5 @@
 from rag_service.embeddings.base import EmbeddingProvider
+from rag_service.retrieval.errors import RetrievalUnavailableError
 from rag_service.retrieval.models import (
     RetrievalRequest,
     RetrievalResult,
@@ -32,13 +33,20 @@ class RetrievalService:
     def retrieve(self, request: RetrievalRequest) -> list[RetrievalResult]:
         self._validate_request(request)
 
-        query_vector = self._embedding_provider.embed_query(request.query.strip())
+        try:
+            query_vector = self._embedding_provider.embed_query(
+                request.query.strip()
+            )
 
-        search_results = self._vector_store.search(
-            query_vector=query_vector,
-            limit=request.limit,
-            filters=request.filters or None,
-        )
+            search_results = self._vector_store.search(
+                query_vector=query_vector,
+                limit=request.limit,
+                filters=request.filters or None,
+            )
+        except Exception as exc:
+            raise RetrievalUnavailableError(
+                "Retrieval could not be completed."
+            ) from exc
 
         search_results = self._deduplicate_results(search_results)
         search_results = self._filter_weak_results(search_results)
