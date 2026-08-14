@@ -11,13 +11,11 @@ The core retrieval and answer-generation logic remains independent of WordPress 
 
 ## Project status
 
-Active development. The content pipeline can retrieve WordPress documents,
-normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector
-index, and retrieve ranked chunks through a shared retrieval service. The
-public search and answer APIs are not implemented yet.
+Active development. The indexing and semantic-search path is implemented end to end. The service can retrieve WordPress documents, normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector index, retrieve ranked chunks through a shared retrieval service, and expose those results through `POST /v1/search`.
 
-See the implementation roadmap in
-`docs/design/007-implementation-roadmap.md`.
+`POST /v1/search` is implemented, tested, and represented in the generated OpenAPI specification. Grounded answer generation and `POST /v1/answer` are planned for the next implementation phases.
+
+See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 
 ## Current capabilities
 
@@ -29,22 +27,105 @@ See the implementation roadmap in
 * Qdrant vector and chunk-metadata storage
 * Full vector-index rebuilds
 * Incremental handling of new, updated, unchanged, and removed documents
-* Shared retrieval service for future search and answer endpoints
+* Shared retrieval service used by the public search endpoint and reusable by the future answer endpoint
 * Query validation and supported metadata filtering
 * Similarity ranking with duplicate removal
 * Configurable minimum retrieval score for weak-result filtering
 * Retrieval-service factory for application-wide dependency wiring
+* Public `POST /v1/search` endpoint
+* Explicit search request and response schemas
+* Standard API error responses for validation and retrieval failures
+* FastAPI-generated OpenAPI and interactive API documentation
+* API tests for successful, empty-result, validation-error, service-unavailable, and OpenAPI behavior
 * Live embedding, storage, search, and filtering smoke test
 * Live retrieval-service smoke tests against indexed WordPress content
+* Live end-to-end search verification through the public API
 
-## Planned public APIs
+## Public API
 
-The completed service will support two public endpoints:
+The service is intentionally designed around two public endpoints:
 
-* `POST /v1/search` - retrieve relevant documentation sections
-* `POST /v1/answer` - generate a grounded answer with validated citations
+| Endpoint | Status | Purpose |
+|---|---|---|
+| `POST /v1/search` | Implemented | Retrieve relevant documentation chunks without generating an answer. |
+| `POST /v1/answer` | Planned | Generate a grounded answer with validated citations. |
 
-Content indexing will run through an internal command or administrative process rather than a public endpoint.
+Content indexing runs through an internal command or administrative process rather than a public endpoint.
+
+### `POST /v1/search`
+
+The search endpoint accepts a natural-language query, optional metadata filters, and an optional result limit.
+
+Example request:
+
+```json
+{
+  "query": "How does metadata improve retrieval?",
+  "filters": {
+    "source": "wordpress",
+    "content_type": "page"
+  },
+  "limit": 5
+}
+```
+
+Supported filters are:
+
+* `document_id`
+* `source`
+* `source_id`
+* `content_type`
+
+Each filter accepts either a single non-empty string or a list of non-empty strings.
+
+Example successful response:
+
+```json
+{
+  "query": "How does metadata improve retrieval?",
+  "results": [
+    {
+      "chunk_id": "wordpress:page:1:chunk:0",
+      "document_id": "wordpress:page:1",
+      "title": "Metadata Strategy",
+      "heading_path": ["Metadata filtering"],
+      "excerpt": "Metadata can narrow the documents considered during retrieval.",
+      "url": "https://example.com/metadata",
+      "score": 0.91
+    }
+  ]
+}
+```
+
+A valid query for which no result meets the configured retrieval threshold returns `200 OK` with an empty `results` array.
+
+Invalid requests return `422 Unprocessable Content` using the standard error format:
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Request validation failed.",
+    "details": []
+  }
+}
+```
+
+If retrieval cannot complete because a required dependency such as the embedding provider or vector database is unavailable, the API returns `503 Service Unavailable`:
+
+```json
+{
+  "error": {
+    "code": "retrieval_unavailable",
+    "message": "Search is temporarily unavailable.",
+    "details": []
+  }
+}
+```
+
+Provider-specific exception details are not exposed through the public API.
+
+See `docs/design/003-api-design.md` for the current API contract.
 
 ## Architecture
 
@@ -55,10 +136,16 @@ The system contains or will contain:
 * content normalization and heading-aware chunking
 * embedding generation
 * vector storage and semantic retrieval
-* shared retrieval logic with validation, filtering, ranking, duplicate removal,
-and minimum-score filtering
+* shared retrieval logic with validation, filtering, ranking, duplicate removal, and minimum-score filtering
+* a public search API that maps HTTP requests to the shared retrieval service
+
+The planned system also includes:
+
 * answer generation and citation validation
+* `POST /v1/answer`
 * a WordPress client for displaying search results and answers
+
+The WordPress connector, retrieval pipeline, API layer, and future answer-generation layer remain separate so source-specific behavior does not spread through the RAG engine.
 
 ## Requirements
 
@@ -114,6 +201,12 @@ FastAPI's generated API documentation is available at:
 ```text
 http://127.0.0.1:8000/docs
 ```
+
+```text
+http://127.0.0.1:8000/openapi.json
+```
+
+The interactive documentation can also be used to execute `POST /v1/search` against the configured retrieval service without using a terminal HTTP client.
 
 ## Indexing
 
@@ -410,6 +503,7 @@ uv run mypy
 ├── src/
 │   └── rag_service/
 │       ├── api/
+│       │   └── routes/
 │       ├── commands/
 │       ├── connectors/
 │       │   └── wordpress/
@@ -422,6 +516,7 @@ uv run mypy
 │       ├── vectorstores/
 │       └── config.py
 ├── tests/
+│   ├── api/
 │   ├── commands/
 │   ├── connectors/
 │   ├── embeddings/
@@ -446,7 +541,7 @@ Current documents include:
 * API Design (draft)
 * Implementation roadmap
 
-Additional design sections will be written and expanded as their implementation phases begin.
+The implemented `/v1/search` contract is documented in `docs/design/003-api-design.md` and in FastAPI's generated OpenAPI documentation. Additional design sections will be written and expanded as their implementation phases begin.
 
 ## License
 
