@@ -1,5 +1,8 @@
 """Smoke test live retrieval and grounded answer generation."""
 
+from datetime import UTC, datetime
+from pathlib import Path
+
 from rag_service.config import settings
 from rag_service.generation import (
     AnswerGenerator,
@@ -11,9 +14,6 @@ from rag_service.retrieval import (
     RetrievalService,
     create_retrieval_service,
 )
-
-from datetime import UTC, datetime
-from pathlib import Path
 
 SMOKE_QUESTION = (
     "How is the role of technical writer changing?"

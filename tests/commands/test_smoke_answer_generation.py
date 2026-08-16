@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -7,16 +8,13 @@ from rag_service.commands.smoke_answer_generation import (
     run,
     write_report,
 )
-
 from rag_service.generation.models import (
     ContextSource,
     GeneratedAnswer,
 )
-
 from rag_service.models.chunk import DocumentChunk
 from rag_service.retrieval.models import RetrievalResult
 
-from pathlib import Path
 
 def make_chunk() -> DocumentChunk:
     """Create one smoke-test document chunk."""
