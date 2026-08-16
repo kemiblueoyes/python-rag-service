@@ -11,9 +11,9 @@ The core retrieval and answer-generation logic remains independent of WordPress 
 
 ## Project status
 
-Active development. The indexing and semantic-search path is implemented end to end. The service can retrieve WordPress documents, normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector index, retrieve ranked chunks through a shared retrieval service, and expose those results through `POST /v1/search`.
+Active development. The indexing, semantic-search, and grounded-answer-generation paths are implemented and tested. The service can retrieve WordPress documents, normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector index, retrieve ranked chunks, and generate structured answers through OpenAI using only the selected evidence.
 
-`POST /v1/search` is implemented, tested, and represented in the generated OpenAPI specification. Grounded answer generation and `POST /v1/answer` are planned for the next implementation phases.
+`POST /v1/search` is implemented, tested, and represented in the generated OpenAPI specification. Internal answer generation now includes token-budgeted context assembly, grounded prompt construction, evidence-sufficiency detection, and citation-integrity validation. The public `POST /v1/answer` endpoint is planned for Phase 8.
 
 See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 
@@ -27,7 +27,7 @@ See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 * Qdrant vector and chunk-metadata storage
 * Full vector-index rebuilds
 * Incremental handling of new, updated, unchanged, and removed documents
-* Shared retrieval service used by the public search endpoint and reusable by the future answer endpoint
+* Shared retrieval service used by search and answer-generation workflows
 * Query validation and supported metadata filtering
 * Similarity ranking with duplicate removal
 * Configurable minimum retrieval score for weak-result filtering
@@ -40,6 +40,15 @@ See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 * Live embedding, storage, search, and filtering smoke test
 * Live retrieval-service smoke tests against indexed WordPress content
 * Live end-to-end search verification through the public API
+* Configurable context-token budget with complete chunks preserved in retrieval order
+* Request-local source identifiers such as `S1`, `S2`, and `S3`
+* Provider-neutral prompt, token-counter, and language-model interfaces
+* OpenAI Responses API integration with structured Pydantic output
+* Grounded-answer prompt that treats retrieved content as evidence rather than instructions
+* Evidence-sufficiency detection with consistent citation requirements
+* Citation-integrity validation for inline and structured citation identifiers
+* Answer-generation factory for application-wide dependency wiring
+* Live end-to-end answer-generation smoke test with a reviewable Markdown report
 
 ## Public API
 
@@ -48,7 +57,9 @@ The service is intentionally designed around two public endpoints:
 | Endpoint | Status | Purpose |
 |---|---|---|
 | `POST /v1/search` | Implemented | Retrieve relevant documentation chunks without generating an answer. |
-| `POST /v1/answer` | Planned | Generate a grounded answer with validated citations. |
+| `POST /v1/answer` | Planned — Phase 8 | Expose the implemented grounded-answer workflow through the public API. |
+
+The internal answer-generation workflow is implemented. Phase 8 will define its public request, response, error, and OpenAPI contracts.
 
 Content indexing runs through an internal command or administrative process rather than a public endpoint.
 
@@ -138,14 +149,19 @@ The system contains or will contain:
 * vector storage and semantic retrieval
 * shared retrieval logic with validation, filtering, ranking, duplicate removal, and minimum-score filtering
 * a public search API that maps HTTP requests to the shared retrieval service
+* token-budgeted context assembly that preserves ranked source order
+* grounded prompt construction
+* a provider-neutral language-model interface with an OpenAI adapter
+* structured answer parsing and evidence-sufficiency detection
+* citation-integrity validation against the supplied context
+* an answer generator that coordinates the complete generation workflow
 
 The planned system also includes:
 
-* answer generation and citation validation
 * `POST /v1/answer`
 * a WordPress client for displaying search results and answers
 
-The WordPress connector, retrieval pipeline, API layer, and future answer-generation layer remain separate so source-specific behavior does not spread through the RAG engine.
+The WordPress connector, retrieval pipeline, API layer, and  answer-generation layer remain separate so source-specific behavior does not spread through the RAG engine.
 
 ## Requirements
 
@@ -393,7 +409,7 @@ The report includes each query, returned result count, similarity scores, titles
 heading paths, URLs, chunk IDs, and chunk text. Queries for which no result meets
 the minimum score are recorded as zero-result passes.
 
-### WordPress connector profiles
+## WordPress connector profiles
 
 WordPress installations commonly add custom post types, REST metadata, ACF
 fields, and site-specific meanings for parent and child pages. Those decisions
@@ -468,6 +484,55 @@ WordPress installations generally.
 components such as accordions or tabs that must remain a single HTML block
 during parsing. The default profile preserves no special block classes.
 
+## Answer generation
+
+The internal answer-generation workflow accepts a question and ranked retrieval results, then:
+
+1. Selects complete retrieved chunks within the configured context-token budget.
+2. Assigns request-local citation identifiers in retrieval order.
+3. Constructs a grounded prompt containing the question and selected evidence.
+4. Requests a structured answer from the configured language model.
+5. Validates evidence sufficiency and citation integrity.
+6. Returns only the sources cited by the generated answer.
+
+Configure answer generation in `.env`:
+
+```dotenv
+GENERATION_PROVIDER=openai
+GENERATION_MODEL=gpt-5.6-terra
+GENERATION_REASONING_EFFORT=low
+GENERATION_CONTEXT_BUDGET_TOKENS=8000
+GENERATION_MAX_OUTPUT_TOKENS=1000
+OPENAI_API_KEY=your-openai-api-key
+```
+
+`GENERATION_CONTEXT_BUDGET_TOKENS` applies to the fully rendered evidence blocks. Sources are included whole and in retrieval order; chunks are not truncated to fit the budget.
+
+Citation identifiers such as `S1` and `S2` are local to one answer-generation request. Validation ensures that inline citations match the structured citation list and refer only to sources supplied to the model.
+
+### Live answer-generation smoke test
+
+Make sure Voyage, Qdrant, and OpenAI credentials are configured and that `QDRANT_COLLECTION` points to the indexed documentation collection. Then run:
+
+```bash
+uv run python -m rag_service.commands.smoke_answer_generation
+```
+
+The command exercises the complete live workflow:
+
+```text
+question → query embedding → Qdrant retrieval → context assembly
+→ OpenAI generation → evidence-sufficiency and citation validation
+```
+
+It writes a reviewable Markdown report to:
+
+```text
+data/answer_generation_smoke_result.md
+```
+
+The report contains the question, generated answer, evidence-sufficiency result, validated source references, retrieval scores, and complete cited source text. It supports manual grounding review; automated answer-quality evaluation is planned for Phase 10.
+
 ## Development checks
 
 Run the tests:
@@ -508,6 +573,7 @@ uv run mypy
 │       ├── connectors/
 │       │   └── wordpress/
 │       ├── embeddings/
+|       |── generation/
 │       ├── indexing/
 │       ├── models/
 │       ├── processing/
@@ -520,6 +586,7 @@ uv run mypy
 │   ├── commands/
 │   ├── connectors/
 │   ├── embeddings/
+|   |── generation/
 │   ├── indexing/
 │   ├── retrieval/
 │   ├── vectorstores/
