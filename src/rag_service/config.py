@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +31,21 @@ class Settings(BaseSettings):
 
     # Retrieval
     retrieval_min_score: float = 0.50
+
+    # Answer generation
+    generation_provider: Literal["openai"] = "openai"
+    generation_model: str = "gpt-5.6-terra"
+    generation_reasoning_effort: Literal[
+        "none",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max",
+    ] = "low"
+    generation_context_budget_tokens: int = 8_000
+    generation_max_output_tokens: int = 1_000
+    openai_api_key: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

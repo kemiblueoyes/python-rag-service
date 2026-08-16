@@ -94,3 +94,11 @@ class ProposedAnswer(BaseModel):
             )
 
         return self
+
+@dataclass(frozen=True, slots=True)
+class GeneratedAnswer:
+    """A citation-validated answer produced from retrieved evidence."""
+
+    answer: str
+    sources: tuple[ContextSource, ...]
+    sufficient_evidence: bool

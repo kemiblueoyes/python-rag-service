@@ -29,3 +29,7 @@ class LanguageModelResponseError(LanguageModelError):
 
 class LanguageModelRefusalError(LanguageModelResponseError):
     """Raised when the language model refuses the request."""
+
+
+class CitationValidationError(RuntimeError):
+    """Raised when a generated answer contains invalid citations."""

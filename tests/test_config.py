@@ -35,3 +35,13 @@ def test_retrieval_provider_settings_have_expected_defaults() -> None:
     assert settings.vector_database == "qdrant"
     assert settings.qdrant_url == "http://localhost:6333"
     assert settings.qdrant_collection == "rag_chunks"
+
+def test_generation_settings_have_expected_defaults() -> None:
+    settings = Settings(_env_file=None)
+
+    assert settings.generation_provider == "openai"
+    assert settings.generation_model == "gpt-5.6-terra"
+    assert settings.generation_reasoning_effort == "low"
+    assert settings.generation_context_budget_tokens == 8_000
+    assert settings.generation_max_output_tokens == 1_000
+    assert settings.openai_api_key is None

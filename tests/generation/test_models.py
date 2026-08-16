@@ -1,8 +1,10 @@
 import pytest
+from pydantic import ValidationError
 
 from rag_service.generation.models import (
     AssembledContext,
     ContextSource,
+    ProposedAnswer,
 )
 from rag_service.models.chunk import DocumentChunk
 
@@ -100,4 +102,51 @@ def test_assembled_context_rejects_negative_token_count() -> None:
         AssembledContext(
             sources=(),
             token_count=-1,
+        )
+
+def test_proposed_answer_accepts_sufficient_evidence() -> None:
+    answer = ProposedAnswer(
+        answer="RAG uses retrieved evidence [S1].",
+        citation_ids=["S1"],
+        sufficient_evidence=True,
+    )
+
+    assert answer.sufficient_evidence is True
+    assert answer.citation_ids == ["S1"]
+
+
+def test_proposed_answer_accepts_insufficient_evidence() -> None:
+    answer = ProposedAnswer(
+        answer="The available sources are insufficient.",
+        citation_ids=[],
+        sufficient_evidence=False,
+    )
+
+    assert answer.sufficient_evidence is False
+    assert answer.citation_ids == []
+
+
+def test_proposed_answer_rejects_sufficient_answer_without_citations() -> None:
+    with pytest.raises(
+        ValidationError,
+        match=(
+            "sufficient answers must contain at least one citation ID"
+        ),
+    ):
+        ProposedAnswer(
+            answer="RAG uses retrieved evidence.",
+            citation_ids=[],
+            sufficient_evidence=True,
+        )
+
+
+def test_proposed_answer_rejects_insufficient_answer_with_citations() -> None:
+    with pytest.raises(
+        ValidationError,
+        match="insufficient answers must not contain citation IDs",
+    ):
+        ProposedAnswer(
+            answer="The available sources are insufficient [S1].",
+            citation_ids=["S1"],
+            sufficient_evidence=False,
         )
