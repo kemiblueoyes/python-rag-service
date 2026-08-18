@@ -1,5 +1,3 @@
-from openai import OpenAI
-
 from rag_service.config import Settings
 from rag_service.generation.answer_generator import AnswerGenerator
 from rag_service.generation.citation_validator import (
@@ -22,7 +20,6 @@ def create_answer_generator(settings: Settings) -> AnswerGenerator:
             f"{settings.generation_provider!r}"
         )
 
-    client = OpenAI(api_key=settings.openai_api_key)
     token_counter = OpenAITokenCounter(
         model=settings.generation_model,
     )
@@ -33,7 +30,7 @@ def create_answer_generator(settings: Settings) -> AnswerGenerator:
         ),
     )
     language_model = OpenAILanguageModel(
-        client=client,
+        api_key=settings.openai_api_key,
         model=settings.generation_model,
         reasoning_effort=(
             settings.generation_reasoning_effort

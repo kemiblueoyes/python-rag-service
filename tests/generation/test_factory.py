@@ -16,7 +16,6 @@ def test_create_answer_generator_builds_configured_dependencies(
         _env_file=None,
     )
 
-    client = MagicMock()
     token_counter = MagicMock()
     context_assembler = MagicMock()
     language_model = MagicMock()
@@ -24,7 +23,6 @@ def test_create_answer_generator_builds_configured_dependencies(
     citation_validator = MagicMock()
     answer_generator = MagicMock()
 
-    client_factory = MagicMock(return_value=client)
     token_counter_factory = MagicMock(
         return_value=token_counter
     )
@@ -44,10 +42,6 @@ def test_create_answer_generator_builds_configured_dependencies(
         return_value=answer_generator
     )
 
-    monkeypatch.setattr(
-        "rag_service.generation.factory.OpenAI",
-        client_factory,
-    )
     monkeypatch.setattr(
         "rag_service.generation.factory.OpenAITokenCounter",
         token_counter_factory,
@@ -77,7 +71,6 @@ def test_create_answer_generator_builds_configured_dependencies(
 
     assert result is answer_generator
 
-    client_factory.assert_called_once_with(api_key="test-key")
     token_counter_factory.assert_called_once_with(
         model="gpt-5.6-terra",
     )
@@ -86,7 +79,7 @@ def test_create_answer_generator_builds_configured_dependencies(
         max_context_tokens=8_000,
     )
     language_model_factory.assert_called_once_with(
-        client=client,
+        api_key="test-key",
         model="gpt-5.6-terra",
         reasoning_effort="low",
         max_output_tokens=1_000,
@@ -99,3 +92,14 @@ def test_create_answer_generator_builds_configured_dependencies(
         language_model=language_model,
         citation_validator=citation_validator,
     )
+
+
+def test_create_answer_generator_does_not_require_openai_credentials() -> None:
+    settings = Settings(
+        openai_api_key=None,
+        _env_file=None,
+    )
+
+    generator = create_answer_generator(settings)
+
+    assert generator is not None

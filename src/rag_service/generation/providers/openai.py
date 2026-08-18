@@ -74,8 +74,9 @@ class OpenAILanguageModel:
     def __init__(
         self,
         *,
-        client: OpenAI,
         model: str,
+        client: OpenAI | None = None,
+        api_key: str | None = None,
         reasoning_effort: ReasoningEffort = "low",
         max_output_tokens: int = 1_000,
     ) -> None:
@@ -88,9 +89,18 @@ class OpenAILanguageModel:
             )
 
         self._client = client
+        self._api_key = api_key
         self._model = model
         self._reasoning_effort = reasoning_effort
         self._max_output_tokens = max_output_tokens
+
+    def _require_client(self) -> OpenAI:
+        """Create the OpenAI client on first use."""
+
+        if self._client is None:
+            self._client = OpenAI(api_key=self._api_key)
+
+        return self._client
 
     def generate(
         self,
@@ -99,7 +109,7 @@ class OpenAILanguageModel:
         """Generate and parse a structured proposed answer."""
 
         try:
-            response = self._client.responses.parse(
+            response = self._require_client().responses.parse(
                 model=self._model,
                 input=[
                     {
