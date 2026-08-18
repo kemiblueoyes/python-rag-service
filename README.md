@@ -13,7 +13,7 @@ The core retrieval and answer-generation logic remains independent of WordPress 
 
 Active development. The indexing, semantic-search, and grounded-answer-generation paths are implemented and tested. The service can retrieve WordPress documents, normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector index, retrieve ranked chunks, and generate structured answers through OpenAI using only the selected evidence.
 
-`POST /v1/search` is implemented, tested, and represented in the generated OpenAPI specification. Internal answer generation now includes token-budgeted context assembly, grounded prompt construction, evidence-sufficiency detection, and citation-integrity validation. The public `POST /v1/answer` endpoint is planned for Phase 8.
+`POST /v1/search` and `POST /v1/answer` are implemented, tested, and represented in the generated OpenAPI specification. The answer endpoint reuses the shared retrieval pipeline and exposes grounded generation with token-budgeted context assembly, evidence-sufficiency detection, citation-integrity validation, and trusted source references.
 
 See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 
@@ -27,24 +27,27 @@ See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 * Qdrant vector and chunk-metadata storage
 * Full vector-index rebuilds
 * Incremental handling of new, updated, unchanged, and removed documents
-* Shared retrieval service used by search and answer-generation workflows
 * Query validation and supported metadata filtering
 * Similarity ranking with duplicate removal
 * Configurable minimum retrieval score for weak-result filtering
 * Retrieval-service factory for application-wide dependency wiring
 * Public `POST /v1/search` endpoint
-* Explicit search request and response schemas
-* Standard API error responses for validation and retrieval failures
-* FastAPI-generated OpenAPI and interactive API documentation
+* Public `POST /v1/answer` endpoint
+* Shared retrieval service used by both public endpoints
+* Explicit search and answer request/response schemas
+* Insufficient-evidence responses for unsupported questions
+* Standard API error responses for validation, retrieval, and answer-generation failures
+* FastAPI-generated OpenAPI and interactive API documentation for both endpoints
 * API tests for successful, empty-result, validation-error, service-unavailable, and OpenAPI behavior
 * Live embedding, storage, search, and filtering smoke test
 * Live retrieval-service smoke tests against indexed WordPress content
-* Live end-to-end search verification through the public API
+* Live end-to-end verification through both public API workflows
 * Configurable context-token budget with complete chunks preserved in retrieval order
 * Request-local source identifiers such as `S1`, `S2`, and `S3`
 * Provider-neutral prompt, token-counter, and language-model interfaces
 * OpenAI Responses API integration with structured Pydantic output
 * Grounded-answer prompt that treats retrieved content as evidence rather than instructions
+* Grounded answer responses with validated source references
 * Evidence-sufficiency detection with consistent citation requirements
 * Citation-integrity validation for inline and structured citation identifiers
 * Answer-generation factory for application-wide dependency wiring
@@ -57,9 +60,9 @@ The service is intentionally designed around two public endpoints:
 | Endpoint | Status | Purpose |
 |---|---|---|
 | `POST /v1/search` | Implemented | Retrieve relevant documentation chunks without generating an answer. |
-| `POST /v1/answer` | Planned — Phase 8 | Expose the implemented grounded-answer workflow through the public API. |
+| `POST /v1/answer` | Implemented | Retrieve relevant documentation and generate a grounded answer with validated sources. |
 
-The internal answer-generation workflow is implemented. Phase 8 will define its public request, response, error, and OpenAPI contracts.
+Both endpoints use the same retrieval pipeline. `POST /v1/answer` builds on the retrieved results by running the grounded answer-generation and citation-validation workflow.
 
 Content indexing runs through an internal command or administrative process rather than a public endpoint.
 

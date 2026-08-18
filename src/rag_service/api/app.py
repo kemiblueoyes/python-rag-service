@@ -6,9 +6,12 @@ from fastapi.exceptions import RequestValidationError
 from starlette.types import ExceptionHandler
 
 from rag_service.api.errors import (
+    AnswerUnavailableError,
+    answer_unavailable_exception_handler,
     request_validation_exception_handler,
     retrieval_unavailable_exception_handler,
 )
+from rag_service.api.routes.answer import router as answer_router
 from rag_service.api.routes.search import router as search_router
 from rag_service.retrieval import RetrievalUnavailableError
 
@@ -28,8 +31,12 @@ app.add_exception_handler(
 )
 
 app.include_router(search_router)
-
+app.include_router(answer_router)
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
+app.add_exception_handler(
+    AnswerUnavailableError,
+    cast(ExceptionHandler, answer_unavailable_exception_handler),
+)

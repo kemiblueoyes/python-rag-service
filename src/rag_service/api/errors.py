@@ -10,6 +10,9 @@ from rag_service.api.models import (
 from rag_service.retrieval import RetrievalUnavailableError
 
 
+class AnswerUnavailableError(RuntimeError):
+    """Raised when a grounded answer cannot be produced."""
+
 async def request_validation_exception_handler(
     _request: Request,
     exc: RequestValidationError,
@@ -56,6 +59,24 @@ async def retrieval_unavailable_exception_handler(
         error=ErrorBody(
             code="retrieval_unavailable",
             message="Search is temporarily unavailable.",
+        )
+    )
+
+    return JSONResponse(
+        status_code=503,
+        content=response.model_dump(mode="json"),
+    )
+
+async def answer_unavailable_exception_handler(
+    _request: Request,
+    _exc: AnswerUnavailableError,
+) -> JSONResponse:
+    """Return answer-generation failures using the public API error format."""
+
+    response = ErrorResponse(
+        error=ErrorBody(
+            code="answer_unavailable",
+            message="Answer generation is temporarily unavailable.",
         )
     )
 

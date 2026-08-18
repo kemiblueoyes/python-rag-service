@@ -90,6 +90,71 @@ class SearchResponse(BaseModel):
         description="Ranked search results that met the retrieval threshold.",
     )
 
+class AnswerRequest(BaseModel):
+    """Request body for POST /v1/answer."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    query: NonEmptyString = Field(
+        description="Natural-language question to answer.",
+        examples=[
+            "Why does inconsistent terminology cause retrieval failures?"
+        ],
+    )
+    filters: SearchFilters | None = Field(
+        default=None,
+        description="Optional metadata filters applied during retrieval.",
+    )
+
+
+class AnswerSource(BaseModel):
+    """One validated source supporting a generated answer."""
+
+    citation_id: str = Field(
+        description=(
+            "Request-local citation identifier used in the generated answer."
+        ),
+        examples=["S1"],
+    )
+    chunk_id: str = Field(
+        description="Stable identifier for the supporting chunk.",
+    )
+    document_id: str = Field(
+        description="Stable identifier for the source document.",
+    )
+    title: str = Field(
+        description="Title of the source document.",
+    )
+    heading_path: list[str] = Field(
+        description="Heading hierarchy containing the supporting chunk.",
+    )
+    excerpt: str = Field(
+        description="Text from the supporting chunk.",
+    )
+    url: str = Field(
+        description="Trusted URL for the source document.",
+    )
+
+
+class AnswerResponse(BaseModel):
+    """Successful response from POST /v1/answer."""
+
+    query: str = Field(
+        description="The question submitted by the client.",
+    )
+    answer: str = Field(
+        description="Grounded answer generated from retrieved evidence.",
+    )
+    sources: list[AnswerSource] = Field(
+        description="Validated sources cited by the generated answer.",
+    )
+    sufficient_evidence: bool = Field(
+        description=(
+            "Whether the retrieved sources contained enough evidence "
+            "to answer the question."
+        ),
+    )
+
 class ErrorDetail(BaseModel):
     """Details about one request error."""
 
