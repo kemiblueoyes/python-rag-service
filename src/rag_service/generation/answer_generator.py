@@ -1,3 +1,4 @@
+import re
 from collections.abc import Sequence
 
 from rag_service.generation.citation_validator import (
@@ -5,10 +6,58 @@ from rag_service.generation.citation_validator import (
 )
 from rag_service.generation.context_assembler import ContextAssembler
 from rag_service.generation.language_model import LanguageModel
-from rag_service.generation.models import GeneratedAnswer
+from rag_service.generation.models import (
+    ContextSource,
+    GeneratedAnswer,
+)
 from rag_service.generation.prompt_builder import PromptBuilder
 from rag_service.retrieval.models import RetrievalResult
 
+_CITATION_PATTERN = re.compile(r"\[(S[1-9]\d*)\]")
+
+def _normalize_citations(
+    *,
+    answer: str,
+    sources: tuple[ContextSource, ...],
+) -> tuple[str, tuple[ContextSource, ...]]:
+    """Renumber cited sources by first appearance in the final answer."""
+
+    source_by_id = {
+        source.citation_id: source
+        for source in sources
+    }
+
+    ordered_ids = list(
+        dict.fromkeys(
+            _CITATION_PATTERN.findall(answer)
+        )
+    )
+
+    citation_map = {
+        citation_id: f"S{index}"
+        for index, citation_id in enumerate(
+            ordered_ids,
+            start=1,
+        )
+    }
+
+    normalized_answer = _CITATION_PATTERN.sub(
+        lambda match: (
+            f"[{citation_map[match.group(1)]}]"
+        ),
+        answer,
+    )
+
+    normalized_sources = tuple(
+        ContextSource(
+            citation_id=citation_map[citation_id],
+            chunk=source_by_id[citation_id].chunk,
+            score=source_by_id[citation_id].score,
+        )
+        for citation_id in ordered_ids
+    )
+
+    return normalized_answer, normalized_sources
 
 class AnswerGenerator:
     """Generate a grounded, citation-validated answer."""
@@ -45,15 +94,13 @@ class AnswerGenerator:
             context=context,
         )
 
-        cited_ids = set(validated_answer.citation_ids)
-        cited_sources = tuple(
-            source
-            for source in context.sources
-            if source.citation_id in cited_ids
+        normalized_answer, cited_sources = _normalize_citations(
+            answer=validated_answer.answer,
+            sources=context.sources,
         )
 
         return GeneratedAnswer(
-            answer=validated_answer.answer,
+            answer=normalized_answer,
             sources=cited_sources,
             sufficient_evidence=(
                 validated_answer.sufficient_evidence

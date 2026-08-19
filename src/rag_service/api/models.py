@@ -69,6 +69,10 @@ class SearchResult(BaseModel):
     heading_path: list[str] = Field(
         description="Heading hierarchy containing the retrieved chunk.",
     )
+    anchor: str | None = Field(
+        default=None,
+        description="Source anchor for the retrieved chunk's current heading.",
+    )
     excerpt: str = Field(
         description="Text from the retrieved chunk.",
     )
@@ -127,6 +131,10 @@ class AnswerSource(BaseModel):
     )
     heading_path: list[str] = Field(
         description="Heading hierarchy containing the supporting chunk.",
+    )
+    anchor: str | None = Field(
+        default=None,
+        description="Source anchor for the supporting chunk's current heading.",
     )
     excerpt: str = Field(
         description="Text from the supporting chunk.",

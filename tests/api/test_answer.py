@@ -37,6 +37,7 @@ def _chunk() -> DocumentChunk:
             "harder to retrieve."
         ),
         heading_path=["Vocabulary mismatch"],
+        anchor="vocabulary-mismatch",
         sequence=0,
     )
 
@@ -112,6 +113,7 @@ def test_answer_returns_grounded_response() -> None:
                     "document_id": "wordpress:page:1",
                     "title": "Retrieval Failures",
                     "heading_path": ["Vocabulary mismatch"],
+                    "anchor": "vocabulary-mismatch",
                     "excerpt": (
                         "Inconsistent terminology can make relevant "
                         "content harder to retrieve."

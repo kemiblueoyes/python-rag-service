@@ -102,6 +102,7 @@ def answer(
                 document_id=source.chunk.document_id,
                 title=source.chunk.title,
                 heading_path=source.chunk.heading_path,
+                anchor=source.chunk.anchor,
                 excerpt=source.chunk.text,
                 url=source.chunk.url,
             )

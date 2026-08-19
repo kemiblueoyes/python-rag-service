@@ -65,6 +65,7 @@ def search(
                 document_id=result.chunk.document_id,
                 title=result.chunk.title,
                 heading_path=result.chunk.heading_path,
+                anchor=result.chunk.anchor,
                 excerpt=result.chunk.text,
                 url=result.chunk.url,
                 score=result.score,

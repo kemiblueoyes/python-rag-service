@@ -115,11 +115,11 @@ def test_answer_generator_returns_only_cited_sources() -> None:
     )
 
     assert result.answer == (
-        "The second source contains the answer [S2]."
+        "The second source contains the answer [S1]."
     )
     assert result.sufficient_evidence is True
     assert len(result.sources) == 1
-    assert result.sources[0].citation_id == "S2"
+    assert result.sources[0].citation_id == "S1"
     assert result.sources[0].chunk is second.chunk
 
     assert language_model.prompt is not None
@@ -176,3 +176,49 @@ def test_answer_generator_propagates_invalid_citation() -> None:
             question="What is the answer?",
             results=[result],
         )
+
+def test_answer_generator_renumbers_citations_by_first_appearance() -> None:
+    generator, _language_model = make_generator(
+        ProposedAnswer(
+            answer=(
+                "First claim [S2][S5]. "
+                "Second claim [S2][S3]."
+            ),
+            citation_ids=["S2", "S3", "S5"],
+            sufficient_evidence=True,
+        )
+    )
+
+    results = [
+        make_result(
+            chunk_id=f"chunk-{index}",
+            document_id=f"document-{index}",
+            title=f"Source {index}",
+            score=1.0 - (index * 0.01),
+        )
+        for index in range(1, 6)
+    ]
+
+    result = generator.generate(
+        question="What is the answer?",
+        results=results,
+    )
+
+    assert result.answer == (
+        "First claim [S1][S2]. "
+        "Second claim [S1][S3]."
+    )
+
+    assert [
+        source.citation_id
+        for source in result.sources
+    ] == ["S1", "S2", "S3"]
+
+    assert [
+        source.chunk.chunk_id
+        for source in result.sources
+    ] == [
+        "chunk-2",
+        "chunk-5",
+        "chunk-3",
+    ]

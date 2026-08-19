@@ -89,6 +89,7 @@ def _chunk() -> DocumentChunk:
         content_type="page",
         text="Metadata can narrow the documents considered during retrieval.",
         heading_path=["Metadata filtering"],
+        anchor="metadata-filtering",
         sequence=0,
     )
 
@@ -128,6 +129,7 @@ def test_search_returns_ranked_results() -> None:
                     "document_id": "wordpress:page:1",
                     "title": "Metadata Strategy",
                     "heading_path": ["Metadata filtering"],
+                    "anchor": "metadata-filtering",
                     "excerpt": (
                         "Metadata can narrow the documents "
                         "considered during retrieval."
