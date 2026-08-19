@@ -11,9 +11,13 @@ The core retrieval and answer-generation logic remains independent of WordPress 
 
 ## Project status
 
-Active development. The indexing, semantic-search, and grounded-answer-generation paths are implemented and tested. The service can retrieve WordPress documents, normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector index, retrieve ranked chunks, and generate structured answers through OpenAI using only the selected evidence.
+Active development. The core indexing, semantic-search, grounded-answer-generation, and WordPress client workflows are implemented and tested.
 
-`POST /v1/search` and `POST /v1/answer` are implemented, tested, and represented in the generated OpenAPI specification. The answer endpoint reuses the shared retrieval pipeline and exposes grounded generation with token-budgeted context assembly, evidence-sufficiency detection, citation-integrity validation, and trusted source references.
+The service can retrieve WordPress documents, normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector index, retrieve ranked chunks, and generate structured answers through OpenAI using only selected evidence.
+
+`POST /v1/search` and `POST /v1/answer` are implemented, tested, and represented in the generated OpenAPI specification. The answer endpoint reuses the shared retrieval pipeline and adds token-budgeted context assembly, evidence-sufficiency detection, citation-integrity validation, citation normalization, and trusted source references.
+
+A WordPress reference client is also implemented. It proxies browser requests through WordPress to the Python API and provides user-facing Search and Ask workflows, loading and error states, insufficient-evidence handling, source links, heading-anchor links, and clickable inline citations.
 
 See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 
@@ -52,6 +56,16 @@ See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 * Citation-integrity validation for inline and structured citation identifiers
 * Answer-generation factory for application-wide dependency wiring
 * Live end-to-end answer-generation smoke test with a reviewable Markdown report
+* WordPress reference client for `POST /v1/search` and `POST /v1/answer`
+* Server-side WordPress REST proxy between the browser and Python API
+* Search and Ask interface exposed through a WordPress shortcode
+* Loading, disabled-button, empty-result, insufficient-evidence, and service-error states
+* Search-result excerpts with configurable client-side truncation
+* Links to source documents and retrieved heading anchors
+* Safe rendering of generated paragraphs, lists, and bold text
+* Clickable inline citations mapped to validated sources
+* Responsive desktop and mobile client layout
+* Final citation identifiers normalized by first appearance in the generated answer
 
 ## Public API
 
@@ -103,6 +117,7 @@ Example successful response:
       "document_id": "wordpress:page:1",
       "title": "Metadata Strategy",
       "heading_path": ["Metadata filtering"],
+      "anchor": "metadata-filtering",
       "excerpt": "Metadata can narrow the documents considered during retrieval.",
       "url": "https://example.com/metadata",
       "score": 0.91
@@ -143,28 +158,81 @@ See `docs/design/003-api-design.md` for the current API contract.
 
 ## Architecture
 
-The system contains or will contain:
+The implemented system includes:
 
 * a WordPress connector that retrieves and maps source content
-* a canonical document model
+* a platform-neutral canonical document model
 * content normalization and heading-aware chunking
 * embedding generation
 * vector storage and semantic retrieval
 * shared retrieval logic with validation, filtering, ranking, duplicate removal, and minimum-score filtering
-* a public search API that maps HTTP requests to the shared retrieval service
+* public search and answer APIs
 * token-budgeted context assembly that preserves ranked source order
 * grounded prompt construction
 * a provider-neutral language-model interface with an OpenAI adapter
 * structured answer parsing and evidence-sufficiency detection
-* citation-integrity validation against the supplied context
+* citation-integrity validation against supplied context
+* final citation normalization and source filtering
 * an answer generator that coordinates the complete generation workflow
+* a WordPress reference client that proxies Search and Ask requests to the Python service
 
-The planned system also includes:
+The WordPress connector and WordPress client serve different responsibilities. The connector brings WordPress content into the RAG system for indexing. The client is a consumer of the public API and presents search results and generated answers to site visitors.
 
-* `POST /v1/answer`
-* a WordPress client for displaying search results and answers
+The connector, retrieval pipeline, API layer, answer-generation layer, and client remain separate so source- and client-specific behavior does not spread through the core RAG engine.
 
-The WordPress connector, retrieval pipeline, API layer, and  answer-generation layer remain separate so source-specific behavior does not spread through the RAG engine.
+## WordPress client
+
+The first reference client is a WordPress plugin located at:
+
+```text
+clients/wordpress/doc-landscape-rag/
+```
+
+The plugin provides a Search and Ask interface through the shortcode:
+
+```text
+[doc_landscape_rag]
+```
+
+Browser requests are sent to WordPress REST endpoints rather than directly to the Python service:
+
+```text
+Browser
+  → WordPress REST proxy
+  → Python RAG API
+  → retrieval and answer-generation services
+```
+
+This keeps the Python service URL and future API credentials on the server side rather than exposing them in browser JavaScript.
+
+Configure the Python service base URL in WordPress:
+
+```php
+define(
+    'DL_RAG_API_BASE_URL',
+    'https://your-rag-service.example.com'
+);
+```
+
+The client currently supports:
+
+* Semantic search through `/v1/search`
+* Grounded questions through `/v1/answer`
+* Loading states and duplicate-submission prevention
+* Empty-result and insufficient-evidence states
+* Normalized public error messages
+* Truncated search excerpts
+* Source-document and heading-anchor links
+* Formatted generated answers
+* Clickable inline citations and validated source lists
+* Responsive desktop and mobile layouts
+
+The included plugin is a reference implementation for The Doc Landscape rather than a general-purpose configurable WordPress product. The Python API remains platform-agnostic so other clients can be added independently.
+
+During local development, the Python API must be running and reachable from the hosted WordPress installation. A temporary HTTPS tunnel can provide that connection. Production deployment will replace the local server and development tunnel with an always-available hosted API.
+
+That server-side proxy description matches the client currently committed: its WordPress routes call `DL_RAG_API_BASE_URL` and forward Search and Answer requests to Python. 
+
 
 ## Requirements
 
@@ -355,8 +423,8 @@ test collection can be deleted from Qdrant after inspection. Restore
 
 ## Retrieval service
 
-The shared retrieval service is the internal search pipeline that will be reused by
-both `POST /v1/search` and `POST /v1/answer`. `RetrievalService`:
+The shared retrieval service is the internal search pipeline used by both
+`POST /v1/search` and `POST /v1/answer`. `RetrievalService`:
 
 * validates non-empty queries and retrieval limits
 * validates supported metadata filters
@@ -492,11 +560,12 @@ during parsing. The default profile preserves no special block classes.
 The internal answer-generation workflow accepts a question and ranked retrieval results, then:
 
 1. Selects complete retrieved chunks within the configured context-token budget.
-2. Assigns request-local citation identifiers in retrieval order.
+2. Assigns request-local source identifiers for the model context.
 3. Constructs a grounded prompt containing the question and selected evidence.
 4. Requests a structured answer from the configured language model.
 5. Validates evidence sufficiency and citation integrity.
-6. Returns only the sources cited by the generated answer.
+6. Keeps only sources cited by the generated answer.
+7. Renumbers final citation identifiers sequentially by first appearance in the answer.
 
 Configure answer generation in `.env`:
 
@@ -511,7 +580,7 @@ OPENAI_API_KEY=your-openai-api-key
 
 `GENERATION_CONTEXT_BUDGET_TOKENS` applies to the fully rendered evidence blocks. Sources are included whole and in retrieval order; chunks are not truncated to fit the budget.
 
-Citation identifiers such as `S1` and `S2` are local to one answer-generation request. Validation ensures that inline citations match the structured citation list and refer only to sources supplied to the model.
+Citation identifiers such as `S1` and `S2` are local to one answer-generation request. Validation first ensures that every citation refers to evidence supplied to the model. The final response then renumbers cited sources sequentially by first appearance so clients receive compact citation sequences without gaps.
 
 ### Live answer-generation smoke test
 
@@ -566,6 +635,12 @@ uv run mypy
 
 ```text
 .
+├── clients/
+│   └── wordpress/
+│       └── doc-landscape-rag/
+│           ├── assets/
+│           ├── includes/
+│           └── doc-landscape-rag.php
 ├── docs/
 │   └── design/
 ├── src/
@@ -608,10 +683,10 @@ Current documents include:
 
 * Project vision and goals
 * High-level architecture
-* API Design (draft)
+* API Design
 * Implementation roadmap
 
-The implemented `/v1/search` contract is documented in `docs/design/003-api-design.md` and in FastAPI's generated OpenAPI documentation. Additional design sections will be written and expanded as their implementation phases begin.
+The implemented `/v1/search` and `/v1/answer` contracts are documented in `docs/design/003-api-design.md` and in FastAPI's generated OpenAPI documentation. Additional design documentation will be added as later implementation phases are completed.
 
 ## License
 

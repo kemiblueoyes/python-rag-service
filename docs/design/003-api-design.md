@@ -99,6 +99,7 @@ Status: `200 OK`
       "heading_path": [
         "Metadata filtering"
       ],
+      "anchor": "metadata-filtering",
       "excerpt": "Metadata can narrow the documents considered during retrieval...",
       "url": "https://example.com/metadata-strategy/",
       "score": 0.87
@@ -113,6 +114,7 @@ Each result contains:
 * `document_id` - Stable identifier for the source document.
 * `title` - Title of the source document.
 * `heading_path` - Heading hierarchy containing the retrieved chunk.
+* `anchor` - Source heading anchor for the retrieved chunk's current heading. `null` when no heading anchor is available.
 * `excerpt` - Text of the retrieved chunk.
 * `url` - Trusted URL stored with the source document.
 * `score` - Semantic similarity score returned for the result.
@@ -240,6 +242,7 @@ Status: `200 OK`
       "heading_path": [
         "Vocabulary mismatch"
       ],
+      "anchor": "metadata-filtering",
       "excerpt": "Inconsistent terminology can make relevant content harder to retrieve.",
       "url": "https://example.com/retrieval-failures/"
     }
@@ -255,6 +258,7 @@ Each source contains:
 * `document_id` - Stable identifier for the source document.
 * `title` - Title of the source document.
 * `heading_path` - Heading hierarchy containing the supporting chunk.
+* `anchor` - Source heading anchor for the supporting chunk's current heading. `null` when no heading anchor is available.
 * `excerpt` - Text of the supporting chunk.
 * `url` - Trusted URL stored with the source document.
 
