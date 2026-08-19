@@ -35,7 +35,6 @@ The system supports two primary workflows:
 ### Content indexing
 
 ```text
-The Doc Landscape
 WordPress
     |
     | WordPress REST API
@@ -59,7 +58,6 @@ Vector database
 ### User query processing
 
 ```text
-The Doc Landscape
 WordPress client
     |
 POST /v1/search or
@@ -100,7 +98,7 @@ The indexing and query workflows share the vector database but otherwise serve d
 
 ### WordPress content source
 
-The initial content source is The Doc Landscape WordPress site.
+The initial content source is a WordPress site.
 
 WordPress remains the source of truth for published articles and their associated metadata, including:
 
