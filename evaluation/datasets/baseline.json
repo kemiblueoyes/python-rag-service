@@ -1,0 +1,487 @@
+{
+    "dataset_id": "doc-landscape-baseline",
+    "version": "1.0",
+    "description": "Initial human-labeled retrieval baseline for The Doc Landscape WordPress index.",
+    "cases": [
+      {
+        "id": "terminology-001",
+        "category": "exact_answer",
+        "query": "Why can inconsistent terminology cause AI retrieval to fail?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:page:2368",
+              "title": "What Retrieval Systems Need from Your Content",
+              "heading_path": [
+                "Retrieval Depends on Consistent Signals"
+              ],
+              "chunk_id": "wordpress:page:2368:chunk:v1:ccba4172e13bcc89f3f437d7113db01f0f065827272dd12419d213cd9b0c1b97"
+            },
+            {
+              "document_id": "wordpress:glossary:2455",
+              "title": "BM25",
+              "heading_path": [
+                "Why This Matters for Technical Writers"
+              ],
+              "chunk_id": "wordpress:glossary:2455:chunk:v1:3344c6d3a4216303c5a33e3ec0dcec38578fdc112dd395371636d429a3b30ae8"
+            },
+            {
+              "document_id": "wordpress:page:1486",
+              "title": "Downstream Knowledge Flows: The Feedback Nobody Routed",
+              "heading_path": [
+                "What the Signal Actually Contains",
+                "Terminology Divergence"
+              ],
+              "chunk_id": "wordpress:page:1486:chunk:v1:cf9e390b419ff1992c9eaba1b7a50f5c76fcd79934f3984905d3e5324043facd"
+            },
+            {
+              "document_id": "wordpress:page:2366",
+              "title": "How RAG Works in Retrieval-Based AI Systems",
+              "heading_path": [
+                "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                "Step 4: Embeddings"
+              ],
+              "chunk_id": "wordpress:page:2366:chunk:v1:e608885ce1731409468b9d616ddc59062c0f90a8528615449f0a5d5202fe80e2"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "chunking-001",
+        "category": "exact_answer",
+        "query": "Why is heading-aware chunking useful for documentation retrieval?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:page:2366",
+              "title": "How RAG Works in Retrieval-Based AI Systems",
+              "heading_path": [
+                "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                "Step 3: Chunking"
+              ],
+              "chunk_id": "wordpress:page:2366:chunk:v1:a04b7e1517199858a707d7ce3829a7d00ba32e29593f8bd9a3bb3a51002f9022"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "metadata-001",
+        "category": "exact_answer",
+        "query": "How can metadata improve AI retrieval?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:page:2368",
+              "title": "What Retrieval Systems Need from Your Content",
+              "heading_path": [
+                "Takeaways"
+              ],
+              "chunk_id": "wordpress:page:2368:chunk:v1:b42c0ab63ed6997a98c372762f87e0a12643544554ca458c18b6ad14dd85cec5",
+              "role": "supporting"
+            },
+            {
+              "document_id": "wordpress:page:2366",
+              "title": "How RAG Works in Retrieval-Based AI Systems",
+              "heading_path": [
+                "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                "Step 5: Vector Databases"
+              ],
+              "chunk_id": "wordpress:page:2366:chunk:v1:f7e1052ca169267580bdc5a9f56ba94f93c5cce1e722c6bed361f77915727a1c",
+              "role": "primary"
+            },
+            {
+              "document_id": "wordpress:page:2374",
+              "title": "When and Why AI Retrieval Fails",
+              "heading_path": [
+                "Reason 5: Metadata Is Missing or Inconsistent"
+              ],
+              "chunk_id": "wordpress:page:2374:chunk:v1:17d2ea3b0d57327f2e279c4eee55a09cf315937ef49f7abc0e45c14627c97e94",
+              "role": "primary"
+            },
+            {
+              "document_id": "wordpress:page:2368",
+              "title": "What Retrieval Systems Need from Your Content",
+              "heading_path": [
+                "Retrieval Depends on Information Beyond the Content Itself"
+              ],
+              "chunk_id": "wordpress:page:2368:chunk:v1:5920e764fa66d0574806063ab3d834080d7b1d6d281ec72cdba5baa02ad6aac4",
+              "role": "primary"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "bm25-001",
+        "category": "exact_answer",
+        "query": "What is BM25 and how does it relate to semantic search?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:glossary:2455",
+              "title": "BM25",
+              "heading_path": [
+                "Common Confusion"
+              ],
+              "chunk_id": "wordpress:glossary:2455:chunk:v1:ce201f293c5218576275abf859abbaddc62d818dc515c3f252e8577e3622ea56"
+            },
+            {
+              "document_id": "wordpress:glossary:2455",
+              "title": "BM25",
+              "heading_path": [
+                "Why This Matters for Technical Writers"
+              ],
+              "chunk_id": "wordpress:glossary:2455:chunk:v1:3344c6d3a4216303c5a33e3ec0dcec38578fdc112dd395371636d429a3b30ae8"
+            },
+            {
+              "document_id": "wordpress:glossary:2455",
+              "title": "BM25",
+              "heading_path": [],
+              "chunk_id": "wordpress:glossary:2455:chunk:v1:346f83b867b5ec5041cec822a03b8a0ebe91d8c42a06474b98b777af09bee74c"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "rag-001",
+        "category": "exact_answer",
+        "query": "What is retrieval-augmented generation?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:glossary:1353",
+              "title": "RAG",
+              "heading_path": [],
+              "chunk_id": "wordpress:glossary:1353:chunk:v1:7f830b37c170cf142826205ea04f1a0a57dc21b10ee04a981154281c10133447"
+            },
+            {
+              "document_id": "wordpress:page:2360",
+              "title": "Understanding RAG and Retrieval-Based AI Systems",
+              "heading_path": [
+                "Retrieval Systems Exist on a Spectrum",
+                "Retrieval Plus Generation"
+              ],
+              "chunk_id": "wordpress:page:2360:chunk:v1:2cf9922a60efbe0b073d85443befef720215c0d1eb4c0bdcce633c08ea63d9da"
+            },
+            {
+              "document_id": "wordpress:page:2360",
+              "title": "Understanding RAG and Retrieval-Based AI Systems",
+              "heading_path": [
+                "What RAG Actually Is"
+              ],
+              "chunk_id": "wordpress:page:2360:chunk:v1:bc0b7d00c17d41eeb3790e1bd81258cb43d71038c5fef2a96abec5a964207af7"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "chunking-failure-001",
+        "category": "exact_answer",
+        "query": "How can poor chunking reduce retrieval quality?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:page:2366",
+              "title": "How RAG Works in Retrieval-Based AI Systems",
+              "heading_path": [
+                "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                "Step 3: Chunking"
+              ],
+              "chunk_id": "wordpress:page:2366:chunk:v1:a04b7e1517199858a707d7ce3829a7d00ba32e29593f8bd9a3bb3a51002f9022"
+            },
+            {
+              "document_id": "wordpress:page:2366",
+              "title": "How RAG Works in Retrieval-Based AI Systems",
+              "heading_path": [
+                "Takeaways"
+              ],
+              "chunk_id": "wordpress:page:2366:chunk:v1:aef986c42ad2012660f687300872c5b2ed79d78d9618ecf69297b39d6c0d788b",
+              "role": "supporting"
+            },
+            {
+              "document_id": "wordpress:page:2374",
+              "title": "When and Why AI Retrieval Fails",
+              "heading_path": [
+                "Reason 1: The Content Is Too Hard to Interpret"
+              ],
+              "chunk_id": "wordpress:page:2374:chunk:v1:1fd0d122c85f543f202641b2c13dbe68eea1edd29fed0ba6e6cca9b671257731"
+            },
+            {
+              "document_id": "wordpress:page:2374",
+              "title": "When and Why AI Retrieval Fails",
+              "heading_path": [],
+              "chunk_id": "wordpress:page:2374:chunk:v1:eab607338adf6d8e89e78a2fb2ba4a8fb80b7c99940f2fbf2beed3ba4c71f919"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "embeddings-001",
+        "category": "exact_answer",
+        "query": "What role do embeddings play in semantic search?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:glossary:2385",
+              "title": "Embeddings",
+              "heading_path": [],
+              "chunk_id": "wordpress:glossary:2385:chunk:v1:d464f828b83a0321c8feb322073de1c3d4834cacba078308071454a17ca41f7c"
+            },
+            {
+              "document_id": "wordpress:page:2366",
+              "title": "How RAG Works in Retrieval-Based AI Systems",
+              "heading_path": [
+                "Phase 2: Retrieval — Searching the Knowledge Environment",
+                "Step 7: Query Embedding"
+              ],
+              "chunk_id": "wordpress:page:2366:chunk:v1:5e62c38f1e45a880828f86c8efe27e3882fdeae298a59e3810b7fbb6499c8ff5"
+            },
+            {
+              "document_id": "wordpress:page:2366",
+              "title": "How RAG Works in Retrieval-Based AI Systems",
+              "heading_path": [
+                "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                "Step 4: Embeddings"
+              ],
+              "chunk_id": "wordpress:page:2366:chunk:v1:e608885ce1731409468b9d616ddc59062c0f90a8528615449f0a5d5202fe80e2"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "documentation-engineering-001",
+        "category": "confusable",
+        "query": "What does a documentation engineer do?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:page:2672",
+              "title": "Documentation Engineering",
+              "heading_path": [
+                "How It Differs From the Roles It’s Confused With",
+                "Spanning Design and Implementation"
+              ],
+              "chunk_id": "wordpress:page:2672:chunk:v1:4bc57314e9b4fc97ed56fe54aa2c30217cf2470e5d0d738d54f9192defa5ef2a"
+            },
+            {
+              "document_id": "wordpress:page:2672",
+              "title": "Documentation Engineering",
+              "heading_path": [
+                "What the Discipline Spans"
+              ],
+              "chunk_id": "wordpress:page:2672:chunk:v1:49ec96efb031a85bcd9176a8ee83effaf23d5de887ab5ab30e1d011da77e5474"
+            },
+            {
+              "document_id": "wordpress:page:2647",
+              "title": "The Knowledge Infrastructure",
+              "heading_path": [
+                "Documentation Engineering Spans Both Layers"
+              ],
+              "chunk_id": "wordpress:page:2647:chunk:v1:7de3fe71b9e49ba633dfcaeccbc9b16da90c0b74725c586e658514a910416eb3"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null,
+        "notes": "The current top-ranked chunk is an introductory fragment rather than a substantive answer."
+      },
+      {
+        "id": "documentation-engineering-002",
+        "category": "exact_answer",
+        "query": "What is documentation engineering?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:page:2672",
+              "title": "Documentation Engineering",
+              "heading_path": [
+                "From Producing Content to Designing Systems"
+              ],
+              "chunk_id": "wordpress:page:2672:chunk:v1:f3d8001bbc75f33400e9de7bdabd684d2d1cd22999a62fe294c3f05383debb32"
+            },
+            {
+              "document_id": "wordpress:page:2672",
+              "title": "Documentation Engineering",
+              "heading_path": [],
+              "chunk_id": "wordpress:page:2672:chunk:v1:96a50252ff41f329b6bc8082287c9e2a964e7b6beb98ae19842fe4dff1d2edf5"
+            },
+            {
+              "document_id": "wordpress:page:2672",
+              "title": "Documentation Engineering",
+              "heading_path": [
+                "Takeaways"
+              ],
+              "chunk_id": "wordpress:page:2672:chunk:v1:e6900d03c9efe2af2bcf4421adc390cc2f01e2ff036c3166146014d5b9e77f0d",
+              "role": "supporting"
+            },
+            {
+              "document_id": "wordpress:page:2647",
+              "title": "The Knowledge Infrastructure",
+              "heading_path": [
+                "Documentation Engineering Spans Architecture and Operations Layers"
+              ],
+              "chunk_id": "wordpress:page:2647:chunk:v1:d6663229376cac5076072c319c3116d3af5f183913fac54e63db3efb3472cfd1"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "context-001",
+        "category": "ambiguous",
+        "query": "How important is context in documentation?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:page:252",
+              "title": "Context Setting in Documentation",
+              "heading_path": [
+                "Why This Matters"
+              ],
+              "chunk_id": "wordpress:page:252:chunk:v1:6df1776ad2accd5b22bcf979fb5477dbaeaabe485ee70acba1b77fc98c04d2ec"
+            },
+            {
+              "document_id": "wordpress:page:252",
+              "title": "Context Setting in Documentation",
+              "heading_path": [
+                "Where Does Context Setting Apply?"
+              ],
+              "chunk_id": "wordpress:page:252:chunk:v1:f72d83b8d9fbfbe1ea1c73b051775c9e5b2fd179eb82468c1c98423d87201942"
+            },
+            {
+              "document_id": "wordpress:page:252",
+              "title": "Context Setting in Documentation",
+              "heading_path": [
+                "What Is Context Setting?"
+              ],
+              "chunk_id": "wordpress:page:252:chunk:v1:3cf84d8e7f9c02142218d16ae517d63ca9ef5e0ea2ad86c8f79d551add895a2d"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null
+      },
+      {
+        "id": "cms-selection-001",
+        "category": "confusable",
+        "query": "How do I choose a CMS for documentation?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [
+            {
+              "document_id": "wordpress:post:1938",
+              "title": "How to Choose a CCMS Based on Your Documentation Needs",
+              "heading_path": [
+                "Documentation Systems Shape How Teams Work"
+              ],
+              "chunk_id": "wordpress:post:1938:chunk:v1:23309d30167b3a98d3be9b51f674b0b58744a04ea98e38f9e628421694c0ac63"
+            },
+            {
+              "document_id": "wordpress:post:1938",
+              "title": "How to Choose a CCMS Based on Your Documentation Needs",
+              "heading_path": [
+                "Different CCMS Categories Solve Different Problems",
+                "Traditional structured CCMS platforms"
+              ],
+              "chunk_id": "wordpress:post:1938:chunk:v1:c8aca29f6f534499a5cf7f602286ebc893262b382cb57e84ad5372e4dac610e8"
+            },
+            {
+              "document_id": "wordpress:post:1938",
+              "title": "How to Choose a CCMS Based on Your Documentation Needs",
+              "heading_path": [],
+              "chunk_id": "wordpress:post:1938:chunk:v1:1e8bd284d05914e3b7ef1433e02a5b200ea0e266fb0944205619742a51933529"
+            }
+          ],
+          "expect_empty": false
+        },
+        "answer": null,
+        "notes": "The CMS glossary currently ranks above the more directly useful CCMS selection article."
+      },
+      {
+        "id": "unanswerable-kubernetes-001",
+        "category": "unanswerable",
+        "query": "How do I configure Kubernetes horizontal pod autoscaling?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [],
+          "expect_empty": true
+        },
+        "answer": null
+      },
+      {
+        "id": "unanswerable-cooking-001",
+        "category": "unanswerable",
+        "query": "How long should I roast a whole chicken?",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [],
+          "expect_empty": true
+        },
+        "answer": null
+      },
+      {
+        "id": "unanswerable-developer-transition-001",
+        "category": "unanswerable",
+        "query": "How do I transition from technical writer to software developer",
+        "filters": {
+          "source": "wordpress"
+        },
+        "retrieval": {
+          "relevant_sources": [],
+          "expect_empty": true
+        },
+        "answer": null,
+        "notes": "Current retrieval returns documentation-career content above the minimum score even though the indexed site does not answer this question."
+      }
+    ]
+  }

@@ -34,11 +34,6 @@ SMOKE_QUERIES: list[dict[str, Any]] = [
         "filters": {"source": "wordpress"},
     },
     {
-        "label": "Out-of-domain control",
-        "query": "How do I configure Kubernetes horizontal pod autoscaling?",
-        "filters": {"source": "wordpress"},
-    },
-    {
     "label": "RAG basics",
     "query": "What is retrieval-augmented generation?",
     "filters": {"source": "wordpress"},
@@ -56,6 +51,11 @@ SMOKE_QUERIES: list[dict[str, Any]] = [
     {
         "label": "Documentation engineering",
         "query": "What does a documentation engineer do?",
+        "filters": {"source": "wordpress"},
+    },
+    {
+        "label": "Doc engineering",
+        "query": "What is documentation engineering?",
         "filters": {"source": "wordpress"},
     },
     {
