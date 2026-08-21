@@ -26,7 +26,10 @@ MARKDOWN_OUTPUT_PATH = OUTPUT_DIRECTORY / "retrieval_baseline.md"
 EVALUATION_DEPTH = 5
 
 
-def _format_percentage(value: float) -> str:
+def _format_percentage(value: float | None) -> str:
+    if value is None:
+        return "N/A"
+
     return f"{value * 100:.1f}%"
 
 
@@ -181,6 +184,11 @@ def main() -> None:
             f"**{_format_percentage(summary.mean_precision_at_k)}**"
         ),
         (
+            "- Precision-evaluable answerable cases: "
+            f"**{summary.precision_evaluable_cases}"
+            f"/{summary.answerable_cases}**"
+        ),
+        (
             "- Mean recall@5: "
             f"**{_format_percentage(summary.mean_recall_at_k)}**"
         ),
@@ -204,6 +212,14 @@ def main() -> None:
     for case_report in case_reports:
         evaluation = case_report["evaluation"]
         passed = case_report["passed"]
+
+        precision = evaluation["precision_at_k"]
+
+        precision_display = (
+            f"`{precision:.3f}`"
+            if precision is not None
+            else "`N/A` — unjudged results present"
+        )
 
         markdown.extend(
             [
@@ -239,9 +255,13 @@ def main() -> None:
                         f"`{str(evaluation['hit_at_k']).lower()}`"
                     ),
                     "",
+                    f"**Precision@5:** {precision_display}",
+                    "",
                     (
-                        "**Precision@5:** "
-                        f"`{evaluation['precision_at_k']:.3f}`"
+                        "**Retrieval judgments:** "
+                        f"`{evaluation['relevant_retrieved_count']} relevant`, "
+                        f"`{evaluation['nonrelevant_retrieved_count']} nonrelevant`, "
+                        f"`{evaluation['unjudged_retrieved_count']} unjudged`"
                     ),
                     "",
                     (

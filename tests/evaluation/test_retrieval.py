@@ -5,6 +5,7 @@ import pytest
 from rag_service.evaluation.models import (
     EvaluationCase,
     GoldSource,
+    NonRelevantSource,
     RetrievalExpectation,
 )
 from rag_service.evaluation.retrieval import (
@@ -15,6 +16,16 @@ from rag_service.evaluation.retrieval import (
 from rag_service.models.chunk import DocumentChunk
 from rag_service.retrieval.models import RetrievalResult
 
+
+def make_nonrelevant_source(
+    chunk_id: str,
+) -> NonRelevantSource:
+    return NonRelevantSource(
+        document_id="wordpress:page:1",
+        title="Test document",
+        heading_path=["Test section"],
+        chunk_id=chunk_id,
+    )
 
 def make_chunk(
     *,
@@ -58,6 +69,7 @@ def make_result(
 def make_case(
     *,
     relevant_sources: list[GoldSource],
+    nonrelevant_sources: list[NonRelevantSource] | None = None,
 ) -> EvaluationCase:
     return EvaluationCase(
         id="test-001",
@@ -65,6 +77,7 @@ def make_case(
         query="Test query",
         retrieval=RetrievalExpectation(
             relevant_sources=relevant_sources,
+            nonrelevant_sources=nonrelevant_sources or [],
         ),
     )
 
@@ -78,7 +91,10 @@ def test_retrieval_case_scores_relevant_result_at_rank_one() -> None:
                 heading_path=["Test section"],
                 chunk_id="chunk-relevant",
             )
-        ]
+        ],
+        nonrelevant_sources=[
+            make_nonrelevant_source("chunk-other"),
+        ],
     )
 
     results = [
@@ -114,7 +130,11 @@ def test_retrieval_case_scores_relevant_result_at_lower_rank() -> None:
                 heading_path=["Test section"],
                 chunk_id="chunk-relevant",
             )
-        ]
+        ],
+        nonrelevant_sources=[
+            make_nonrelevant_source("chunk-other-1"),
+            make_nonrelevant_source("chunk-other-2"),
+        ],
     )
 
     results = [
@@ -159,7 +179,10 @@ def test_retrieval_case_calculates_partial_recall() -> None:
                 heading_path=["Section two"],
                 chunk_id="chunk-2",
             ),
-        ]
+        ],
+        nonrelevant_sources=[
+            make_nonrelevant_source("chunk-other"),
+        ],
     )
 
     results = [
@@ -194,7 +217,10 @@ def test_retrieval_case_scores_no_relevant_results() -> None:
                 heading_path=["Test section"],
                 chunk_id="chunk-relevant",
             )
-        ]
+        ],
+        nonrelevant_sources=[
+            make_nonrelevant_source("chunk-other"),
+        ],
     )
 
     results = [
@@ -307,7 +333,10 @@ def test_retrieval_case_only_evaluates_top_k_results() -> None:
                 heading_path=["Test section"],
                 chunk_id="chunk-relevant",
             )
-        ]
+        ],
+        nonrelevant_sources=[
+            make_nonrelevant_source("chunk-other"),
+        ],
     )
 
     results = [
@@ -362,6 +391,8 @@ def test_summarize_retrieval_evaluations() -> None:
             expected_empty=False,
             retrieved_count=5,
             relevant_retrieved_count=2,
+            nonrelevant_retrieved_count=3,
+            unjudged_retrieved_count=0,
             hit_at_k=True,
             precision_at_k=0.4,
             recall_at_k=1.0,
@@ -374,6 +405,8 @@ def test_summarize_retrieval_evaluations() -> None:
             expected_empty=False,
             retrieved_count=5,
             relevant_retrieved_count=1,
+            nonrelevant_retrieved_count=4,
+            unjudged_retrieved_count=0,
             hit_at_k=True,
             precision_at_k=0.2,
             recall_at_k=0.5,
@@ -386,8 +419,10 @@ def test_summarize_retrieval_evaluations() -> None:
             expected_empty=True,
             retrieved_count=0,
             relevant_retrieved_count=0,
+            nonrelevant_retrieved_count=0,
+            unjudged_retrieved_count=0,
             hit_at_k=False,
-            precision_at_k=0.0,
+            precision_at_k=None,
             recall_at_k=0.0,
             reciprocal_rank=0.0,
             empty_result_correct=True,
@@ -398,8 +433,10 @@ def test_summarize_retrieval_evaluations() -> None:
             expected_empty=True,
             retrieved_count=3,
             relevant_retrieved_count=0,
+            nonrelevant_retrieved_count=3,
+            unjudged_retrieved_count=0,
             hit_at_k=False,
-            precision_at_k=0.0,
+            precision_at_k=None,
             recall_at_k=0.0,
             reciprocal_rank=0.0,
             empty_result_correct=False,
@@ -414,6 +451,7 @@ def test_summarize_retrieval_evaluations() -> None:
 
     assert summary.hit_rate_at_k == 1.0
     assert summary.mean_precision_at_k == pytest.approx(0.3)
+    assert summary.precision_evaluable_cases == 2
     assert summary.mean_recall_at_k == pytest.approx(0.75)
     assert summary.mean_reciprocal_rank == pytest.approx(0.75)
 
@@ -508,3 +546,38 @@ def test_supporting_source_alone_does_not_count_as_hit() -> None:
     assert evaluation.precision_at_k == 1.0
     assert evaluation.recall_at_k == 0.5
     assert evaluation.reciprocal_rank == 0.0
+
+def test_retrieval_case_does_not_calculate_precision_with_unjudged_result() -> None:
+    case = make_case(
+        relevant_sources=[
+            GoldSource(
+                document_id="wordpress:page:1",
+                title="Test document",
+                heading_path=["Test section"],
+                chunk_id="chunk-relevant",
+            )
+        ]
+    )
+
+    results = [
+        make_result(
+            chunk_id="chunk-relevant",
+            score=0.90,
+        ),
+        make_result(
+            chunk_id="chunk-unjudged",
+            score=0.80,
+        ),
+    ]
+
+    evaluation = evaluate_retrieval_case(
+        case,
+        results,
+        k=2,
+    )
+
+    assert evaluation.relevant_retrieved_count == 1
+    assert evaluation.nonrelevant_retrieved_count == 0
+    assert evaluation.unjudged_retrieved_count == 1
+    assert evaluation.precision_at_k is None
+    assert evaluation.recall_at_k == 1.0

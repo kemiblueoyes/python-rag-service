@@ -31,6 +31,15 @@ class GoldSource(BaseModel):
     chunk_id: str | None = None
     role: GoldSourceRole = "primary"
 
+class NonRelevantSource(BaseModel):
+    """A source explicitly judged not relevant to an evaluation query."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    document_id: str
+    title: str
+    heading_path: list[str] = Field(default_factory=list)
+    chunk_id: str | None = None
 
 class RetrievalExpectation(BaseModel):
     """Expected retrieval behavior for one evaluation case."""
@@ -38,6 +47,7 @@ class RetrievalExpectation(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     relevant_sources: list[GoldSource] = Field(default_factory=list)
+    nonrelevant_sources: list[NonRelevantSource] = Field(default_factory=list)
     expect_empty: bool = False
 
     @model_validator(mode="after")
@@ -77,6 +87,25 @@ class RetrievalExpectation(BaseModel):
                 "Relevant sources must not contain duplicate chunk IDs."
             )
 
+        nonrelevant_source_keys = [
+        (
+            source.document_id,
+            tuple(source.heading_path),
+            source.chunk_id,
+        )
+        for source in self.nonrelevant_sources
+        ]
+
+        if len(nonrelevant_source_keys) != len(set(nonrelevant_source_keys)):
+            raise ValueError(
+                "Nonrelevant sources must not contain duplicate chunk IDs."
+            )
+
+        if set(source_keys) & set(nonrelevant_source_keys):
+            raise ValueError(
+                "A source cannot be both relevant and nonrelevant."
+            )
+        
         return self
 
 

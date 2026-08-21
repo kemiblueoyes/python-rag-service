@@ -6,6 +6,7 @@ from rag_service.evaluation.models import (
     EvaluationCase,
     EvaluationDataset,
     GoldSource,
+    NonRelevantSource,
     RetrievalExpectation,
 )
 
@@ -216,6 +217,81 @@ def test_retrieval_expectation_requires_primary_source() -> None:
                     heading_path=["Supporting section"],
                     chunk_id="supporting-chunk",
                     role="supporting",
+                )
+            ],
+        )
+
+def test_retrieval_expectation_accepts_nonrelevant_sources() -> None:
+    expectation = RetrievalExpectation(
+        relevant_sources=[make_source("primary-chunk")],
+        nonrelevant_sources=[
+            NonRelevantSource(
+                document_id="document-2",
+                title="Other document",
+                heading_path=["Unrelated section"],
+                chunk_id="nonrelevant-chunk",
+            )
+        ],
+    )
+
+    assert expectation.nonrelevant_sources[0].chunk_id == "nonrelevant-chunk"
+
+
+def test_retrieval_expectation_accepts_nonrelevant_sources_for_empty_case() -> None:
+    expectation = RetrievalExpectation(
+        expect_empty=True,
+        nonrelevant_sources=[
+            NonRelevantSource(
+                document_id="document-2",
+                title="Other document",
+                heading_path=["Unrelated section"],
+                chunk_id="nonrelevant-chunk",
+            )
+        ],
+    )
+
+    assert expectation.expect_empty is True
+    assert len(expectation.nonrelevant_sources) == 1
+
+
+def test_retrieval_expectation_rejects_duplicate_nonrelevant_sources() -> None:
+    source = NonRelevantSource(
+        document_id="document-2",
+        title="Other document",
+        heading_path=["Unrelated section"],
+        chunk_id="nonrelevant-chunk",
+    )
+
+    with pytest.raises(
+        ValidationError,
+        match="Nonrelevant sources must not contain duplicate",
+    ):
+        RetrievalExpectation(
+            relevant_sources=[make_source("primary-chunk")],
+            nonrelevant_sources=[source, source],
+        )
+
+
+def test_retrieval_expectation_rejects_source_with_conflicting_judgments() -> None:
+    with pytest.raises(
+        ValidationError,
+        match="cannot be both relevant and nonrelevant",
+    ):
+        RetrievalExpectation(
+            relevant_sources=[
+                GoldSource(
+                    document_id="document-1",
+                    title="Test document",
+                    heading_path=["Test section"],
+                    chunk_id="chunk-1",
+                )
+            ],
+            nonrelevant_sources=[
+                NonRelevantSource(
+                    document_id="document-1",
+                    title="Test document",
+                    heading_path=["Test section"],
+                    chunk_id="chunk-1",
                 )
             ],
         )

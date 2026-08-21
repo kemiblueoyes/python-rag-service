@@ -295,7 +295,7 @@
               "document_id": "wordpress:page:2672",
               "title": "Documentation Engineering",
               "heading_path": [
-                "How It Differs From the Roles It’s Confused With",
+                "How It Differs From the Roles It's Confused With",
                 "Spanning Design and Implementation"
               ],
               "chunk_id": "wordpress:page:2672:chunk:v1:4bc57314e9b4fc97ed56fe54aa2c30217cf2470e5d0d738d54f9192defa5ef2a"
@@ -309,13 +309,13 @@
               "chunk_id": "wordpress:page:2672:chunk:v1:49ec96efb031a85bcd9176a8ee83effaf23d5de887ab5ab30e1d011da77e5474"
             },
             {
-              "document_id": "wordpress:page:2647",
-              "title": "The Knowledge Infrastructure",
-              "heading_path": [
-                "Documentation Engineering Spans Both Layers"
-              ],
-              "chunk_id": "wordpress:page:2647:chunk:v1:7de3fe71b9e49ba633dfcaeccbc9b16da90c0b74725c586e658514a910416eb3"
-            }
+                "document_id": "wordpress:page:2647",
+                "title": "The Knowledge Infrastructure",
+                "heading_path": [
+                  "Documentation Engineering Spans Architecture and Operations Layers"
+                ],
+                "chunk_id": "wordpress:page:2647:chunk:v1:d6663229376cac5076072c319c3116d3af5f183913fac54e63db3efb3472cfd1"
+              }
           ],
           "expect_empty": false
         },

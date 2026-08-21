@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from rag_service.evaluation.models import (
     EvaluationCase,
     GoldSource,
+    NonRelevantSource,
 )
 from rag_service.retrieval.models import RetrievalResult
 
@@ -20,11 +21,14 @@ class RetrievalEvaluationResult:
     expected_empty: bool
     retrieved_count: int
     relevant_retrieved_count: int
+    nonrelevant_retrieved_count: int
+    unjudged_retrieved_count: int
     # Did at least one primary, answer-bearing result appear
     # within the top X retrieved chunks?
     hit_at_k: bool
     # What proportion of the results evaluated were relevant?
-    precision_at_k: float
+    # None means at least one retrieved result has not been judged yet.
+    precision_at_k: float | None
     # What proportion of all known relevant sources did we retrieve?
     recall_at_k: float
     # How high did the first correct result appear? 
@@ -40,20 +44,20 @@ class RetrievalEvaluationResult:
     empty_result_correct: bool | None
 
 
-def _matches_gold_source(
+def _matches_source(
     result: RetrievalResult,
-    gold_source: GoldSource,
+    source: GoldSource | NonRelevantSource,
 ) -> bool:
-    """Return whether a retrieved chunk matches a gold source."""
+    """Return whether a retrieved chunk matches a judged source."""
 
     chunk = result.chunk
 
-    if gold_source.chunk_id is not None:
-        return chunk.chunk_id == gold_source.chunk_id
+    if source.chunk_id is not None:
+        return chunk.chunk_id == source.chunk_id
 
     return (
-        chunk.document_id == gold_source.document_id
-        and chunk.heading_path == gold_source.heading_path
+        chunk.document_id == source.document_id
+        and chunk.heading_path == source.heading_path
     )
 
 
@@ -63,22 +67,38 @@ def evaluate_retrieval_case(
     *,
     k: int,
 ) -> RetrievalEvaluationResult:
-    """Evaluate ranked retrieval results for one gold test case."""
+    """Evaluate ranked retrieval results for one gold test case.
+    all returned results judged → calculate Precision@5
+    any returned result unjudged → Precision@5 = None"""
 
     if k < 1:
         raise ValueError("k must be at least 1.")
 
     ranked_results = list(results[:k])
 
+    nonrelevant_sources = case.retrieval.nonrelevant_sources
+
     if case.retrieval.expect_empty:
+        nonrelevant_count = sum(
+            any(
+                _matches_source(result, source)
+                for source in nonrelevant_sources
+            )
+            for result in ranked_results
+        )
+
+        unjudged_count = len(ranked_results) - nonrelevant_count
+
         return RetrievalEvaluationResult(
             case_id=case.id,
             query=case.query,
             expected_empty=True,
             retrieved_count=len(ranked_results),
             relevant_retrieved_count=0,
+            nonrelevant_retrieved_count=nonrelevant_count,
+            unjudged_retrieved_count=unjudged_count,
             hit_at_k=False,
-            precision_at_k=0.0,
+            precision_at_k=None,
             recall_at_k=0.0,
             reciprocal_rank=0.0,
             empty_result_correct=not ranked_results,
@@ -89,24 +109,45 @@ def evaluate_retrieval_case(
     matched_gold_indexes: set[int] = set()
     relevant_result_ranks: list[int] = []
     primary_result_ranks: list[int] = []
+    nonrelevant_count = 0
+    unjudged_count = 0
 
     for rank, result in enumerate(ranked_results, start=1):
+        relevant_match_found = False
+
         for gold_index, gold_source in enumerate(gold_sources):
             if gold_index in matched_gold_indexes:
                 continue
 
-            if _matches_gold_source(result, gold_source):
+            if _matches_source(result, gold_source):
                 matched_gold_indexes.add(gold_index)
                 relevant_result_ranks.append(rank)
+                relevant_match_found = True
 
                 if gold_source.role == "primary":
                     primary_result_ranks.append(rank)
 
                 break
 
+        if relevant_match_found:
+            continue
+
+        if any(
+            _matches_source(result, source)
+            for source in nonrelevant_sources
+        ):
+            nonrelevant_count += 1
+        else:
+            unjudged_count += 1
+
     relevant_count = len(relevant_result_ranks)
 
-    precision_at_k = relevant_count / k
+    precision_at_k = (
+        relevant_count / k
+        if unjudged_count == 0
+        else None
+    )
+
     recall_at_k = relevant_count / len(gold_sources)
 
     reciprocal_rank = (
@@ -121,6 +162,8 @@ def evaluate_retrieval_case(
         expected_empty=False,
         retrieved_count=len(ranked_results),
         relevant_retrieved_count=relevant_count,
+        nonrelevant_retrieved_count=nonrelevant_count,
+        unjudged_retrieved_count=unjudged_count,
         hit_at_k=bool(primary_result_ranks),
         precision_at_k=precision_at_k,
         recall_at_k=recall_at_k,
@@ -135,15 +178,13 @@ class RetrievalEvaluationSummary:
     total_cases: int
     answerable_cases: int
     unanswerable_cases: int
-
     hit_rate_at_k: float
-    mean_precision_at_k: float
+    mean_precision_at_k: float | None
     mean_recall_at_k: float
     mean_reciprocal_rank: float
-
     unanswerable_accuracy: float
     overall_success_rate: float
-
+    precision_evaluable_cases: int
 
 def summarize_retrieval_evaluations(
     evaluations: Sequence[RetrievalEvaluationResult],
@@ -179,15 +220,18 @@ def summarize_retrieval_evaluations(
         if answerable_count
         else 0.0
     )
+    precision_values = [
+        evaluation.precision_at_k
+        for evaluation in answerable
+        if evaluation.precision_at_k is not None
+    ]
 
+    # So mean precision will be based only on cases whose retrieved 
+    # results have actually been fully judged.
     mean_precision = (
-        sum(
-            evaluation.precision_at_k
-            for evaluation in answerable
-        )
-        / answerable_count
-        if answerable_count
-        else 0.0
+        sum(precision_values) / len(precision_values)
+        if precision_values
+        else None
     )
 
     mean_recall = (
@@ -243,4 +287,5 @@ def summarize_retrieval_evaluations(
         mean_reciprocal_rank=mean_reciprocal_rank,
         unanswerable_accuracy=unanswerable_accuracy,
         overall_success_rate=overall_success_rate,
+        precision_evaluable_cases=len(precision_values),
     )
