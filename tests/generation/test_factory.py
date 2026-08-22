@@ -1,13 +1,15 @@
 from unittest.mock import MagicMock
 
+from pytest import MonkeyPatch
+
 from rag_service.config import Settings
 from rag_service.generation.factory import create_answer_generator
 
 
 def test_create_answer_generator_builds_configured_dependencies(
-    monkeypatch,
+    monkeypatch: MonkeyPatch,
 ) -> None:
-    settings = Settings(
+    settings = Settings(  # type: ignore[call-arg]
         generation_model="gpt-5.6-terra",
         generation_reasoning_effort="low",
         generation_context_budget_tokens=8_000,
@@ -95,7 +97,7 @@ def test_create_answer_generator_builds_configured_dependencies(
 
 
 def test_create_answer_generator_does_not_require_openai_credentials() -> None:
-    settings = Settings(
+    settings = Settings(  # type: ignore[call-arg]
         openai_api_key=None,
         _env_file=None,
     )

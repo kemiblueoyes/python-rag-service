@@ -26,6 +26,8 @@ class RetrievalEvaluationResult:
     # Did at least one primary, answer-bearing result appear
     # within the top X retrieved chunks?
     hit_at_k: bool
+    # How many primary, answer-bearing gold sources were retrieved?
+    primary_retrieved_count: int
     # What proportion of the results evaluated were relevant?
     # None means at least one retrieved result has not been judged yet.
     precision_at_k: float | None
@@ -102,6 +104,7 @@ def evaluate_retrieval_case(
             recall_at_k=0.0,
             reciprocal_rank=0.0,
             empty_result_correct=not ranked_results,
+            primary_retrieved_count=0,
         )
 
     gold_sources = case.retrieval.relevant_sources
@@ -142,11 +145,12 @@ def evaluate_retrieval_case(
 
     relevant_count = len(relevant_result_ranks)
 
-    precision_at_k = (
-        relevant_count / k
-        if unjudged_count == 0
-        else None
-    )
+    if unjudged_count > 0:
+        precision_at_k = None
+    elif ranked_results:
+        precision_at_k = relevant_count / len(ranked_results)
+    else:
+        precision_at_k = 0.0
 
     recall_at_k = relevant_count / len(gold_sources)
 
@@ -169,6 +173,7 @@ def evaluate_retrieval_case(
         recall_at_k=recall_at_k,
         reciprocal_rank=reciprocal_rank,
         empty_result_correct=None,
+        primary_retrieved_count=len(primary_result_ranks),
     )
 
 @dataclass(frozen=True, slots=True)

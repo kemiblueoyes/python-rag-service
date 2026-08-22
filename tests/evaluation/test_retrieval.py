@@ -398,6 +398,7 @@ def test_summarize_retrieval_evaluations() -> None:
             recall_at_k=1.0,
             reciprocal_rank=1.0,
             empty_result_correct=None,
+            primary_retrieved_count=1
         ),
         RetrievalEvaluationResult(
             case_id="answerable-2",
@@ -412,6 +413,7 @@ def test_summarize_retrieval_evaluations() -> None:
             recall_at_k=0.5,
             reciprocal_rank=0.5,
             empty_result_correct=None,
+            primary_retrieved_count=1,
         ),
         RetrievalEvaluationResult(
             case_id="unanswerable-1",
@@ -426,6 +428,7 @@ def test_summarize_retrieval_evaluations() -> None:
             recall_at_k=0.0,
             reciprocal_rank=0.0,
             empty_result_correct=True,
+            primary_retrieved_count=0,
         ),
         RetrievalEvaluationResult(
             case_id="unanswerable-2",
@@ -440,6 +443,7 @@ def test_summarize_retrieval_evaluations() -> None:
             recall_at_k=0.0,
             reciprocal_rank=0.0,
             empty_result_correct=False,
+            primary_retrieved_count=0,
         ),
     ]
 
@@ -581,3 +585,31 @@ def test_retrieval_case_does_not_calculate_precision_with_unjudged_result() -> N
     assert evaluation.unjudged_retrieved_count == 1
     assert evaluation.precision_at_k is None
     assert evaluation.recall_at_k == 1.0
+
+def test_retrieval_case_calculates_precision_from_returned_results() -> None:
+    case = make_case(
+        relevant_sources=[
+            GoldSource(
+                document_id="wordpress:page:1",
+                title="Test document",
+                heading_path=["Test section"],
+                chunk_id="chunk-relevant",
+            )
+        ]
+    )
+
+    results = [
+        make_result(
+            chunk_id="chunk-relevant",
+            score=0.90,
+        )
+    ]
+
+    evaluation = evaluate_retrieval_case(
+        case,
+        results,
+        k=5,
+    )
+
+    assert evaluation.retrieved_count == 1
+    assert evaluation.precision_at_k == 1.0

@@ -1,11 +1,13 @@
 from unittest.mock import MagicMock
 
+from pytest import MonkeyPatch
+
 from rag_service.config import Settings
 from rag_service.retrieval.factory import create_retrieval_service
 
 
 def test_create_retrieval_service_builds_configured_dependencies(
-    monkeypatch,
+    monkeypatch: MonkeyPatch,
 ) -> None:
     settings = Settings(retrieval_min_score=0.42)
 

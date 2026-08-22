@@ -2,7 +2,7 @@ from rag_service.config import Settings
 
 
 def test_wordpress_settings_have_expected_defaults() -> None:
-    settings = Settings(
+    settings = Settings(  # type: ignore[call-arg]
         wordpress_base_url="https://example.com",
         _env_file=None,
     )
@@ -16,7 +16,7 @@ def test_wordpress_settings_have_expected_defaults() -> None:
 
 
 def test_wordpress_collections_can_include_custom_post_types() -> None:
-    settings = Settings(
+    settings = Settings(  # type: ignore[call-arg]
         wordpress_base_url="https://example.com",
         wordpress_collections=("posts", "pages", "glossary"),
         _env_file=None,
@@ -26,7 +26,7 @@ def test_wordpress_collections_can_include_custom_post_types() -> None:
 
 
 def test_retrieval_provider_settings_have_expected_defaults() -> None:
-    settings = Settings(_env_file=None)
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
 
     assert settings.embedding_provider == "voyage"
     assert settings.embedding_model == "voyage-4-lite"
@@ -37,7 +37,7 @@ def test_retrieval_provider_settings_have_expected_defaults() -> None:
     assert settings.qdrant_collection == "rag_chunks"
 
 def test_generation_settings_have_expected_defaults() -> None:
-    settings = Settings(_env_file=None)
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
 
     assert settings.generation_provider == "openai"
     assert settings.generation_model == "gpt-5.6-terra"

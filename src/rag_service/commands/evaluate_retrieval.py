@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from rag_service.evaluation.models import EvaluationCase
 from rag_service.config import settings
 from rag_service.evaluation.dataset import load_evaluation_dataset
 from rag_service.evaluation.retrieval import (
@@ -47,14 +48,27 @@ def _serialize_result(
         "title": chunk.title,
         "heading_path": chunk.heading_path,
         "url": chunk.url,
+        "text": chunk.text,
     }
 
 
 def _case_passed(
+    case: EvaluationCase,
     evaluation: RetrievalEvaluationResult,
 ) -> bool:
     if evaluation.expected_empty:
         return evaluation.empty_result_correct is True
+
+    if case.category == "multi_section":
+        required_primary_count = sum(
+            source.role == "primary"
+            for source in case.retrieval.relevant_sources
+        )
+
+        return (
+            evaluation.primary_retrieved_count
+            == required_primary_count
+        )
 
     return evaluation.hit_at_k
 
@@ -108,7 +122,7 @@ def main() -> None:
                     for source in case.retrieval.relevant_sources
                 ],
                 "evaluation": asdict(evaluation),
-                "passed": _case_passed(evaluation),
+                "passed": _case_passed(case, evaluation),
                 "retrieved_results": [
                     _serialize_result(rank, result)
                     for rank, result in enumerate(
@@ -255,6 +269,11 @@ def main() -> None:
                         f"`{str(evaluation['hit_at_k']).lower()}`"
                     ),
                     "",
+                    (
+                        "**Primary retrieved count:** "
+                        f"`{evaluation['primary_retrieved_count']}`"
+                    ),
+                    "",
                     f"**Precision@5:** {precision_display}",
                     "",
                     (
@@ -309,6 +328,7 @@ def main() -> None:
                         ),
                         f"   - Heading: {heading}",
                         f"   - Chunk: `{result['chunk_id']}`",
+                        f"   - Text: {result['text']}",
                         "",
                     ]
                 )

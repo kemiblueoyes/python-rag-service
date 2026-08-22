@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from rag_service.api.models import AnswerRequest, SearchRequest
+from rag_service.api.models import AnswerRequest, SearchFilters, SearchRequest
 
 
 def test_search_request_defaults() -> None:
@@ -39,10 +39,10 @@ def test_search_request_rejects_limit_below_one() -> None:
 def test_search_request_accepts_supported_filters() -> None:
     request = SearchRequest(
         query="What is RAG?",
-        filters={
-            "source": "wordpress",
-            "content_type": ["page", "post"],
-        },
+        filters=SearchFilters(
+            source="wordpress",
+            content_type=["page", "post"],
+        ),
     )
 
     assert request.filters is not None
@@ -52,9 +52,11 @@ def test_search_request_accepts_supported_filters() -> None:
 
 def test_search_request_rejects_unsupported_filter() -> None:
     with pytest.raises(ValidationError):
-        SearchRequest(
-            query="What is RAG?",
-            filters={"site_id": "the-doc-landscape"},
+        SearchRequest.model_validate(
+            {
+                "query": "What is RAG?",
+                "filters": {"site_id": "the-doc-landscape"},
+            }
         )
 
 def test_answer_request_defaults() -> None:
@@ -83,10 +85,10 @@ def test_answer_request_rejects_empty_query(query: str) -> None:
 def test_answer_request_accepts_supported_filters() -> None:
     request = AnswerRequest(
         query="Why does retrieval fail?",
-        filters={
-            "source": "wordpress",
-            "content_type": ["page", "post"],
-        },
+        filters=SearchFilters(
+            source="wordpress",
+            content_type=["page", "post"],
+        ),
     )
 
     assert request.filters is not None
@@ -96,15 +98,19 @@ def test_answer_request_accepts_supported_filters() -> None:
 
 def test_answer_request_rejects_unsupported_filter() -> None:
     with pytest.raises(ValidationError):
-        AnswerRequest(
-            query="Why does retrieval fail?",
-            filters={"site_id": "the-doc-landscape"},
+        AnswerRequest.model_validate(
+            {
+                "query": "Why does retrieval fail?",
+                "filters": {"site_id": "the-doc-landscape"},
+            }
         )
 
 
 def test_answer_request_rejects_retrieval_limit() -> None:
     with pytest.raises(ValidationError):
-        AnswerRequest(
-            query="Why does retrieval fail?",
-            limit=5,
+        AnswerRequest.model_validate(
+            {
+                "query": "Why does retrieval fail?",
+                "limit": 5,
+            }
         )

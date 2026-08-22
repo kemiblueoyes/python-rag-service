@@ -5,7 +5,11 @@ from unittest.mock import MagicMock
 from pytest import MonkeyPatch
 
 from rag_service.commands import index_wordpress
-from rag_service.connectors.wordpress.connector import WordPressConnectorProfile
+from rag_service.config import settings
+from rag_service.connectors.wordpress.connector import (
+    WordPressConnector,
+    WordPressConnectorProfile,
+)
 from rag_service.models.canonical_document import CanonicalDocument
 
 
@@ -30,17 +34,17 @@ def test_writes_canonical_documents_and_processed_chunks(
         metadata={"language": "en-US"},
     )
     monkeypatch.setattr(
-        index_wordpress.settings,
+        settings,
         "wordpress_base_url",
         "https://example.test",
     )
     monkeypatch.setattr(
-        index_wordpress.settings,
+        settings,
         "wordpress_collections",
         ("posts", "pages", "glossary"),
     )
     monkeypatch.setattr(
-        index_wordpress.settings,
+        settings,
         "wordpress_profile",
         "doc_landscape",
     )
@@ -57,7 +61,7 @@ def test_writes_canonical_documents_and_processed_chunks(
     client_factory = MagicMock(return_value=client)
     monkeypatch.setattr(index_wordpress, "WordPressClient", client_factory)
     monkeypatch.setattr(
-        index_wordpress.WordPressConnector,
+        WordPressConnector,
         "fetch_documents",
         lambda _connector: [document],
     )
