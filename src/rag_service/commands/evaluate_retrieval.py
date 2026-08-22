@@ -6,9 +6,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from rag_service.evaluation.models import EvaluationCase
 from rag_service.config import settings
 from rag_service.evaluation.dataset import load_evaluation_dataset
+from rag_service.evaluation.models import EvaluationCase
 from rag_service.evaluation.retrieval import (
     RetrievalEvaluationResult,
     evaluate_retrieval_case,
