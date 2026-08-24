@@ -20,6 +20,7 @@ class WordPressConnectorProfile:
     metadata_mappings: tuple[WordPressMetadataMapping, ...] = ()
     document_enrichers: tuple[WordPressDocumentEnricher, ...] = ()
     preserved_block_classes: frozenset[str] = frozenset()
+    excluded_section_headings: frozenset[str] = frozenset()
 
 
 class WordPressConnector:

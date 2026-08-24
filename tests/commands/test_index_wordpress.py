@@ -29,6 +29,8 @@ def test_writes_canonical_documents_and_processed_chunks(
                 <h3>Diagram title</h3>
                 <p>Diagram content.</p>
             </div>
+            <h2>Related Terms</h2>
+            <p>Semantic search.</p>
         """,
         content_type="page",
         metadata={"language": "en-US"},
@@ -49,7 +51,8 @@ def test_writes_canonical_documents_and_processed_chunks(
         "doc_landscape",
     )
     profile = WordPressConnectorProfile(
-        preserved_block_classes=frozenset({"wp-block-accordion"})
+        preserved_block_classes=frozenset({"wp-block-accordion"}),
+        excluded_section_headings=frozenset({"Related Terms"}),
     )
     profile_resolver = MagicMock(return_value=profile)
     monkeypatch.setattr(
@@ -93,3 +96,8 @@ def test_writes_canonical_documents_and_processed_chunks(
     assert "wp-block-accordion" in chunk_payload[0]["block_metadata"][0]["html"]
     assert chunk_payload[0]["anchor"] == "components"
     assert chunk_payload[0]["metadata"] == {"language": "en-US"}
+    assert len(chunk_payload) == 1
+    assert all(
+        "Related Terms" not in chunk["heading_path"]
+        for chunk in chunk_payload
+    )

@@ -125,4 +125,10 @@ DOC_LANDSCAPE_WORDPRESS_PROFILE = WordPressConnectorProfile(
     ),
     document_enrichers=(enrich_doc_landscape_series,),
     preserved_block_classes=frozenset({"wp-block-accordion"}),
+    excluded_section_headings=frozenset(
+        {
+            "Related Terms",
+            "Related Content",
+        }
+    ),
 )

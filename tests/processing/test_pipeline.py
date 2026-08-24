@@ -66,3 +66,42 @@ def test_reprocessing_produces_identical_chunks() -> None:
     second_run = process_document(document)
 
     assert first_run == second_run
+    
+def test_excludes_sections_by_heading() -> None:
+    document = make_document(
+        body="""
+        <h1>Glossary term</h1>
+        <p>Main definition.</p>
+
+        <h2>Related Terms</h2>
+        <p>Semantic search, embeddings, vector database.</p>
+
+        <h3>More Related Terms</h3>
+        <p>This nested content should also be excluded.</p>
+
+        <h2>Why This Matters</h2>
+        <p>This content should remain.</p>
+        """
+    )
+
+    chunks = process_document(
+        document,
+        excluded_section_headings=frozenset({"Related Terms"}),
+    )
+
+    assert len(chunks) == 2
+
+    assert chunks[0].heading_path == ["Glossary term"]
+    assert chunks[0].text == "Main definition."
+
+    assert chunks[1].heading_path == [
+        "Glossary term",
+        "Why This Matters",
+    ]
+    assert chunks[1].text == "This content should remain."
+
+    assert all("Related Terms" not in chunk.heading_path for chunk in chunks)
+    assert all(
+        "nested content should also be excluded" not in chunk.text
+        for chunk in chunks
+    )

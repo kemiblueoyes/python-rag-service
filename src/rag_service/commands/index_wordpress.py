@@ -111,6 +111,9 @@ def run(
             preserve_block=build_wordpress_block_preserver(
                 profile.preserved_block_classes
             ),
+            excluded_section_headings=(
+                profile.excluded_section_headings
+            ),
         )
 
     vector_index_stats = None
