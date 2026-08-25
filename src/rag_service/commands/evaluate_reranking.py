@@ -38,24 +38,6 @@ CANDIDATE_DEPTH = 20
 EVALUATION_DEPTH = 5
 RERANK_MODEL = "rerank-2.5"
 
-"""
-RERANK_INSTRUCTION = (
-    "Rank each document by whether it contains information that directly "
-    "answers or materially helps answer the user's question. "
-    "For a multi-part question, a document is relevant if it directly "
-    "addresses at least one requested part. "
-    "Do not rank a document highly merely because it discusses a related "
-    "topic, role, technology, or domain. "
-    "If the document is topically related but does not provide information "
-    "the user asked for, treat it as low relevance."
-)
-"""
-
-def _build_rerank_query(query: str) -> str:
-    return (
-        f"User question: {query}"
-    )
-
 class _RerankingResult(Protocol):
     index: int
     relevance_score: float
@@ -141,7 +123,6 @@ def _judgment_for_result(
             return "nonrelevant"
 
     return "unjudged"
-
 
 def _case_passed(
     case: EvaluationCase,
