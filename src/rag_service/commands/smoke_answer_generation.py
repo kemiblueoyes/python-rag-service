@@ -65,7 +65,7 @@ def write_report(
     *,
     model: str,
     collection: str,
-    min_score: float,
+    support_cutoff: float,
     output_path: Path = OUTPUT_PATH,
 ) -> Path:
     """Write a reviewable Markdown smoke-test report."""
@@ -79,7 +79,7 @@ def write_report(
         "",
         f"Qdrant collection: `{collection}`",
         "",
-        f"Minimum retrieval score: `{min_score:.2f}`",
+        f"Retrieval support cutoff: `{support_cutoff:.2f}`",
         "",
         "## Question",
         "",
@@ -166,7 +166,7 @@ def main() -> None:
         answer,
         model=settings.generation_model,
         collection=settings.qdrant_collection,
-        min_score=settings.retrieval_min_score,
+        support_cutoff=settings.retrieval_support_cutoff,
     )
 
     print(

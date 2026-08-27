@@ -1873,6 +1873,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
+    { name = "bm25s" },
     { name = "fastapi" },
     { name = "openai" },
     { name = "pydantic-settings" },
@@ -1900,6 +1901,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.15.0" },
+    { name = "bm25s", specifier = ">=0.3.11" },
     { name = "fastapi", specifier = ">=0.139.2" },
     { name = "openai", specifier = ">=3.1.0" },
     { name = "pydantic-settings", specifier = ">=2.14.2" },

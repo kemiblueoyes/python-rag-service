@@ -188,7 +188,6 @@ class RetrievalEvaluationSummary:
     mean_recall_at_k: float
     mean_reciprocal_rank: float
     unanswerable_accuracy: float
-    overall_success_rate: float
     precision_evaluable_cases: int
 
 def summarize_retrieval_evaluations(
@@ -270,18 +269,6 @@ def summarize_retrieval_evaluations(
         else 0.0
     )
 
-    successful_cases = (
-        sum(
-            evaluation.hit_at_k
-            for evaluation in answerable
-        )
-        + correct_empty
-    )
-
-    overall_success_rate = (
-        successful_cases / len(evaluations)
-    )
-
     return RetrievalEvaluationSummary(
         total_cases=len(evaluations),
         answerable_cases=answerable_count,
@@ -291,6 +278,5 @@ def summarize_retrieval_evaluations(
         mean_recall_at_k=mean_recall,
         mean_reciprocal_rank=mean_reciprocal_rank,
         unanswerable_accuracy=unanswerable_accuracy,
-        overall_success_rate=overall_success_rate,
         precision_evaluable_cases=len(precision_values),
     )

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -30,7 +31,19 @@ class Settings(BaseSettings):
     qdrant_collection: str = "rag_chunks"
 
     # Retrieval
-    retrieval_min_score: float = 0.50
+    lexical_corpus_path: Path = Path(
+        "data/wordpress-chunks.json"
+    )
+
+    retrieval_vector_candidate_depth: int = 20
+    retrieval_lexical_candidate_depth: int = 20
+    retrieval_fused_candidate_depth: int = 20
+    retrieval_rrf_k: int = 60
+    retrieval_support_cutoff: float = 0.70
+
+    # Reranking
+    reranking_provider: str = "voyage"
+    reranking_model: str = "rerank-2.5"
 
     # Answer generation
     generation_provider: Literal["openai"] = "openai"

@@ -144,7 +144,7 @@ def main() -> None:
         "",
         f"Collection: `{settings.qdrant_collection}`",
         "",
-        f"Minimum retrieval score: `{settings.retrieval_min_score:.2f}`",
+        f"Support cutoff: `{settings.retrieval_support_cutoff:.2f}`",
         "",
         (
             "Each query returns the five highest-ranked chunks "
@@ -177,8 +177,8 @@ def main() -> None:
                     "**Results returned:** 0",
                     "",
                     (
-                        "**Check:** PASS — no results met the minimum "
-                        f"similarity score of {settings.retrieval_min_score:.2f}."
+                        "**Check:** PASS — no results passed the "
+                        f"support cutoff of {settings.retrieval_support_cutoff:.2f}."
                     ),
                     "",
                     "---",
@@ -191,7 +191,7 @@ def main() -> None:
         for result in results:
             if previous_score is not None and result.score > previous_score:
                 raise RuntimeError(
-                    f"Results were not in descending similarity order for: {query}"
+                    f"Results were not in descending rerank-score order for: {query}"
                 )
             previous_score = result.score
 

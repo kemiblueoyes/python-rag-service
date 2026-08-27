@@ -93,6 +93,7 @@ def main() -> None:
 
     evaluations: list[RetrievalEvaluationResult] = []
     case_reports: list[dict[str, Any]] = []
+    case_passes: list[bool] = []
 
     for case in dataset.cases:
         results = retrieval_service.retrieve(
@@ -109,6 +110,12 @@ def main() -> None:
             k=EVALUATION_DEPTH,
         )
 
+        passed = _case_passed(
+            case,
+            evaluation,
+        )
+        case_passes.append(passed)
+
         evaluations.append(evaluation)
 
         case_reports.append(
@@ -122,7 +129,7 @@ def main() -> None:
                     for source in case.retrieval.relevant_sources
                 ],
                 "evaluation": asdict(evaluation),
-                "passed": _case_passed(case, evaluation),
+                "passed": passed,
                 "retrieved_results": [
                     _serialize_result(rank, result)
                     for rank, result in enumerate(
@@ -134,6 +141,10 @@ def main() -> None:
             }
         )
 
+    overall_success_rate = (
+        sum(case_passes) / len(case_passes)
+    )
+
     summary = summarize_retrieval_evaluations(evaluations)
 
     generated_at = datetime.now(UTC).isoformat()
@@ -144,9 +155,12 @@ def main() -> None:
         "generated_at": generated_at,
         "collection": settings.qdrant_collection,
         "embedding_model": settings.embedding_model,
-        "minimum_retrieval_score": settings.retrieval_min_score,
+        "support_cutoff": settings.retrieval_support_cutoff,
         "k": EVALUATION_DEPTH,
-        "summary": asdict(summary),
+        "summary": {
+            **asdict(summary),
+            "overall_success_rate": overall_success_rate,
+        },
         "cases": case_reports,
     }
 
@@ -178,8 +192,8 @@ def main() -> None:
         f"Embedding model: `{settings.embedding_model}`",
         "",
         (
-            "Minimum retrieval score: "
-            f"`{settings.retrieval_min_score:.2f}`"
+            "Support cutoff: "
+            f"`{settings.retrieval_support_cutoff:.2f}`"
         ),
         "",
         f"Results evaluated per query: `{EVALUATION_DEPTH}`",
@@ -216,7 +230,7 @@ def main() -> None:
         ),
         (
             "- Overall success rate: "
-            f"**{_format_percentage(summary.overall_success_rate)}**"
+            f"**{_format_percentage(overall_success_rate)}**"
         ),
         "",
         "## Case results",
@@ -308,7 +322,7 @@ def main() -> None:
         if not retrieved_results:
             markdown.extend(
                 [
-                    "No results met the retrieval threshold.",
+                    "No results passed the support cutoff.",
                     "",
                 ]
             )

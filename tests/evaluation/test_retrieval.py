@@ -460,7 +460,6 @@ def test_summarize_retrieval_evaluations() -> None:
     assert summary.mean_reciprocal_rank == pytest.approx(0.75)
 
     assert summary.unanswerable_accuracy == 0.5
-    assert summary.overall_success_rate == 0.75
 
 
 def test_summarize_retrieval_evaluations_rejects_empty_input() -> None:
