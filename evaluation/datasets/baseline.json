@@ -1,6 +1,6 @@
 {
     "dataset_id": "doc-landscape-baseline",
-    "version": "1.2",
+    "version": "1.3",
     "description": "Initial human-labeled retrieval baseline for The Doc Landscape WordPress index. This is our 'Gold' retrieval dataset",
     "cases": [
         {
@@ -998,6 +998,81 @@
             },
             "answer": null,
             "notes": "Current retrieval returns documentation-career content above the minimum score even though the indexed site does not answer this question."
+        },
+        {
+            "id": "unanswerable-hybrid-implementation-001",
+            "category": "unanswerable",
+            "query": "How do I implement hybrid search with BM25 and vector search in Python?",
+            "filters": {
+                "source": "wordpress"
+            },
+            "retrieval": {
+                "relevant_sources": [],
+                "nonrelevant_sources": [],
+                "expect_empty": true
+            },
+            "answer": null,
+            "notes": "The corpus discusses BM25, semantic search, and hybrid retrieval conceptually but does not provide a Python implementation."
+        },
+        {
+            "id": "unanswerable-vector-db-selection-001",
+            "category": "unanswerable",
+            "query": "How do I choose between Qdrant and Pinecone for a documentation RAG system?",
+            "filters": {
+                "source": "wordpress"
+            },
+            "retrieval": {
+                "relevant_sources": [],
+                "nonrelevant_sources": [],
+                "expect_empty": true
+            },
+            "answer": null,
+            "notes": "The corpus discusses vector databases and retrieval architecture but does not compare Qdrant and Pinecone."
+        },
+        {
+            "id": "unanswerable-embedding-finetuning-001",
+            "category": "unanswerable",
+            "query": "How do I fine-tune an embedding model on technical documentation?",
+            "filters": {
+                "source": "wordpress"
+            },
+            "retrieval": {
+                "relevant_sources": [],
+                "nonrelevant_sources": [],
+                "expect_empty": true
+            },
+            "answer": null,
+            "notes": "The corpus explains embeddings and semantic retrieval but does not explain how to fine-tune an embedding model."
+        },
+        {
+            "id": "unanswerable-cms-migration-001",
+            "category": "unanswerable",
+            "query": "How do I migrate documentation from WordPress to a headless CMS?",
+            "filters": {
+                "source": "wordpress"
+            },
+            "retrieval": {
+                "relevant_sources": [],
+                "nonrelevant_sources": [],
+                "expect_empty": true
+            },
+            "answer": null,
+            "notes": "The corpus discusses documentation platforms and CMS selection but does not provide a WordPress-to-headless-CMS migration procedure."
+        },
+        {
+            "id": "unanswerable-doc-engineering-certification-001",
+            "category": "unanswerable",
+            "query": "What certification should I get to become a documentation engineer?",
+            "filters": {
+                "source": "wordpress"
+            },
+            "retrieval": {
+                "relevant_sources": [],
+                "nonrelevant_sources": [],
+                "expect_empty": true
+            },
+            "answer": null,
+            "notes": "The corpus discusses documentation engineering and career evolution but does not recommend certifications for becoming a documentation engineer."
         },
         {
             "id": "synonym-001",

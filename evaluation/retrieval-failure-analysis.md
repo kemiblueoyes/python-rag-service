@@ -1,10 +1,16 @@
 # Retrieval Failure Analysis
 
-## Baseline
+## Purpose
 
-This analysis describes the initial retrieval baseline for the `doc-landscape-baseline` evaluation dataset.
+This report documents the retrieval failures discovered during Phase 10, the experiments used to investigate them, and the current retrieval decision.
 
-The baseline uses:
+The evaluation started with a semantic-search baseline and then tested BM25, hybrid retrieval, Voyage reranking, and an explicit support gate for unsupported questions.
+
+The current evaluation dataset is `doc-landscape-baseline` version `1.3`.
+
+## Initial semantic baseline
+
+The initial baseline used:
 
 - 17 evaluation cases
 - 14 answerable cases
@@ -26,15 +32,14 @@ Baseline results:
 | Unanswerable accuracy | 66.7% |
 | Overall success rate | 88.2% |
 
-- **Primary hit rate@5:** The percentage of answerable cases where at least one primary, answer-bearing source appeared in the top five results.
-- **Mean precision@5:** The average percentage of the top five results that were relevant.
-- **Precision-evaluable answerable cases: The number of answerable cases with enough retrieved results to calculate precision, out of all answerable cases.
-- **Mean recall@5:** The average percentage of the expected relevant sources that appeared in the top five results.
-- **Mean reciprocal rank:** A ranking score that gives more credit when the first relevant result appears near the top.
-- **Unanswerable accuracy:** The percentage of unanswerable cases where retrieval correctly returned no qualifying results.
-- **Overall success rate:** The percentage of all evaluation cases that met their defined success criteria. 
+Fifteen of the 17 cases met their original success criteria. Two failures exposed different retrieval problems:
 
-Fifteen of the 17 cases met their current success criteria. The two failures expose different limitations and should be treated separately.
+1. `multi-section-001` exposed incomplete coverage for a compound query.
+2. `unanswerable-developer-transition-001` exposed false-positive retrieval for an unsupported but semantically adjacent query.
+
+These failures were investigated separately because they require different kinds of fixes.
+
+---
 
 ## Failure 1: Multi-section retrieval does not provide complete coverage
 
@@ -44,50 +49,60 @@ Fifteen of the 17 cases met their current success criteria. The two failures exp
 
 > How can lost context during chunking, weak source authority, and missing metadata each cause retrieval failures?
 
-**Observed result:**
+### Initial semantic-baseline behavior
+
+The semantic baseline retrieved a relevant overview but did not retrieve the separate answer-bearing sections required to cover all parts of the query.
+
+Initial metrics included:
 
 - Primary hit@5: `false`
 - Primary retrieved count: `0`
 - Recall@5: `0.250`
 - Reciprocal rank: `0.000`
-- One relevant result was returned
 
-The retrieved result was the introductory chunk from *When and Why AI Retrieval Fails*. That chunk mentions several of the concepts in the question, including lost context, source authority, and metadata. However, the purpose-built gold set requires the more specific sections that explain each failure mechanism.
+The retrieved overview mentioned several concepts in the question, but the purpose-built gold set requires the specific sections that explain each failure mechanism.
 
 ### Failure type
 
 **Coverage failure for a compound query.**
 
-The retrieval system found a semantically relevant overview, but it did not retrieve the separate answer-bearing sections needed to cover all parts of the question.
+The system can recognize the overall topic while still failing to retrieve enough distinct evidence to answer every part of a compound question.
 
-The `1.000` precision score for this case does not indicate successful retrieval. Only one result cleared the retrieval threshold, and that result was relevant. Precision therefore remained high while recall and primary-source coverage were poor.
+This is not an answerability problem. The corpus does contain the requested information.
 
-This illustrates why precision alone is insufficient for evaluating multi-section questions.
+### Hybrid + reranking result
 
-### Likely cause
+Hybrid retrieval and reranking improved this case substantially, but did not fully solve it.
 
-The current retrieval pipeline embeds the complete question as one query and performs one vector similarity search.
+The final experimental pipeline retrieved five relevant results:
 
-A compound question containing several related subtopics can therefore be represented as one blended semantic signal. A broad overview covering all three concepts may be more similar to that combined signal than any of the narrower sections that explain one concept in depth.
+- Precision@5: `1.000`
+- Recall@5: `0.714`
+- Primary hit@5: `true`
+- Primary retrieved count: `1`
+- Reciprocal rank: `0.200`
+- Top rerank score: `0.812500`
 
-This baseline does not establish which retrieval enhancement will solve the problem. It establishes the behavior that future retrieval experiments need to improve.
+The case still fails because the evaluation requires coverage across multiple specific primary sections, not merely one primary source plus related supporting chunks.
 
-### Future experiments
+The support gate correctly **accepts** this query because the corpus does support it. The remaining failure is therefore specifically a coverage and selection problem.
 
-Potential experiments include:
+### Current interpretation
+
+Hybrid retrieval and reranking improve the candidate set, but a ranking system optimized mainly for individual relevance can still favor broad or overlapping chunks instead of maximizing coverage across separate subtopics.
+
+Potential future approaches include:
 
 - Query decomposition
-- Retrieving candidates separately for individual parts of a compound question
-- Increasing the candidate pool before final selection
-- Hybrid retrieval
-- Reranking
-- Result-diversity or coverage-aware selection
+- Retrieving candidates separately for each part of a compound query
+- Coverage-aware or diversity-aware result selection
+- Increasing the final result depth for compound questions
 
-These are improvement hypotheses, not changes to make during the baseline evaluation.
+No additional coverage mechanism has been selected yet.
 
 ---
 
-## Failure 2: Semantically adjacent content passes the retrieval threshold for an unsupported question
+## Failure 2: Semantically adjacent content is retrieved for an unsupported question
 
 **Case:** `unanswerable-developer-transition-001`
 
@@ -99,109 +114,275 @@ These are improvement hypotheses, not changes to make during the baseline evalua
 
 No qualifying results.
 
-**Observed behavior:**
+### Initial semantic-baseline behavior
 
-Retrieval returned five chunks above the `0.50` threshold. The highest-scoring result was from *Documentation Engineering* at approximately `0.55`, followed by other content about technical-writing careers, documentation work, engineering workflows, and the SDLC.
+The semantic baseline returned documentation-career content above the `0.50` vector-similarity threshold even though none of the indexed sources answered the question.
 
-None of those sources actually answers how to transition into software development.
+The retrieved chunks were genuinely related to concepts in the query, including technical writing, engineering, development, careers, and technical skills. That made the failure more difficult than the original Kubernetes and cooking expected-empty cases, which were far outside the corpus domain.
 
 ### Failure type
 
 **False-positive retrieval for an unsupported but semantically adjacent query.**
 
-This case differs from the Kubernetes and cooking unanswerable cases. Those questions are far outside the indexed site's subject area and correctly return no results. The developer-transition question contains concepts that are strongly represented in the collection:
+The important distinction is:
 
-- technical writers
-- careers
-- engineering
-- development
-- technical skills
+> Semantic similarity is not the same as answerability.
 
-The embeddings therefore identify genuine semantic similarity even though the retrieved content does not provide the answer the user requested.
+A chunk can be meaningfully related to a query without containing the evidence needed to answer it.
 
-### Likely cause
+### Why the original similarity threshold was insufficient
 
-The current minimum-score filter determines whether a chunk is sufficiently similar to return, but semantic similarity is not the same as answerability.
+Vector similarity scores for supported and unsupported queries overlapped. Increasing the global vector threshold enough to remove the developer-transition results would also risk removing valid answerable results.
 
-A chunk can be meaningfully related to a query without containing enough evidence to answer it.
-
-This means the retrieval threshold alone cannot be treated as the system's complete unsupported-question detector.
-
-### Future experiments
-
-Potential retrieval-side experiments include:
-
-- Relevance-score calibration
-- Stronger handling of borderline results
-- Query-to-document intent matching
-- Reranking
-- Additional answerability signals
-
-However, this case is also important for answer evaluation. The answer-generation layer has its own evidence-sufficiency detection. Even when retrieval returns related chunks, the generator should still decline to answer if those chunks do not support the requested conclusion.
-
-The retrieval failure should therefore remain in the baseline rather than being hidden before answer evaluation.
+A global semantic-similarity cutoff was therefore not a safe support gate.
 
 ---
 
-## Successful cases that still reveal retrieval weaknesses
+## Expected-empty experiments
 
-Not every useful finding is a failed case.
+### Standalone BM25
 
-### Synonym retrieval works, but the result set is noisy
+BM25 was tested as a lexical relevance signal over the full indexed corpus.
 
-`synonym-001` passes and retrieves a primary source at rank 1, demonstrating that semantic retrieval can connect differently worded expressions of the same concept.
+Standalone BM25 did not solve the expected-empty problem. The developer-transition query received a strong lexical score because the corpus contains overlapping terms such as *technical writer*, *software*, *developer*, and *transition*.
 
-However:
+The experiment also showed that BM25 is weaker than semantic retrieval when used alone for meaning-based cases such as `synonym-001`.
 
-- Precision@5 is `0.400`.
-- Recall@5 is `0.667`.
-- Three of the five evaluated results are nonrelevant.
+The conclusion was not that BM25 is unsuitable for the project. It was that **BM25 alone is not a safe answerability gate**.
 
-The core semantic behavior works, but result quality drops beyond the strongest matches. This is a useful future benchmark for experiments involving ranking or candidate selection.
+### Hybrid semantic + BM25 retrieval
 
-### Metadata retrieval succeeds, but the strongest answer-bearing result is not ranked first
+The next experiment combined semantic and BM25 retrieval using Reciprocal Rank Fusion (RRF).
 
-`metadata-001` passes, but its reciprocal rank is `0.500`, meaning the first primary answer-bearing source appears at rank 2. Recall@5 is `0.750`.
+The experimental pipeline used:
 
-The rank-1 result is a relevant summary chunk, while a more directly explanatory metadata section appears below it.
+1. Top 20 semantic candidates
+2. Top 20 BM25 candidates
+3. RRF fusion with `k=60`
+4. Top 5 fused results for evaluation
 
-This is primarily a ranking-quality issue rather than a retrieval failure.
+RRF combines ranks instead of directly adding vector and BM25 scores, whose numeric scales are not comparable.
 
-### Confusable content can outrank more task-specific content
+Hybrid retrieval improved answerable-case retrieval and restored cases that standalone BM25 struggled with, including synonym retrieval. However, RRF scores still did not provide a safe answerability boundary.
 
-The CMS-selection case succeeds in retrieving the relevant selection article, but a general CMS glossary result ranks above the more directly useful article.
+This established an important distinction:
 
-This indicates that semantic similarity alone does not always express which source is most useful for the user's task. Source type, intent, specificity, and authority may eventually be useful ranking signals.
+- Hybrid retrieval improved **candidate retrieval**.
+- It did not, by itself, solve **support detection**.
 
-### Updated content is retrievable
+### Hybrid retrieval + Voyage reranking
 
-`updated-content-001` passes with its primary source at rank 1 and recall@5 of `1.000`.
+The next experiment added Voyage `rerank-2.5` after hybrid fusion.
 
-This provides evidence that updated source content can propagate through indexing and become retrievable in the live vector index. The case should remain in the dataset as a regression check for incremental indexing.
+The pipeline became:
+
+```text
+Query
+  ├─> Semantic retrieval: top 20 ─┐
+  │                               ├─> RRF fusion
+  └─> BM25 retrieval: top 20 ─────┘
+                                  ↓
+                         top 20 fused candidates
+                                  ↓
+                         Voyage rerank-2.5
+                                  ↓
+                               top 5
+```
+
+This produced the first useful separation between supported and unsupported queries.
 
 ---
 
-## Baseline conclusions
+## Expanded expected-empty evaluation
 
-The initial semantic-retrieval implementation performs well on direct, concept-focused questions. It also demonstrates the intended benefit of embeddings by retrieving semantically related content when query wording differs from source wording.
+Because the original dataset contained only three expected-empty cases, five additional in-domain but unsupported cases were added.
 
-The baseline exposes three broader limitations:
+The dataset increased from 17 to 22 cases:
 
-1. **Semantic relevance does not guarantee complete coverage.** Compound questions can retrieve a broad overview while missing the individual sections required for a complete answer.
+- 14 answerable
+- 8 expected-empty
 
-2. **Semantic relevance does not guarantee answerability.** Related content can exceed the similarity threshold even when the indexed documentation does not actually answer the user's question.
+The added cases intentionally use concepts that are strongly represented in the corpus while asking for information the corpus does not provide:
 
-3. **Relevant does not necessarily mean best-ranked.** General or summary content can outrank more specific, task-oriented sources.
+- `unanswerable-hybrid-implementation-001`
+- `unanswerable-vector-db-selection-001`
+- `unanswerable-embedding-finetuning-001`
+- `unanswerable-cms-migration-001`
+- `unanswerable-doc-engineering-certification-001`
 
-These limitations are useful baseline findings rather than reasons to tune the system immediately. Changing retrieval before answer evaluation would remove the ability to observe how the generation layer behaves when retrieval is imperfect.
+These are more useful support-gate tests than only using obviously out-of-domain questions.
 
-The next evaluation stage should therefore run answer generation against this unchanged retrieval baseline.
+### Top rerank scores for expected-empty cases
 
-## Handoff to answer evaluation
+| Case | Top rerank score |
+| --- | ---: |
+| `unanswerable-cooking-001` | 0.277344 |
+| `unanswerable-kubernetes-001` | 0.328125 |
+| `unanswerable-cms-migration-001` | 0.390625 |
+| `unanswerable-vector-db-selection-001` | 0.421875 |
+| `unanswerable-doc-engineering-certification-001` | 0.503906 |
+| `unanswerable-hybrid-implementation-001` | 0.578125 |
+| `unanswerable-embedding-finetuning-001` | 0.597656 |
+| `unanswerable-developer-transition-001` | 0.640625 |
 
-Two retrieval cases are particularly important for diagnosing the generation layer:
+The highest unsupported score is `0.640625`.
 
-- `multi-section-001` tests whether the generator correctly handles context that is relevant but incomplete. It should not fabricate the missing explanations.
-- `unanswerable-developer-transition-001` tests whether evidence-sufficiency detection can reject an unsupported question even though retrieval returned semantically related chunks.
+The lowest top rerank score among answerable cases is `0.812500`, from `multi-section-001`.
 
-Answer evaluation should distinguish generation failures from retrieval failures. A weak final answer caused by missing evidence should not automatically be attributed to the language model, and a good refusal can demonstrate correct generation behavior even when retrieval itself returned false-positive results.
+The current dataset therefore shows a clear separation between unsupported and supported queries.
+
+---
+
+## Provisional support gate
+
+A provisional query-level support cutoff of `0.70` was evaluated.
+
+The rule is:
+
+```text
+if top rerank score < 0.70:
+    return no qualifying results
+else:
+    keep the reranked result set
+```
+
+The cutoff is applied at the **query level**, not separately to each chunk.
+
+For example, an accepted query may contain lower-ranked chunks with rerank scores below `0.70`. Those chunks are not individually removed merely because they fall below the query-level support threshold.
+
+### Support-gate results
+
+| Metric | Result |
+| --- | ---: |
+| Total cases | 22 |
+| Correct gate decisions | 22/22 |
+| Overall gate accuracy | 100.0% |
+| Answerable queries accepted | 14/14 |
+| Answerable acceptance rate | 100.0% |
+| Expected-empty queries rejected | 8/8 |
+| Expected-empty rejection rate | 100.0% |
+| False positives | 0 |
+| False negatives | 0 |
+
+The `0.70` cutoff therefore correctly separates all supported and unsupported queries in the current evaluation dataset.
+
+The cutoff remains **provisional**, not universal. It must be treated as model-, corpus-, and pipeline-specific and revalidated when those conditions change.
+
+---
+
+## Final hybrid + reranking retrieval results
+
+The final experimental pipeline uses:
+
+- `voyage-4-lite` embeddings
+- Semantic candidate depth: 20
+- BM25 candidate depth: 20
+- RRF fusion with `k=60`
+- 20 fused candidates sent to `rerank-2.5`
+- Evaluation depth: 5
+- Query-level support cutoff: `0.70`
+
+Answerable-case retrieval results:
+
+| Metric | Result |
+| --- | ---: |
+| Answerable cases | 14 |
+| Successful answerable cases | 13 |
+| Answerable success rate | 92.9% |
+| Primary hit rate@5 | 100.0% |
+| Mean precision@5 | 94.3% |
+| Precision-evaluable answerable cases | 14/14 |
+| Mean recall@5 | 76.5% |
+| Mean reciprocal rank | 0.907 |
+
+The single remaining answerable-case failure is `multi-section-001`.
+
+This is compatible with the support-gate result: the gate correctly determines that the corpus supports the query, while the retrieval benchmark correctly identifies that the top-five result set does not provide the required primary-source coverage.
+
+---
+
+## Other useful findings
+
+### Synonym retrieval remains strong
+
+`synonym-001` is a useful regression case because BM25 alone struggled with it.
+
+Under hybrid retrieval plus reranking:
+
+- Primary hit@5: `true`
+- Precision@5: `1.000`
+- Recall@5: `0.833`
+- Reciprocal rank: `1.000`
+- All five evaluated results are relevant
+
+This shows why the lexical component should complement rather than replace semantic retrieval.
+
+### Ranking improves, but relevance is not identical to usefulness
+
+Cases such as CMS selection and documentation engineering continue to show that several chunks can be relevant while differing in specificity or usefulness.
+
+Reranking improves ordering, but future source-authority, specificity, or task-intent signals may still improve which relevant result appears first.
+
+### Updated content remains retrievable
+
+`updated-content-001` continues to pass and retrieves current revised documentation successfully.
+
+It remains useful as a regression check that updated source content propagates through indexing and remains retrievable after retrieval-pipeline changes.
+
+---
+
+## Current conclusions
+
+The Phase 10 experiments support the following conclusions:
+
+1. **Vector similarity alone is not a reliable support gate.** Semantically adjacent content can score highly even when it does not answer the query.
+
+2. **BM25 alone is not a reliable support gate.** Lexical overlap can also be strong for unsupported questions, and BM25 alone loses meaning-based retrieval quality.
+
+3. **Hybrid semantic + BM25 retrieval improves the candidate pool.** RRF combines complementary semantic and lexical signals without requiring their raw scores to share a scale.
+
+4. **Reranking is the stage that produced useful support separation.** Voyage reranking over the hybrid candidate pool separated the tested answerable and expected-empty queries.
+
+5. **A `0.70` top-rerank-score gate is a viable provisional support rule for the current corpus and models.** It achieved 100% gate accuracy across the current 22-case dataset.
+
+6. **Support detection and retrieval coverage are separate problems.** `multi-section-001` correctly passes the support gate while still failing the retrieval-coverage requirement.
+
+7. **An LLM support grader is not currently required.** The hybrid + reranking pipeline provides a non-generative support signal that succeeds on the current evaluation set. An LLM grader can remain a future fallback if the score separation stops holding as the corpus or query distribution changes.
+
+---
+
+## Current decision
+
+The current retrieval candidate for production is:
+
+```text
+Semantic retrieval: top 20
+        +
+BM25 retrieval: top 20
+        ↓
+RRF fusion (k=60)
+        ↓
+Top 20 fused candidates
+        ↓
+Voyage rerank-2.5
+        ↓
+Top rerank score < 0.70?
+        ├─ yes -> no qualifying results
+        └─ no  -> return reranked results
+```
+
+This decision is based on the current evaluation dataset rather than on the assumption that any one retrieval score is universally meaningful.
+
+The `0.70` threshold should remain configurable and should be regression-tested whenever the corpus, embedding model, reranking model, chunking strategy, or retrieval configuration changes.
+
+The production `RetrievalService` should not be considered updated until this experimental pipeline is deliberately integrated and covered by service/API tests.
+
+---
+
+## Remaining retrieval limitation
+
+`multi-section-001` remains the only known answerable-case failure in the final experiment.
+
+It should be tracked separately from the expected-empty problem. The current pipeline can determine that the query is supported, but it does not yet guarantee that a top-five result set covers every distinct subtopic required by a compound query.
+
+This limitation can either be investigated further during Phase 10 or documented as a known retrieval limitation before moving fully into answer evaluation. In either case, answer evaluation should continue to verify that generation does not invent missing details when retrieved context is incomplete.
