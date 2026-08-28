@@ -9,6 +9,8 @@ SYSTEM_MESSAGE = (
     "- Do not use outside knowledge or make unsupported claims.\n"
     "- If the sources do not contain enough information, state that "
     "the available sources are insufficient.\n"
+    "- Answer only what the user asked. Ignore source content that is "
+    "related to the topic but not needed to answer the question.\n"
     "- Cite supporting sources inline using their citation IDs, "
     "such as [S1].\n"
     "- Place each citation immediately after the claim it supports.\n"

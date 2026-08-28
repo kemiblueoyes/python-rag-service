@@ -115,29 +115,7 @@ class AnswerExpectation(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     expected_sufficient_evidence: bool
-    acceptable_citation_chunk_ids: list[str] = Field(default_factory=list)
     required_points: list[str] = Field(default_factory=list)
-
-    @model_validator(mode="after")
-    def validate_answer_expectation(self) -> Self:
-        if (
-            self.expected_sufficient_evidence
-            and not self.acceptable_citation_chunk_ids
-        ):
-            raise ValueError(
-                "Sufficient answers must define acceptable citation chunks."
-            )
-
-        if (
-            not self.expected_sufficient_evidence
-            and self.acceptable_citation_chunk_ids
-        ):
-            raise ValueError(
-                "Insufficient answers must not define citation chunks."
-            )
-
-        return self
-
 
 class EvaluationCase(BaseModel):
     """One question and its expected retrieval and answer behavior."""
@@ -151,29 +129,6 @@ class EvaluationCase(BaseModel):
     retrieval: RetrievalExpectation
     answer: AnswerExpectation | None = None
     notes: str | None = None
-
-    @model_validator(mode="after")
-    def validate_answer_sources(self) -> Self:
-        if self.answer is None:
-            return self
-
-        retrieval_chunk_ids = {
-            source.chunk_id
-            for source in self.retrieval.relevant_sources
-        }
-
-        answer_chunk_ids = set(
-            self.answer.acceptable_citation_chunk_ids
-        )
-
-        if not answer_chunk_ids.issubset(retrieval_chunk_ids):
-            raise ValueError(
-                "Answer citation chunks must also be relevant "
-                "retrieval sources."
-            )
-
-        return self
-
 
 class EvaluationDataset(BaseModel):
     """Versioned collection of evaluation cases."""

@@ -150,7 +150,7 @@ def test_write_report_includes_answer_and_validated_sources(
         answer,
         model="gpt-5.6-terra",
         collection="rag_chunks",
-        min_score=0.50,
+        support_cutoff=0.70,
         output_path=output_path,
     )
 

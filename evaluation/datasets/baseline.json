@@ -1,7 +1,7 @@
 {
     "dataset_id": "doc-landscape-baseline",
-    "version": "1.3",
-    "description": "Initial human-labeled retrieval baseline for The Doc Landscape WordPress index. This is our 'Gold' retrieval dataset",
+    "version": "1.5",
+    "description": "Human-labeled retrieval and answer evaluation dataset for The Doc Landscape WordPress index.",
     "cases": [
         {
             "id": "terminology-001",
@@ -50,7 +50,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 4: Embeddings"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:e608885ce1731409468b9d616ddc59062c0f90a8528615449f0a5d5202fe80e2"
@@ -68,7 +68,12 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Inconsistent terminology weakens the signals retrieval uses to connect a query with the right content, increasing the chance that relevant content is missed or ranked less effectively."
+                ]
+            }
         },
         {
             "id": "chunking-001",
@@ -83,7 +88,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 3: Chunking"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:a04b7e1517199858a707d7ce3829a7d00ba32e29593f8bd9a3bb3a51002f9022"
@@ -102,7 +107,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 3: Chunking",
                             "Retrieval Systems Change How Documentation Gets Consumed"
                         ],
@@ -113,7 +118,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 3: Chunking",
                             "Retrieval Systems Change How Documentation Gets Consumed"
                         ],
@@ -142,7 +147,12 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Heading-aware chunking uses a document's heading structure to keep related content and its section context together, producing more coherent units for retrieval."
+                ]
+            }
         },
         {
             "id": "metadata-001",
@@ -166,7 +176,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 5: Vector Databases"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:f7e1052ca169267580bdc5a9f56ba94f93c5cce1e722c6bed361f77915727a1c",
@@ -223,7 +233,13 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Metadata gives retrieval systems information beyond the text itself that can help identify, filter, or select more appropriate content.",
+                    "Missing or inconsistent metadata can make it harder for the retrieval system to select the right content."
+                ]
+            }
         },
         {
             "id": "bm25-001",
@@ -278,7 +294,13 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "BM25 is a lexical or keyword-based retrieval method that ranks content based on how well query terms match the text.",
+                    "BM25 and semantic search use different signals: BM25 focuses on term matching, while semantic search focuses on meaning, so they can complement each other in retrieval."
+                ]
+            }
         },
         {
             "id": "rag-001",
@@ -340,7 +362,12 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Retrieval-augmented generation combines retrieval with generation: the system first retrieves relevant information and then uses that retrieved context to help generate an answer."
+                ]
+            }
         },
         {
             "id": "chunking-failure-001",
@@ -355,7 +382,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 3: Chunking"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:a04b7e1517199858a707d7ce3829a7d00ba32e29593f8bd9a3bb3a51002f9022"
@@ -387,7 +414,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 3: Chunking",
                             "Retrieval Systems Change How Documentation Gets Consumed"
                         ],
@@ -400,7 +427,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 2: Retrieval — Searching the Knowledge Environment",
+                            "Phase 2: Retrieval \u2014 Searching the Knowledge Environment",
                             "Step 8: Retrieval"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:a75220400fdcb6004a49da35d2cf309a91996c7dbd49f840c1a341ef2e076962"
@@ -409,7 +436,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 3: Generation — Constructing the Final Response",
+                            "Phase 3: Generation \u2014 Constructing the Final Response",
                             "Step 10: Augmentation and Prompt Construction"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:3310a5ae7b5638592162160ccaf5bdaf5da88754ba32737ce4613b8fe8fff8dd"
@@ -417,7 +444,12 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Poor chunking can break useful context or create chunks that are difficult for the retrieval system to interpret, making relevant information harder to retrieve accurately."
+                ]
+            }
         },
         {
             "id": "embeddings-001",
@@ -438,7 +470,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 2: Retrieval — Searching the Knowledge Environment",
+                            "Phase 2: Retrieval \u2014 Searching the Knowledge Environment",
                             "Step 7: Query Embedding"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:5e62c38f1e45a880828f86c8efe27e3882fdeae298a59e3810b7fbb6499c8ff5"
@@ -447,7 +479,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 4: Embeddings"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:e608885ce1731409468b9d616ddc59062c0f90a8528615449f0a5d5202fe80e2"
@@ -486,7 +518,12 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Embeddings represent the meaning of content and queries as numerical vectors so semantic search can compare them by meaning rather than relying only on exact keyword matches."
+                ]
+            }
         },
         {
             "id": "documentation-engineering-001",
@@ -526,7 +563,7 @@
                         "document_id": "wordpress:page:2672",
                         "title": "Documentation Engineering",
                         "heading_path": [
-                            "How It Differs From the Roles It’s Confused With"
+                            "How It Differs From the Roles It\u2019s Confused With"
                         ],
                         "chunk_id": "wordpress:page:2672:chunk:v1:43301038db46c893e3ef8a5784fa5d9b1402e771114724bd6b344d38d9ccc8e8",
                         "role": "supporting"
@@ -584,8 +621,14 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null,
-            "notes": "The current top-ranked chunk is an introductory fragment rather than a substantive answer."
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "A documentation engineer works on the systems that make documentation function reliably, not only on producing individual documents.",
+                    "The role spans both documentation architecture and practical implementation or operations, connecting system design with workflows, tooling, and infrastructure."
+                ]
+            },
+            "notes": "The current top-ranked chunk is the substantive What the Discipline Spans section."
         },
         {
             "id": "documentation-engineering-002",
@@ -648,7 +691,13 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Documentation engineering is the discipline of designing and building the systems that support how documentation is created, managed, delivered, and maintained.",
+                    "It shifts the focus from producing individual pieces of content to designing the larger documentation system."
+                ]
+            }
         },
         {
             "id": "context-001",
@@ -725,7 +774,12 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Context is important because it gives readers the surrounding information they need to understand and apply documentation correctly."
+                ]
+            }
         },
         {
             "id": "cms-selection-001",
@@ -781,7 +835,7 @@
                         "document_id": "wordpress:post:1938",
                         "title": "How to Choose a CCMS Based on Your Documentation Needs",
                         "heading_path": [
-                            "A CCMS Isn’t Just a Writing Tool Decision"
+                            "A CCMS Isn\u2019t Just a Writing Tool Decision"
                         ],
                         "chunk_id": "wordpress:post:1938:chunk:v1:c1831e22bca471cd88f2ee9abfec94553bd0b5f6af2a4d40fea70fe18586dc3b",
                         "role": "primary"
@@ -789,8 +843,14 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null,
-            "notes": "The CMS glossary currently ranks above the more directly useful CCMS selection article."
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Choose a documentation content system based on the documentation team's needs, workflows, and the problems the system needs to solve rather than treating it only as a writing-tool choice.",
+                    "Different types of content management platforms support different documentation needs, so the choice should fit the team's content structure, publishing, collaboration, and operational requirements."
+                ]
+            },
+            "notes": "The top articles are all from the CCMS-selection article."
         },
         {
             "id": "unanswerable-kubernetes-001",
@@ -846,7 +906,10 @@
                 ],
                 "expect_empty": true
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": false,
+                "required_points": []
+            }
         },
         {
             "id": "unanswerable-cooking-001",
@@ -903,7 +966,10 @@
                 ],
                 "expect_empty": true
             },
-            "answer": null
+            "answer": {
+                "expected_sufficient_evidence": false,
+                "required_points": []
+            }
         },
         {
             "id": "unanswerable-developer-transition-001",
@@ -996,8 +1062,11 @@
                 ],
                 "expect_empty": true
             },
-            "answer": null,
-            "notes": "Current retrieval returns documentation-career content above the minimum score even though the indexed site does not answer this question."
+            "answer": {
+                "expected_sufficient_evidence": false,
+                "required_points": []
+            },
+            "notes": "Current retrieval returns nothing."
         },
         {
             "id": "unanswerable-hybrid-implementation-001",
@@ -1011,7 +1080,10 @@
                 "nonrelevant_sources": [],
                 "expect_empty": true
             },
-            "answer": null,
+            "answer": {
+                "expected_sufficient_evidence": false,
+                "required_points": []
+            },
             "notes": "The corpus discusses BM25, semantic search, and hybrid retrieval conceptually but does not provide a Python implementation."
         },
         {
@@ -1026,7 +1098,10 @@
                 "nonrelevant_sources": [],
                 "expect_empty": true
             },
-            "answer": null,
+            "answer": {
+                "expected_sufficient_evidence": false,
+                "required_points": []
+            },
             "notes": "The corpus discusses vector databases and retrieval architecture but does not compare Qdrant and Pinecone."
         },
         {
@@ -1041,7 +1116,10 @@
                 "nonrelevant_sources": [],
                 "expect_empty": true
             },
-            "answer": null,
+            "answer": {
+                "expected_sufficient_evidence": false,
+                "required_points": []
+            },
             "notes": "The corpus explains embeddings and semantic retrieval but does not explain how to fine-tune an embedding model."
         },
         {
@@ -1056,7 +1134,10 @@
                 "nonrelevant_sources": [],
                 "expect_empty": true
             },
-            "answer": null,
+            "answer": {
+                "expected_sufficient_evidence": false,
+                "required_points": []
+            },
             "notes": "The corpus discusses documentation platforms and CMS selection but does not provide a WordPress-to-headless-CMS migration procedure."
         },
         {
@@ -1071,7 +1152,10 @@
                 "nonrelevant_sources": [],
                 "expect_empty": true
             },
-            "answer": null,
+            "answer": {
+                "expected_sufficient_evidence": false,
+                "required_points": []
+            },
             "notes": "The corpus discusses documentation engineering and career evolution but does not recommend certifications for becoming a documentation engineer."
         },
         {
@@ -1103,7 +1187,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 2: Retrieval — Searching the Knowledge Environment",
+                            "Phase 2: Retrieval \u2014 Searching the Knowledge Environment",
                             "Step 7: Query Embedding"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:5e62c38f1e45a880828f86c8efe27e3882fdeae298a59e3810b7fbb6499c8ff5",
@@ -1123,7 +1207,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 4: Embeddings"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:e608885ce1731409468b9d616ddc59062c0f90a8528615449f0a5d5202fe80e2",
@@ -1144,7 +1228,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 2: Retrieval — Searching the Knowledge Environment",
+                            "Phase 2: Retrieval \u2014 Searching the Knowledge Environment",
                             "Step 6: Query Transformation"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:9e5d7d4f5f9109587674de402a015331616dde454980a3f47bbe7e4ff170e191"
@@ -1169,7 +1253,13 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null,
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Semantic search can match differently worded questions by representing their meaning rather than relying only on exact words.",
+                    "Embeddings place semantically similar queries and content near each other in vector space, which lets the system recognize similar meaning even when the wording differs."
+                ]
+            },
             "notes": "Purpose-built source-first case. The gold source was selected before running retrieval."
         },
         {
@@ -1228,7 +1318,7 @@
                         "document_id": "wordpress:page:2366",
                         "title": "How RAG Works in Retrieval-Based AI Systems",
                         "heading_path": [
-                            "Phase 1: Ingestion — Building the Searchable Knowledge Environment",
+                            "Phase 1: Ingestion \u2014 Building the Searchable Knowledge Environment",
                             "Step 3: Chunking"
                         ],
                         "chunk_id": "wordpress:page:2366:chunk:v1:a04b7e1517199858a707d7ce3829a7d00ba32e29593f8bd9a3bb3a51002f9022",
@@ -1246,7 +1336,14 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null,
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Lost context during chunking can separate information from the surrounding details needed to interpret it correctly, making the resulting chunks harder to retrieve accurately.",
+                    "Weak source authority signals can allow a less appropriate source to appear more relevant than the source that should answer the query.",
+                    "Missing or inconsistent metadata removes useful signals that retrieval can use to distinguish, filter, or select the right content."
+                ]
+            },
             "notes": "Purpose-built source-first case requiring relevant information from multiple sections. Gold sources were selected before running retrieval."
         },
         {
@@ -1325,7 +1422,13 @@
                 ],
                 "expect_empty": false
             },
-            "answer": null,
+            "answer": {
+                "expected_sufficient_evidence": true,
+                "required_points": [
+                    "Documentation engineering spans both the architecture layer, where the documentation system is designed, and the operations layer, where that design is implemented and run.",
+                    "It connects the two through a feedback loop: architectural decisions shape workflows and infrastructure, while operational experience and constraints feed back into how the system is designed."
+                ]
+            },
             "notes": "Purpose-built source-first case targeting currently indexed content from a revised source document."
         }
     ]

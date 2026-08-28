@@ -113,5 +113,5 @@ def test_repository_baseline_dataset_is_valid() -> None:
     )
 
     assert dataset.dataset_id == "doc-landscape-baseline"
-    assert dataset.version == "1.3"
+    assert dataset.version == "1.5"
     assert len(dataset.cases) == 22

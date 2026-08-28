@@ -74,12 +74,10 @@ def test_retrieval_expectation_rejects_duplicate_chunk_ids() -> None:
 def test_answer_expectation_accepts_supported_answer() -> None:
     expectation = AnswerExpectation(
         expected_sufficient_evidence=True,
-        acceptable_citation_chunk_ids=["chunk-1"],
         required_points=["Metadata can narrow the retrieval set."],
     )
 
     assert expectation.expected_sufficient_evidence is True
-    assert expectation.acceptable_citation_chunk_ids == ["chunk-1"]
 
 
 def test_answer_expectation_accepts_insufficient_answer() -> None:
@@ -87,28 +85,7 @@ def test_answer_expectation_accepts_insufficient_answer() -> None:
         expected_sufficient_evidence=False,
     )
 
-    assert expectation.acceptable_citation_chunk_ids == []
-
-
-def test_answer_expectation_rejects_supported_answer_without_citations() -> None:
-    with pytest.raises(
-        ValidationError,
-        match="must define acceptable citation chunks",
-    ):
-        AnswerExpectation(
-            expected_sufficient_evidence=True,
-        )
-
-
-def test_answer_expectation_rejects_citations_for_insufficient_answer() -> None:
-    with pytest.raises(
-        ValidationError,
-        match="must not define citation chunks",
-    ):
-        AnswerExpectation(
-            expected_sufficient_evidence=False,
-            acceptable_citation_chunk_ids=["chunk-1"],
-        )
+    assert expectation.expected_sufficient_evidence is False
 
 
 def test_evaluation_case_accepts_answer_sources_from_retrieval_sources() -> None:
@@ -121,30 +98,10 @@ def test_evaluation_case_accepts_answer_sources_from_retrieval_sources() -> None
         ),
         answer=AnswerExpectation(
             expected_sufficient_evidence=True,
-            acceptable_citation_chunk_ids=["chunk-1"],
         ),
     )
 
     assert case.id == "metadata-001"
-
-
-def test_evaluation_case_rejects_answer_source_not_relevant_to_retrieval() -> None:
-    with pytest.raises(
-        ValidationError,
-        match="must also be relevant retrieval sources",
-    ):
-        EvaluationCase(
-            id="metadata-001",
-            category="exact_answer",
-            query="How does metadata improve retrieval?",
-            retrieval=RetrievalExpectation(
-                relevant_sources=[make_source("chunk-1")],
-            ),
-            answer=AnswerExpectation(
-                expected_sufficient_evidence=True,
-                acceptable_citation_chunk_ids=["chunk-2"],
-            ),
-        )
 
 
 def test_evaluation_dataset_accepts_unique_case_ids() -> None:

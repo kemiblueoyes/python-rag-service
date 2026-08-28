@@ -58,6 +58,8 @@ def test_build_returns_complete_grounded_prompt() -> None:
         "- Do not use outside knowledge or make unsupported claims.\n"
         "- If the sources do not contain enough information, state that "
         "the available sources are insufficient.\n"
+        "- Answer only what the user asked. Ignore source content that is "
+        "related to the topic but not needed to answer the question.\n"
         "- Cite supporting sources inline using their citation IDs, "
         "such as [S1].\n"
         "- Place each citation immediately after the claim it supports.\n"
@@ -181,4 +183,21 @@ def test_build_allows_empty_context() -> None:
         "Question:\n"
         "What is retrieval?\n\n"
         "Sources:\n"
+    )
+
+def test_build_instructs_model_to_ignore_tangential_sources() -> None:
+    context = AssembledContext(
+        sources=(make_source(),),
+        token_count=50,
+    )
+
+    prompt = PromptBuilder().build(
+        question="What is retrieval?",
+        context=context,
+    )
+
+    assert (
+        "Ignore source content that is related to the topic "
+        "but not needed to answer the question."
+        in prompt.system_message
     )
