@@ -296,8 +296,6 @@ The following enhancements are intentionally deferred until the core system is c
 
 - Additional CMS connectors
 - Additional client applications
-- Hybrid search
-- Reranking
 - Query rewriting
 - Streaming responses
 - Multiple embedding providers
