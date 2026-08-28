@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -154,6 +154,26 @@ def test_search_returns_ranked_results() -> None:
 
     finally:
         app.dependency_overrides.clear()
+
+def test_search_validation_does_not_build_retrieval_service() -> None:
+    get_retrieval_service.cache_clear()
+
+    try:
+        with patch(
+            "rag_service.api.dependencies.create_retrieval_service",
+        ) as create_service:
+            client = TestClient(app)
+
+            response = client.post(
+                "/v1/search",
+                json={"query": ""},
+            )
+
+        assert response.status_code == 422
+        create_service.assert_not_called()
+    finally:
+        get_retrieval_service.cache_clear()
+
 
 def test_search_returns_standard_validation_error() -> None:
     client = TestClient(app)

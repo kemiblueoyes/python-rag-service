@@ -9,7 +9,20 @@ from rag_service.retrieval import RetrievalService
 
 
 def test_get_retrieval_service_is_cached() -> None:
+    get_retrieval_service.cache_clear()
+
+    first = get_retrieval_service()
+    second = get_retrieval_service()
+
+    assert first is second
+
+    get_retrieval_service.cache_clear()
+
+
+def test_get_retrieval_service_builds_on_first_retrieve() -> None:
     service = MagicMock(spec=RetrievalService)
+    request = MagicMock()
+    service.retrieve.return_value = []
 
     get_retrieval_service.cache_clear()
 
@@ -17,14 +30,18 @@ def test_get_retrieval_service_is_cached() -> None:
         "rag_service.api.dependencies.create_retrieval_service",
         return_value=service,
     ) as create_service:
-        first = get_retrieval_service()
-        second = get_retrieval_service()
+        lazy = get_retrieval_service()
 
-    assert first is service
-    assert second is service
+        create_service.assert_not_called()
+
+        lazy.retrieve(request)
+        lazy.retrieve(request)
+
     create_service.assert_called_once()
+    assert service.retrieve.call_count == 2
 
     get_retrieval_service.cache_clear()
+
 
 def test_get_answer_generator_is_cached() -> None:
     generator = MagicMock(spec=AnswerGenerator)
