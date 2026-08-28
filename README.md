@@ -735,11 +735,10 @@ The final dataset `1.5` qualitative review passes all 14 answerable cases, with 
 
 The evaluation process also produced a prompt improvement. An earlier answer to `context-001` was grounded but wandered into related AI-assistant material that was not needed to answer the question. The grounded-answer prompt now explicitly instructs the model to ignore source material that is related to the topic but unnecessary for the user's question.
 
-A consolidated summary of the Phase 10 evaluation approach, results, findings, and known limitations is available at:
+For the detailed investigation that led from semantic-only retrieval to the current hybrid + reranking + support-gate design: 
+- `docs/evaluation/retrieval-failure-analysis.md` — investigation of retrieval failures and the experiments that led to the current pipeline
+- `docs/evaluation/phase-10-evaluation-summary.md` — consolidated Phase 10 (evaluation) results, findings, and known limitations
 
-```text
-docs/evaluation/phase_10_evaluation_summary.md
-```
 
 ## Development checks
 

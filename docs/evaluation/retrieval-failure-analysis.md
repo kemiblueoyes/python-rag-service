@@ -2,11 +2,18 @@
 
 ## Purpose
 
-This report documents the retrieval failures discovered during Phase 10, the experiments used to investigate them, and the current retrieval decision.
+This report documents the retrieval failures discovered during Phase 10, the experiments used to investigate them, and the resulting production retrieval design.
 
 The evaluation started with a semantic-search baseline and then tested BM25, hybrid retrieval, Voyage reranking, and an explicit support gate for unsupported questions.
 
-The current evaluation dataset is `doc-landscape-baseline` version `1.3`.
+The retrieval experiments documented here were conducted while the evaluation dataset was version `1.3`. The project dataset has since advanced to version `1.5` as the broader Phase 10 answer-evaluation framework was completed. The retrieval metrics below are retained with their original provenance.
+
+Two distinct retrieval problems drove the investigation:
+
+1. **Coverage:** a supported compound query may require evidence from several different sections, but the top results may not cover all of them.
+2. **Support detection:** retrieval systems may return topically related content even when the corpus does not actually answer the query.
+
+These problems require different solutions and are evaluated separately.
 
 ## Initial semantic baseline
 
@@ -66,15 +73,15 @@ The retrieved overview mentioned several concepts in the question, but the purpo
 
 **Coverage failure for a compound query.**
 
-The system can recognize the overall topic while still failing to retrieve enough distinct evidence to answer every part of a compound question.
+The system can recognize the overall topic while still failing to retrieve enough distinct evidence to cover every part of a compound question.
 
-This is not an answerability problem. The corpus does contain the requested information.
+This is not a support-detection problem. The corpus does contain the requested information.
 
 ### Hybrid + reranking result
 
-Hybrid retrieval and reranking improved this case substantially, but did not fully solve it.
+Hybrid retrieval and reranking improved this case substantially but did not fully solve it.
 
-The final experimental pipeline retrieved five relevant results:
+The evaluated pipeline retrieved five relevant results:
 
 - Precision@5: `1.000`
 - Recall@5: `0.714`
@@ -83,9 +90,9 @@ The final experimental pipeline retrieved five relevant results:
 - Reciprocal rank: `0.200`
 - Top rerank score: `0.812500`
 
-The case still fails because the evaluation requires coverage across multiple specific primary sections, not merely one primary source plus related supporting chunks.
+The case still fails the multi-section benchmark because the evaluation requires coverage across multiple specific primary sections, not merely one primary source plus related supporting chunks.
 
-The support gate correctly **accepts** this query because the corpus does support it. The remaining failure is therefore specifically a coverage and selection problem.
+The support gate correctly **accepts** this query because the corpus does support it. The remaining failure is specifically a coverage and selection problem.
 
 ### Current interpretation
 
@@ -96,9 +103,9 @@ Potential future approaches include:
 - Query decomposition
 - Retrieving candidates separately for each part of a compound query
 - Coverage-aware or diversity-aware result selection
-- Increasing the final result depth for compound questions
+- Increasing final result depth for compound questions
 
-No additional coverage mechanism has been selected yet.
+No additional coverage mechanism has been selected yet. `multi-section-001` remains a regression case for future retrieval work.
 
 ---
 
@@ -210,7 +217,7 @@ The added cases intentionally use concepts that are strongly represented in the 
 - `unanswerable-cms-migration-001`
 - `unanswerable-doc-engineering-certification-001`
 
-These are more useful support-gate tests than only using obviously out-of-domain questions.
+These are more useful support-gate tests than relying only on obviously out-of-domain questions.
 
 ### Top rerank scores for expected-empty cases
 
@@ -225,17 +232,17 @@ These are more useful support-gate tests than only using obviously out-of-domain
 | `unanswerable-embedding-finetuning-001` | 0.597656 |
 | `unanswerable-developer-transition-001` | 0.640625 |
 
-The highest unsupported score is `0.640625`.
+The highest unsupported score was `0.640625`.
 
-The lowest top rerank score among answerable cases is `0.812500`, from `multi-section-001`.
+The lowest top rerank score among answerable cases was `0.812500`, from `multi-section-001`.
 
-The current dataset therefore shows a clear separation between unsupported and supported queries.
+The evaluated dataset therefore showed a clear separation between unsupported and supported queries.
 
 ---
 
-## Provisional support gate
+## Query-level support gate
 
-A provisional query-level support cutoff of `0.70` was evaluated.
+A query-level support cutoff of `0.70` was evaluated.
 
 The rule is:
 
@@ -248,7 +255,7 @@ else:
 
 The cutoff is applied at the **query level**, not separately to each chunk.
 
-For example, an accepted query may contain lower-ranked chunks with rerank scores below `0.70`. Those chunks are not individually removed merely because they fall below the query-level support threshold.
+For example, an accepted query may contain lower-ranked chunks with rerank scores below `0.70`. Those chunks are not individually removed merely because they fall below the query-level support cutoff.
 
 ### Support-gate results
 
@@ -264,15 +271,17 @@ For example, an accepted query may contain lower-ranked chunks with rerank score
 | False positives | 0 |
 | False negatives | 0 |
 
-The `0.70` cutoff therefore correctly separates all supported and unsupported queries in the current evaluation dataset.
+The `0.70` cutoff correctly separated all supported and unsupported queries in the evaluated dataset.
 
-The cutoff remains **provisional**, not universal. It must be treated as model-, corpus-, and pipeline-specific and revalidated when those conditions change.
+This solved the failure represented by `unanswerable-developer-transition-001`: the query now returns no qualifying results.
+
+The cutoff remains **corpus-, model-, and pipeline-specific**, not universal. It should be revalidated when those conditions change.
 
 ---
 
 ## Final hybrid + reranking retrieval results
 
-The final experimental pipeline uses:
+The final evaluated pipeline uses:
 
 - `voyage-4-lite` embeddings
 - Semantic candidate depth: 20
@@ -319,9 +328,9 @@ This shows why the lexical component should complement rather than replace seman
 
 ### Ranking improves, but relevance is not identical to usefulness
 
-Cases such as CMS selection and documentation engineering continue to show that several chunks can be relevant while differing in specificity or usefulness.
+Cases such as CMS selection and documentation engineering show that several chunks can be relevant while differing in specificity or usefulness.
 
-Reranking improves ordering, but future source-authority, specificity, or task-intent signals may still improve which relevant result appears first.
+Reranking improves ordering, but future source-authority, specificity, task-intent, coverage, or diversity signals may still improve which relevant results appear first.
 
 ### Updated content remains retrievable
 
@@ -341,19 +350,21 @@ The Phase 10 experiments support the following conclusions:
 
 3. **Hybrid semantic + BM25 retrieval improves the candidate pool.** RRF combines complementary semantic and lexical signals without requiring their raw scores to share a scale.
 
-4. **Reranking is the stage that produced useful support separation.** Voyage reranking over the hybrid candidate pool separated the tested answerable and expected-empty queries.
+4. **Reranking produced the useful support signal in the evaluated pipeline.** Voyage reranking over the hybrid candidate pool separated the tested answerable and expected-empty queries.
 
-5. **A `0.70` top-rerank-score gate is a viable provisional support rule for the current corpus and models.** It achieved 100% gate accuracy across the current 22-case dataset.
+5. **A `0.70` top-rerank-score gate is a viable support rule for the current corpus and models.** It achieved 100% gate accuracy across the evaluated 22-case dataset.
 
 6. **Support detection and retrieval coverage are separate problems.** `multi-section-001` correctly passes the support gate while still failing the retrieval-coverage requirement.
 
 7. **An LLM support grader is not currently required.** The hybrid + reranking pipeline provides a non-generative support signal that succeeds on the current evaluation set. An LLM grader can remain a future fallback if the score separation stops holding as the corpus or query distribution changes.
 
+8. **Retrieval and answer quality must be evaluated separately.** `multi-section-001` does not satisfy the retrieval benchmark's primary-source coverage requirement, but the retrieved evidence is still sufficient for the answer generator to produce a complete, grounded answer.
+
 ---
 
-## Current decision
+## Production decision
 
-The current retrieval candidate for production is:
+The evaluated pipeline was adopted as the production retrieval architecture:
 
 ```text
 Semantic retrieval: top 20
@@ -368,21 +379,32 @@ Voyage rerank-2.5
         ↓
 Top rerank score < 0.70?
         ├─ yes -> no qualifying results
-        └─ no  -> return reranked results
+        └─ no  -> return requested reranked results
 ```
 
-This decision is based on the current evaluation dataset rather than on the assumption that any one retrieval score is universally meaningful.
+The production `RetrievalService` now performs:
 
-The `0.70` threshold should remain configurable and should be regression-tested whenever the corpus, embedding model, reranking model, chunking strategy, or retrieval configuration changes.
+- vector candidate retrieval
+- BM25 lexical candidate retrieval
+- duplicate removal
+- reciprocal rank fusion
+- Voyage reranking
+- query-level support gating
 
-The production `RetrievalService` should not be considered updated until this experimental pipeline is deliberately integrated and covered by service/API tests.
+Both `/v1/search` and `/v1/answer` use this shared retrieval pipeline.
+
+The `0.70` support cutoff remains configurable and should be regression-tested whenever the corpus, embedding model, reranking model, chunking strategy, or retrieval configuration changes.
 
 ---
 
 ## Remaining retrieval limitation
 
-`multi-section-001` remains the only known answerable-case failure in the final experiment.
+`multi-section-001` remains the only known answerable-case retrieval limitation identified by the final Phase 10 evaluation.
 
-It should be tracked separately from the expected-empty problem. The current pipeline can determine that the query is supported, but it does not yet guarantee that a top-five result set covers every distinct subtopic required by a compound query.
+The current pipeline can determine that the query is supported, and the retrieved evidence is sufficient for the answer generator to cover all three requested concepts. However, the top-five retrieval set does not satisfy the benchmark's stricter requirement to retrieve all designated primary sections.
 
-This limitation can either be investigated further during Phase 10 or documented as a known retrieval limitation before moving fully into answer evaluation. In either case, answer evaluation should continue to verify that generation does not invent missing details when retrieved context is incomplete.
+This is intentionally documented as a **retrieval coverage limitation**, not an answer-generation failure.
+
+Potential future work includes query decomposition, coverage-aware result selection, diversity-aware selection, per-subtopic retrieval, or adaptive result depth for compound questions.
+
+No additional coverage mechanism is required to close Phase 10. The limitation is preserved as a regression case for future retrieval improvements.
