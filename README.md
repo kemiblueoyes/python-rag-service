@@ -214,16 +214,31 @@ Browser
   → retrieval and answer-generation services
 ```
 
-This keeps the Python service URL and future API credentials on the server side rather than exposing them in browser JavaScript.
+This keeps the Python service URL and API key on the server side rather than exposing them in browser JavaScript.
 
-Configure the Python service base URL in WordPress:
+Configure an API key in the Python service's `.env` file:
+
+```dotenv
+RAG_API_KEY=replace-with-a-long-random-value
+```
+
+Configure the Python service base URL and the same API key in WordPress, typically in `wp-config.php`:
 
 ```php
 define(
     'DL_RAG_API_BASE_URL',
     'https://your-rag-service.example.com'
 );
+
+define(
+    'DL_RAG_API_KEY',
+    'replace-with-the-same-long-random-value'
+);
 ```
+
+The WordPress proxy sends the key to the Python service in the `X-API-Key` header. Search and Answer requests fail if either constant is missing or if `DL_RAG_API_KEY` does not exactly match `RAG_API_KEY`.
+
+After changing the reference client, deploy the complete updated `clients/wordpress/doc-landscape-rag` plugin directory to the WordPress site's `wp-content/plugins` directory. Updating the Python service alone does not update the live WordPress proxy or UI.
 
 The client currently supports:
 
@@ -242,7 +257,7 @@ The included plugin is a reference implementation for The Doc Landscape rather t
 
 During local development, the Python API must be running and reachable from the hosted WordPress installation. A temporary HTTPS tunnel can provide that connection. Production deployment will replace the local server and development tunnel with an always-available hosted API.
 
-That server-side proxy description matches the client currently committed: its WordPress routes call `DL_RAG_API_BASE_URL` and forward Search and Answer requests to Python. 
+That server-side proxy description matches the client currently committed: its WordPress routes call `DL_RAG_API_BASE_URL`, authenticate with `DL_RAG_API_KEY`, and forward Search and Answer requests to Python.
 
 
 ## Requirements
@@ -273,6 +288,8 @@ cp .env.example .env
 
 Add environment-specific URLs and credentials to `.env`. Never commit this
 file or place real API keys in `.env.example`.
+
+Set `RAG_API_KEY` to a long random value. Both `POST /v1/search` and `POST /v1/answer` require that value in the `X-API-Key` request header. The `/health` endpoint remains unauthenticated.
 
 Run the application:
 
