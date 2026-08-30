@@ -56,7 +56,7 @@ class DL_RAG_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function search( WP_REST_Request $request ) {
-		if ( ! defined( 'DL_RAG_API_BASE_URL' ) ) {
+		if ( ! defined( 'DL_RAG_API_BASE_URL' ) || ! defined( 'DL_RAG_API_KEY' ) ) {
 			return new WP_Error(
 				'dl_rag_not_configured',
 				'The RAG service URL is not configured.',
@@ -74,7 +74,10 @@ class DL_RAG_REST_Controller {
 			);
 		}
 
-		$client = new DL_RAG_API_Client( DL_RAG_API_BASE_URL );
+		$client = new DL_RAG_API_Client(
+            DL_RAG_API_BASE_URL,
+            DL_RAG_API_KEY
+        );
         $result = $client->search( $query );
 
         if ( is_wp_error( $result ) ) {
@@ -96,7 +99,7 @@ class DL_RAG_REST_Controller {
      * @return WP_REST_Response|WP_Error
      */
     public function answer( WP_REST_Request $request ) {
-        if ( ! defined( 'DL_RAG_API_BASE_URL' ) ) {
+        if ( ! defined( 'DL_RAG_API_BASE_URL' ) || ! defined( 'DL_RAG_API_KEY' ) ) {
             return new WP_Error(
                 'dl_rag_not_configured',
                 'The RAG service URL is not configured.',
@@ -114,7 +117,10 @@ class DL_RAG_REST_Controller {
             );
         }
 
-        $client = new DL_RAG_API_Client( DL_RAG_API_BASE_URL );
+        $client = new DL_RAG_API_Client(
+            DL_RAG_API_BASE_URL,
+            DL_RAG_API_KEY
+        );
         $result = $client->answer( $query );
 
         if ( is_wp_error( $result ) ) {

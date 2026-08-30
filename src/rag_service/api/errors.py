@@ -2,6 +2,10 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from rag_service.api.auth import (
+    APIAuthenticationConfigurationError,
+    InvalidAPIKeyError,
+)
 from rag_service.api.models import (
     ErrorBody,
     ErrorDetail,
@@ -77,6 +81,43 @@ async def answer_unavailable_exception_handler(
         error=ErrorBody(
             code="answer_unavailable",
             message="Answer generation is temporarily unavailable.",
+        )
+    )
+
+    return JSONResponse(
+        status_code=503,
+        content=response.model_dump(mode="json"),
+    )
+
+async def invalid_api_key_exception_handler(
+    _request: Request,
+    _exc: InvalidAPIKeyError,
+) -> JSONResponse:
+    """Return authentication failures using the public API error format."""
+
+    response = ErrorResponse(
+        error=ErrorBody(
+            code="authentication_failed",
+            message="A valid API key is required.",
+        )
+    )
+
+    return JSONResponse(
+        status_code=401,
+        content=response.model_dump(mode="json"),
+    )
+
+
+async def authentication_configuration_exception_handler(
+    _request: Request,
+    _exc: APIAuthenticationConfigurationError,
+) -> JSONResponse:
+    """Return server-side authentication configuration failures."""
+
+    response = ErrorResponse(
+        error=ErrorBody(
+            code="authentication_unavailable",
+            message="API authentication is temporarily unavailable.",
         )
     )
 

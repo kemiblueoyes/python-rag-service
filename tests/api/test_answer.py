@@ -42,7 +42,9 @@ def _chunk() -> DocumentChunk:
     )
 
 
-def test_answer_returns_grounded_response() -> None:
+def test_answer_returns_grounded_response(
+    api_key_headers: dict[str, str],
+) -> None:
     retrieval_service = MagicMock(spec=RetrievalService)
     answer_generator = MagicMock(spec=AnswerGenerator)
 
@@ -92,6 +94,7 @@ def test_answer_returns_grounded_response() -> None:
                     "source": "wordpress",
                 },
             },
+            headers=api_key_headers,
         )
 
         assert response.status_code == 200
@@ -153,7 +156,9 @@ def test_answer_returns_grounded_response() -> None:
         app.dependency_overrides.clear()
 
 
-def test_answer_returns_insufficient_evidence_response() -> None:
+def test_answer_returns_insufficient_evidence_response(
+    api_key_headers: dict[str, str],
+) -> None:
     retrieval_service = MagicMock(spec=RetrievalService)
     answer_generator = MagicMock(spec=AnswerGenerator)
 
@@ -183,6 +188,7 @@ def test_answer_returns_insufficient_evidence_response() -> None:
             json={
                 "query": "What is the capital of Mars?",
             },
+            headers=api_key_headers,
         )
 
         assert response.status_code == 200
@@ -200,7 +206,9 @@ def test_answer_returns_insufficient_evidence_response() -> None:
     finally:
         app.dependency_overrides.clear()
 
-def test_answer_returns_503_when_retrieval_is_unavailable() -> None:
+def test_answer_returns_503_when_retrieval_is_unavailable(
+    api_key_headers: dict[str, str],
+) -> None:
     retrieval_service = MagicMock(spec=RetrievalService)
     answer_generator = MagicMock(spec=AnswerGenerator)
 
@@ -221,6 +229,7 @@ def test_answer_returns_503_when_retrieval_is_unavailable() -> None:
         response = client.post(
             "/v1/answer",
             json={"query": "What is RAG?"},
+            headers=api_key_headers,
         )
 
         assert response.status_code == 503
@@ -256,6 +265,7 @@ def test_answer_returns_503_when_retrieval_is_unavailable() -> None:
 )
 def test_answer_returns_503_when_generation_fails(
     generation_error: Exception,
+    api_key_headers: dict[str, str],
 ) -> None:
     retrieval_service = MagicMock(spec=RetrievalService)
     answer_generator = MagicMock(spec=AnswerGenerator)
@@ -283,6 +293,7 @@ def test_answer_returns_503_when_generation_fails(
         response = client.post(
             "/v1/answer",
             json={"query": "Why does retrieval fail?"},
+            headers=api_key_headers,
         )
 
         assert response.status_code == 503
@@ -318,18 +329,24 @@ def test_answer_openapi_documents_service_unavailable_error() -> None:
         "$ref": "#/components/schemas/ErrorResponse"
     }
 @pytest.mark.parametrize("query", ["", " ", "   \n\t"])
-def test_answer_rejects_empty_query(query: str) -> None:
+def test_answer_rejects_empty_query(
+    query: str,
+    api_key_headers: dict[str, str],
+) -> None:
     client = TestClient(app)
 
     response = client.post(
         "/v1/answer",
         json={"query": query},
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
 
 
-def test_answer_validation_does_not_build_retrieval_service() -> None:
+def test_answer_validation_does_not_build_retrieval_service(
+    api_key_headers: dict[str, str],
+) -> None:
     get_retrieval_service.cache_clear()
     get_answer_generator.cache_clear()
 
@@ -342,6 +359,7 @@ def test_answer_validation_does_not_build_retrieval_service() -> None:
             response = client.post(
                 "/v1/answer",
                 json={"query": ""},
+                headers=api_key_headers,
             )
 
         assert response.status_code == 422
@@ -351,7 +369,9 @@ def test_answer_validation_does_not_build_retrieval_service() -> None:
         get_answer_generator.cache_clear()
 
 
-def test_answer_rejects_unsupported_filter() -> None:
+def test_answer_rejects_unsupported_filter(
+    api_key_headers: dict[str, str],
+) -> None:
     client = TestClient(app)
 
     response = client.post(
@@ -362,11 +382,14 @@ def test_answer_rejects_unsupported_filter() -> None:
                 "site_id": "the-doc-landscape",
             },
         },
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
 
-def test_answer_rejects_retrieval_limit() -> None:
+def test_answer_rejects_retrieval_limit(
+    api_key_headers: dict[str, str],
+) -> None:
     client = TestClient(app)
 
     response = client.post(
@@ -375,11 +398,14 @@ def test_answer_rejects_retrieval_limit() -> None:
             "query": "What is RAG?",
             "limit": 10,
         },
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
 
-def test_answer_returns_standard_validation_error() -> None:
+def test_answer_returns_standard_validation_error(
+    api_key_headers: dict[str, str],
+) -> None:
     client = TestClient(app)
 
     response = client.post(
@@ -390,6 +416,7 @@ def test_answer_returns_standard_validation_error() -> None:
                 "site_id": "the-doc-landscape",
             },
         },
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422

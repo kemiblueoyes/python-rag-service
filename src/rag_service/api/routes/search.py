@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from rag_service.api.auth import require_api_key
 from rag_service.api.dependencies import get_retrieval_service
 from rag_service.api.models import (
     ErrorResponse,
@@ -14,6 +15,7 @@ from rag_service.retrieval import RetrievalRequest, RetrievalService
 router = APIRouter(
     prefix="/v1",
     tags=["Search"],
+    dependencies=[Depends(require_api_key)],
 )
 
 
@@ -26,6 +28,10 @@ router = APIRouter(
         "without generating an answer."
     ),
     responses={
+        401: {
+            "model": ErrorResponse,
+            "description": "Authentication failed.",
+        },
         422: {
             "model": ErrorResponse,
             "description": "Request validation failed.",

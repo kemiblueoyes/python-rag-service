@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Protocol, cast
 
 from rag_service.vectorstores.base import SearchResult
@@ -9,7 +10,8 @@ class _RerankingResult(Protocol):
 
 
 class _RerankingResponse(Protocol):
-    results: list[_RerankingResult]
+    @property
+    def results(self) -> Sequence[_RerankingResult]: ...
 
 
 class _VoyageClient(Protocol):

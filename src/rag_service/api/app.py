@@ -5,9 +5,15 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.types import ExceptionHandler
 
+from rag_service.api.auth import (
+    APIAuthenticationConfigurationError,
+    InvalidAPIKeyError,
+)
 from rag_service.api.errors import (
     AnswerUnavailableError,
     answer_unavailable_exception_handler,
+    authentication_configuration_exception_handler,
+    invalid_api_key_exception_handler,
     request_validation_exception_handler,
     retrieval_unavailable_exception_handler,
 )
@@ -39,4 +45,17 @@ def health_check() -> dict[str, str]:
 app.add_exception_handler(
     AnswerUnavailableError,
     cast(ExceptionHandler, answer_unavailable_exception_handler),
+)
+
+app.add_exception_handler(
+    InvalidAPIKeyError,
+    cast(ExceptionHandler, invalid_api_key_exception_handler),
+)
+
+app.add_exception_handler(
+    APIAuthenticationConfigurationError,
+    cast(
+        ExceptionHandler,
+        authentication_configuration_exception_handler,
+    ),
 )

@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Literal
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,6 +9,9 @@ class Settings(BaseSettings):
     app_name: str = "python-rag-service"
     environment: str = "development"
     log_level: str = "INFO"
+
+    # API authentication
+    rag_api_key: SecretStr | None = None
 
     # WordPress connector
     wordpress_base_url: str | None = None

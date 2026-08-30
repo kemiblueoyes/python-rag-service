@@ -59,7 +59,7 @@ def test_qualitative_review_rejects_scores_above_two(
     values[field_name] = 3
 
     with pytest.raises(ValidationError):
-        QualitativeAnswerReview(**values)
+        QualitativeAnswerReview.model_validate(values)
 
 
 @pytest.mark.parametrize(
@@ -84,7 +84,7 @@ def test_qualitative_review_rejects_scores_below_zero(
     values[field_name] = -1
 
     with pytest.raises(ValidationError):
-        QualitativeAnswerReview(**values)
+        QualitativeAnswerReview.model_validate(values)
 
 
 def test_qualitative_review_set_accepts_unique_case_ids() -> None:

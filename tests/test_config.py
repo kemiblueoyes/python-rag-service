@@ -45,3 +45,4 @@ def test_generation_settings_have_expected_defaults() -> None:
     assert settings.generation_context_budget_tokens == 8_000
     assert settings.generation_max_output_tokens == 1_000
     assert settings.openai_api_key is None
+    assert settings.rag_api_key is None

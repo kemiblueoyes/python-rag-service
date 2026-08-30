@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from rag_service.api.auth import require_api_key
 from rag_service.api.dependencies import (
     get_answer_generator,
     get_retrieval_service,
@@ -28,6 +29,7 @@ from rag_service.retrieval import (
 router = APIRouter(
     prefix="/v1",
     tags=["Answer"],
+    dependencies=[Depends(require_api_key)],
 )
 
 ANSWER_RETRIEVAL_LIMIT = 5
@@ -42,6 +44,10 @@ ANSWER_RETRIEVAL_LIMIT = 5
         "grounded in validated source content."
     ),
     responses={
+        401: {
+            "model": ErrorResponse,
+            "description": "Authentication failed.",
+        },
         422: {
             "model": ErrorResponse,
             "description": "Request validation failed.",

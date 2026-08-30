@@ -14,18 +14,24 @@ from rag_service.retrieval import (
 
 
 @pytest.mark.parametrize("query", ["", " ", "   \n\t"])
-def test_search_rejects_empty_query(query: str) -> None:
+def test_search_rejects_empty_query(
+    query: str,
+    api_key_headers: dict[str, str],
+) -> None:
     client = TestClient(app)
 
     response = client.post(
         "/v1/search",
         json={"query": query},
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
 
 
-def test_search_rejects_limit_below_one() -> None:
+def test_search_rejects_limit_below_one(
+    api_key_headers: dict[str, str],
+) -> None:
     client = TestClient(app)
 
     response = client.post(
@@ -34,12 +40,15 @@ def test_search_rejects_limit_below_one() -> None:
             "query": "What is RAG?",
             "limit": 0,
         },
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
 
 
-def test_search_rejects_unsupported_filter() -> None:
+def test_search_rejects_unsupported_filter(
+    api_key_headers: dict[str, str],
+) -> None:
     client = TestClient(app)
 
     response = client.post(
@@ -50,12 +59,15 @@ def test_search_rejects_unsupported_filter() -> None:
                 "site_id": "the-doc-landscape",
             },
         },
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
 
 
-def test_search_returns_empty_results_when_nothing_is_relevant() -> None:
+def test_search_returns_empty_results_when_nothing_is_relevant(
+    api_key_headers: dict[str, str],
+) -> None:
     service = MagicMock(spec=RetrievalService)
     service.retrieve.return_value = []
 
@@ -67,6 +79,7 @@ def test_search_returns_empty_results_when_nothing_is_relevant() -> None:
         response = client.post(
             "/v1/search",
             json={"query": "Something unrelated"},
+            headers=api_key_headers,
         )
 
         assert response.status_code == 200
@@ -94,7 +107,9 @@ def _chunk() -> DocumentChunk:
     )
 
 
-def test_search_returns_ranked_results() -> None:
+def test_search_returns_ranked_results(
+    api_key_headers: dict[str, str],
+) -> None:
     service = MagicMock(spec=RetrievalService)
     service.retrieve.return_value = [
         RetrievalResult(
@@ -117,6 +132,7 @@ def test_search_returns_ranked_results() -> None:
                 },
                 "limit": 3,
             },
+            headers=api_key_headers,
         )
 
         assert response.status_code == 200
@@ -155,7 +171,9 @@ def test_search_returns_ranked_results() -> None:
     finally:
         app.dependency_overrides.clear()
 
-def test_search_validation_does_not_build_retrieval_service() -> None:
+def test_search_validation_does_not_build_retrieval_service(
+    api_key_headers: dict[str, str],
+) -> None:
     get_retrieval_service.cache_clear()
 
     try:
@@ -167,6 +185,7 @@ def test_search_validation_does_not_build_retrieval_service() -> None:
             response = client.post(
                 "/v1/search",
                 json={"query": ""},
+                headers=api_key_headers,
             )
 
         assert response.status_code == 422
@@ -175,7 +194,9 @@ def test_search_validation_does_not_build_retrieval_service() -> None:
         get_retrieval_service.cache_clear()
 
 
-def test_search_returns_standard_validation_error() -> None:
+def test_search_returns_standard_validation_error(
+    api_key_headers: dict[str, str],
+) -> None:
     client = TestClient(app)
 
     response = client.post(
@@ -186,6 +207,7 @@ def test_search_returns_standard_validation_error() -> None:
                 "site_id": "the-doc-landscape",
             },
         },
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
@@ -214,7 +236,9 @@ def test_search_openapi_documents_validation_error() -> None:
         "$ref": "#/components/schemas/ErrorResponse"
     }
 
-def test_search_returns_503_when_retrieval_is_unavailable() -> None:
+def test_search_returns_503_when_retrieval_is_unavailable(
+    api_key_headers: dict[str, str],
+) -> None:
     service = MagicMock(spec=RetrievalService)
     service.retrieve.side_effect = RetrievalUnavailableError(
         "Retrieval could not be completed."
@@ -228,6 +252,7 @@ def test_search_returns_503_when_retrieval_is_unavailable() -> None:
         response = client.post(
             "/v1/search",
             json={"query": "What is RAG?"},
+            headers=api_key_headers,
         )
 
         assert response.status_code == 503
@@ -258,3 +283,4 @@ def test_search_openapi_documents_service_unavailable_error() -> None:
     assert error_schema == {
         "$ref": "#/components/schemas/ErrorResponse"
     }
+

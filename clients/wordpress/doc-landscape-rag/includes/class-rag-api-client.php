@@ -9,6 +9,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class DL_RAG_API_Client {
 
+    /**
+     * API key for authenticating with the Python RAG service.
+     *
+     * @var string
+     */
+    private string $api_key;
+
+
 	/**
 	 * Base URL for the Python RAG service.
 	 *
@@ -21,8 +29,9 @@ class DL_RAG_API_Client {
 	 *
 	 * @param string $base_url Base URL for the Python RAG service.
 	 */
-	public function __construct( string $base_url ) {
+	public function __construct( string $base_url, string $api_key) {
 		$this->base_url = untrailingslashit( $base_url );
+        $this->api_key  = $api_key;
 	}
 
 	/**
@@ -89,6 +98,7 @@ class DL_RAG_API_Client {
 				'timeout' => 15,
 				'headers' => array(
 					'Content-Type' => 'application/json',
+                    'X-API-Key'    => $this->api_key,
 				),
 				'body' => wp_json_encode( $body ),
 			)
