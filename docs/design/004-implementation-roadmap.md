@@ -178,6 +178,33 @@ Expose grounded answer generation through a public API.
 
 - Answer endpoint returns grounded responses with validated citations
 
+## Phase 8.5 - API authentication
+
+### Objectives
+
+Protect the public API so only authorized clients can access the search and
+answer endpoints, while keeping credentials out of browser-exposed code.
+
+### Deliverables
+
+- Authentication approach (API keys)
+- Authentication for `/v1/search` and `/v1/answer`
+- Secure key storage and validation
+- `401` and `503` error responses
+- Authentication tests
+- OpenAPI security definitions
+
+### Exit criteria
+
+- `/v1/search` and `/v1/answer` require a valid API key
+- Missing or invalid API keys return `401 Unauthorized`
+- Missing server-side authentication configuration returns `503 Service Unavailable`
+- `/health` remains accessible without authentication
+- Authentication is represented correctly in the OpenAPI schema
+- The WordPress client sends the API key from server-side PHP
+- API credentials are not exposed in browser requests or JavaScript
+- Authentication behavior is covered by automated tests
+
 ## Phase 9 - WordPress client
 
 ### Objectives

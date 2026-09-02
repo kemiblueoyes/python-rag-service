@@ -1,4 +1,4 @@
-# ADR-006: Select Vector Database
+# ADR-007: Select Vector Database
 
 ## Status
 
@@ -7,6 +7,8 @@ Accepted
 ## Date
 
 2026-08-09
+
+Amended 2026-09-02 to record that hybrid retrieval and reranking are implemented.
 
 ## Context
 
@@ -34,7 +36,7 @@ The vector database must support:
 
 The architecture requires that vector database-specific logic remain isolated behind an internal abstraction so the storage technology can be replaced without redesigning the retrieval pipeline.
 
-Future retrieval improvements may include hybrid search and reranking. The selected database should support these future capabilities without requiring changes to the core architecture.
+The selected database needed to leave room for later retrieval improvements such as hybrid search and reranking without requiring changes to the core architecture.
 
 ## Decision
 
@@ -50,6 +52,22 @@ The initial implementation will provide:
 - Metadata filtering support
 - Upsert and deletion workflows for incremental indexing
 
+## Later refinement (2026-09-02)
+
+Hybrid retrieval and reranking are now part of the production retrieval pipeline. Qdrant remains the vector store; it was not replaced and did not need to become a hybrid-search engine.
+
+The current retrieval path is:
+
+1. Semantic search over Qdrant embeddings
+2. BM25 lexical search over the indexed chunk corpus
+3. Reciprocal rank fusion of the two ranked lists
+4. Voyage reranking of the fused candidates
+5. A query-level support gate based on the top rerank score
+
+Lexical retrieval and reranking sit behind their own internal abstractions, just as vector storage does. Hybrid fusion happens in the retrieval service, not inside Qdrant.
+
+This confirmed the original architectural claim: retrieval strategy can evolve without changing the vector-store adapter or the rest of the RAG pipeline's storage contract.
+
 ## Options Considered
 
 ### Qdrant
@@ -63,7 +81,7 @@ Advantages:
 - Open-source with managed hosting available
 - Simple local development using Docker
 - Python-friendly ecosystem
-- Supports future retrieval improvements such as hybrid search and external reranking workflows
+- Leaves room for retrieval improvements such as hybrid search and external reranking without replacing the storage layer
 
 Disadvantages:
 
@@ -134,7 +152,7 @@ Disadvantages:
 
 - Provides a production-oriented foundation for semantic retrieval
 - Supports the current Phase 4 requirements without unnecessary complexity
-- Allows future retrieval improvements such as reranking without changing the storage layer
+- Hybrid search and reranking were added without changing the Qdrant adapter or storage contract
 - Keeps vector storage replaceable through an abstraction layer
 
 ### Negative
@@ -144,13 +162,12 @@ Disadvantages:
 
 ### Future Considerations
 
-The vector database should continue to be evaluated separately from retrieval strategies.
+The vector database should continue to be evaluated separately from retrieval strategies. Hybrid search currently uses BM25 over the saved chunk files rather than Qdrant's native sparse or hybrid search.
 
 Future improvements may include:
 
-- Hybrid search
-- Reranking
 - Retrieval experimentation
+- Moving lexical retrieval into the vector database
 - Additional vector database adapters
 
 Changes to the vector database should be evaluated using the retrieval evaluation framework to ensure retrieval quality is maintained.

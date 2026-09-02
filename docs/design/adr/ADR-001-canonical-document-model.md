@@ -1,4 +1,4 @@
-# ADR-002: Canonical Document Model
+# ADR-001: Canonical Document Model
 
 ## Status
 
@@ -42,13 +42,14 @@ The canonical document model will include:
 
 - `document_id`
 - `source`
-- `site_id`
+- `source_id`
 - `title`
 - `url`
 - `body`
 - `content_type`
-- `categories`
-- `tags`
+- `document_role`
+- `indexable`
+- `metadata`
 - `published_at`
 - `modified_at`
 

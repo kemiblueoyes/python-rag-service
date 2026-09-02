@@ -1,4 +1,4 @@
-# ADR-005: Select Embedding Provider
+# ADR-006: Select Embedding Provider
 
 ## Status
 

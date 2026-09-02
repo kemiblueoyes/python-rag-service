@@ -8,6 +8,8 @@ Accepted
 
 2026-08-09
 
+Amended 2026-09-02 to record `/health` as an operational endpoint.
+
 ## Context
 
 The RAG service is designed as a reusable retrieval system rather than a
@@ -38,14 +40,34 @@ The service needs to support two primary use cases:
 2.  Applications that want a complete retrieval-augmented answer
     experience.
 
+Operators and the host environment also need a way to confirm that the
+service process is running. That check is an operational concern, not a
+third RAG capability.
+
 ## Decision
 
-Expose only two public API endpoints:
+Expose only two public user-facing capability API endpoints:
 
--   `/search`
--   `/answer`
+- `POST /v1/search`
+- `POST /v1/answer`
 
 The service will not expose internal pipeline operations as public
+endpoints.
+
+## Later refinement (2026-09-02)
+
+The two user-facing capability endpoints remain `/v1/search` and
+`/v1/answer`. `/health` was added as an operational endpoint, not as a
+third application capability.
+
+`/health` reports that the service process is running. It does not
+retrieve content, generate answers, or expose internal pipeline stages.
+
+Unlike the capability endpoints, `/health` is unauthenticated and is not
+versioned under `/v1/`.
+
+This does not change the original rule: the public API still does not
+expose ingest, chunking, embedding, indexing, or generation as separate
 endpoints.
 
 ## Endpoint Responsibilities
@@ -83,6 +105,13 @@ It coordinates:
 This endpoint is intended for applications that need a complete
 question-answering experience without implementing the retrieval
 workflow themselves.
+
+### `/health`
+
+The `/health` endpoint is an operational liveness check.
+
+It confirms that the service process has started and can respond. It is
+not a retrieval, generation, or dependency-readiness API.
 
 ## Options Considered
 
@@ -148,6 +177,8 @@ Advantages:
     workflows
 -   Internal implementation details remain private
 -   Future pipeline improvements do not require API changes
+-   Operators can check process liveness without a third capability
+    endpoint or an authenticated RAG call
 
 ### Negative
 
@@ -160,13 +191,14 @@ Advantages:
 ## Future Considerations
 
 Additional endpoints should only be added when they represent stable
-user-facing capabilities rather than internal implementation steps.
+user-facing capabilities or operational needs, rather than internal
+implementation steps.
 
 Potential future additions may include:
 
 -   Evaluation endpoints
 -   Administrative indexing workflows
--   Health and observability endpoints
+-   Readiness, metrics, or other observability endpoints
 -   Configuration or management APIs
 
 Any future endpoint should be evaluated against the same principle:
