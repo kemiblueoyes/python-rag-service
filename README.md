@@ -21,9 +21,11 @@ A WordPress reference client is also implemented. It proxies browser requests th
 
 Phase 10 added a versioned evaluation framework for retrieval and generated answers. The current 22-case dataset includes answerable, expected-empty, synonym, ambiguous, confusable, multi-section, and updated-content cases. The final answer evaluation passes all structural checks and all 14 answerable cases pass the human qualitative review. One known retrieval-coverage limitation remains for a compound multi-section query.
 
-See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
+See the implementation roadmap in `docs/design/00-implementation-roadmap.md`.
 
 ## Current capabilities
+
+### Ingestion and indexing
 
 * WordPress REST API connector with configurable site profiles
 * Platform-neutral canonical document model
@@ -33,6 +35,9 @@ See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 * Qdrant vector and chunk-metadata storage
 * Full vector-index rebuilds
 * Incremental handling of new, updated, unchanged, and removed documents
+
+### Retrieval
+
 * BM25 lexical retrieval over the indexed chunk corpus
 * Vector retrieval through Qdrant
 * Reciprocal rank fusion of lexical and vector candidates
@@ -42,16 +47,20 @@ See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 * Duplicate removal across retrieval candidates
 * Configurable vector, lexical, and fused candidate depths
 * Retrieval-service factory for application-wide dependency wiring
+* Shared hybrid retrieval service used by both public endpoints
+
+### Public API
+
 * Public `POST /v1/search` endpoint
 * Public `POST /v1/answer` endpoint
-* Shared hybrid retrieval service used by both public endpoints
+* Operational `GET /health` endpoint (liveness check)
 * Explicit search and answer request/response schemas
 * Empty search results and insufficient-evidence answers for unsupported questions
 * Standard API error responses for validation, retrieval, and answer-generation failures
 * FastAPI-generated OpenAPI and interactive API documentation for both endpoints
-* API tests for successful, empty-result, validation-error, service-unavailable, and OpenAPI behavior
-* Live embedding, storage, retrieval, reranking, and filtering checks
-* Live end-to-end verification through both public API workflows
+
+### Answer generation
+
 * Configurable context-token budget with complete chunks preserved in retrieval order
 * Request-local source identifiers such as `S1`, `S2`, and `S3`
 * Provider-neutral prompt, token-counter, language-model, lexical-retrieval, and reranking interfaces
@@ -61,12 +70,10 @@ See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 * Evidence-sufficiency detection with consistent citation requirements
 * Citation-integrity validation for inline and structured citation identifiers
 * Answer-generation factory for application-wide dependency wiring
-* Live end-to-end answer-generation smoke test with a reviewable Markdown report
-* Versioned retrieval and answer evaluation dataset
-* Automated retrieval metrics and expected-empty evaluation
-* Deterministic answer-structure and citation evaluation
-* Human qualitative answer evaluation for support, completeness, unsupported details, and focus
-* JSON and Markdown evaluation artifacts
+* Final citation identifiers normalized by first appearance in the generated answer
+
+### WordPress client
+
 * WordPress reference client for `POST /v1/search` and `POST /v1/answer`
 * Server-side WordPress REST proxy between the browser and Python API
 * Search and Ask interface exposed through a WordPress shortcode
@@ -76,7 +83,18 @@ See the implementation roadmap in `docs/design/007-implementation-roadmap.md`.
 * Safe rendering of generated paragraphs, lists, and bold text
 * Clickable inline citations mapped to validated sources
 * Responsive desktop and mobile client layout
-* Final citation identifiers normalized by first appearance in the generated answer
+
+### Evaluation and verification
+
+* API tests for successful, empty-result, validation-error, service-unavailable, and OpenAPI behavior
+* Live embedding, storage, retrieval, reranking, and filtering checks
+* Live end-to-end verification through both public API workflows
+* Live end-to-end answer-generation smoke test with a reviewable Markdown report
+* Versioned retrieval and answer evaluation dataset
+* Automated retrieval metrics and expected-empty evaluation
+* Deterministic answer-structure and citation evaluation
+* Human qualitative answer evaluation for support, completeness, unsupported details, and focus
+* JSON and Markdown evaluation artifacts
 
 ## Public API
 
