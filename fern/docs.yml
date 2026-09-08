@@ -1,0 +1,9 @@
+instances:
+  - url: https://python-rag-service.docs.buildwithfern.com
+title: Python RAG Service | Documentation
+navigation:
+  - api: API Reference
+    paginated: true
+colors:
+  accentPrimary: '#ffffff'
+  background: '#000000'
