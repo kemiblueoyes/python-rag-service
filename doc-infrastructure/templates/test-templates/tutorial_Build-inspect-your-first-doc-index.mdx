@@ -1,0 +1,92 @@
+---
+id: TutIndx
+title: Build and inspect your first documentation index
+subtitle: Learn how WordPress content becomes retrievable documentation by inspecting each stage of the indexing process.
+description: Build and inspect a WordPress documentation index to learn how source content becomes canonical documents, chunks, embeddings, and retrieval results.
+content_type: tutorial
+lifecycle_status: draft
+topics: [topic-indexing]
+components: [component-wordpress-connector, component-indexing-pipeline]
+prerequisites: [ConfSrv]
+next_steps: [SrchDoc, GenAns]
+related_pages: [IndxWP, RIndxUpdt, IndxPipe]
+last_modified: 2026-09-14
+---
+
+In this tutorial, you'll build a documentation index from a configured WordPress source and inspect what the RAG service produces along the way.
+
+Rather than treating indexing as a single command, you'll follow the content through the main stages of the pipeline. By the end, you'll have seen how WordPress content is transformed into the retrieval-ready content the service can search.
+
+## Prerequisites
+
+[Configure the service](): Configure the required providers and WordPress content source before building the index.
+
+<Steps toc={true}>
+
+## Build the documentation index
+
+Run the project's full indexing workflow against the configured WordPress source.
+
+As the indexing process runs, the service retrieves the source content and begins transforming it into the internal forms used by the retrieval system.
+
+The important thing to notice at this stage is that indexing is not simply copying WordPress pages into a database. The source content moves through several transformations before it can be retrieved effectively.
+
+## Inspect the canonical documents
+
+Inspect the canonical documents created from the WordPress source content.
+
+Canonical documents give the rest of the indexing pipeline a consistent representation of content regardless of how the original source stored it.
+
+Look at a document and identify information carried forward from WordPress, such as its content, title, source information, and other document metadata available in the generated representation.
+
+At this point, the content has been normalized into the service's document model, but it has not yet been reduced to the smaller units used for retrieval.
+
+## Inspect the chunks
+
+Next, inspect the chunks created from the canonical documents.
+
+Compare a chunk with its source document. Notice that the indexing pipeline preserves enough context for the chunk to remain meaningful while breaking a larger document into smaller retrieval units.
+
+This is the content the retrieval system will work with when trying to find information relevant to a user's query.
+
+## Inspect the embeddings and vector records
+
+Inspect the records created from the chunks after embedding.
+
+Each indexed chunk is represented in a form that allows the retrieval system to compare it with a user's query. The stored record also retains the content and metadata needed to identify and return the source material later.
+
+Notice the relationship between the earlier stages:
+
+WordPress source content becomes a canonical document, the canonical document becomes chunks, and those chunks become retrieval-ready records.
+
+## Inspect retrieval results
+
+Use the completed index to retrieve documentation for a query that the indexed content can answer.
+
+Inspect the returned results and identify which chunks were selected from the content you examined earlier.
+
+This final step connects the indexing process to its purpose: the transformations you inspected allow the service to locate useful pieces of source documentation when a user submits a query.
+
+</Steps>
+
+## What you learned
+
+You followed documentation from its WordPress source through the main stages that make it retrievable:
+
+- Source content is mapped into a consistent canonical document model.
+- Canonical documents are divided into smaller retrieval-ready chunks.
+- Chunks are embedded and stored with the information needed for retrieval.
+- Retrieval uses the resulting index to find documentation relevant to a query.
+
+The index is therefore more than a stored copy of the source content. It is the result of a processing pipeline that prepares documentation to be found and returned in useful pieces.
+
+## Next steps
+
+- [Search documentation](): Use the completed index to retrieve relevant documentation through the Search API.
+- [Generate grounded answers](): Use retrieved documentation as evidence for generated answers.
+
+## Related pages
+
+- [Index WordPress content](): Follow the task-focused procedure for creating an initial WordPress documentation index.
+- [Re-index and update content](): Keep an existing index synchronized as WordPress content changes.
+- [Indexing pipeline](): Learn in more depth how source content moves through canonical mapping, chunking, embeddings, and storage.

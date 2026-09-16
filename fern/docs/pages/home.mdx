@@ -1,0 +1,27 @@
+---
+title: Python RAG Service
+subtitle: Test subtitle
+description: A platform-agnostic Python RAG service for indexing documentation, retrieving relevant chunks, and generating grounded answers with citations.
+---
+
+The Python RAG Service indexes documentation, performs hybrid retrieval, and generates grounded answers with validated citations.
+
+WordPress is the first content source and the first client. The retrieval and answer-generation engine stays independent of WordPress so additional sources and clients can be added later.
+
+## Public API
+
+The public API has two capability endpoints and one operational endpoint:
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /v1/search` | Retrieve ranked documentation chunks without generating an answer. |
+| `POST /v1/answer` | Retrieve documentation and generate a grounded answer with validated sources. |
+| `GET /health` | Confirm that the service process is running. |
+
+Search and Answer share the same retrieval pipeline: semantic vector search, BM25 over indexed chunks, reciprocal rank fusion, Voyage reranking, and a query-level support gate. Answer then assembles context, generates a grounded response, and validates citations.
+
+Indexing is an internal operation and is not exposed through the public API.
+
+Search and Answer require a shared API key. `/health` does not.
+
+See the [API Reference](/reference) for request and response schemas.

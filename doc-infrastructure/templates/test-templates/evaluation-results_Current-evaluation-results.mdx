@@ -1,0 +1,101 @@
+---
+id: CurEvRes
+title: Current evaluation results
+subtitle: Review the latest retrieval, support-detection, answer-structure, and qualitative evaluation results.
+description: See the latest retrieval, support-detection, answer-structure, and qualitative evaluation results for the current dataset and implementation.
+content_type: eval_results
+lifecycle_status: draft
+topics: [topic-retrieval-evaluation, topic-answer-evaluation, topic-support-detection]
+components: [component-evaluation-framework, component-retrieval-service, component-answer-generation-service]
+dataset_version: current-dataset-version
+evaluation_version: current-evaluation-version
+next_steps: [KnLmt]
+related_pages: [RtrvlEv, AnsEv, EvArch, HowEv]
+last_modified: 2026-09-15
+---
+
+These results describe the current evaluated implementation of the Python RAG
+service. They cover retrieval quality, support detection, answer structure, and
+qualitative answer quality using the current evaluation dataset.
+
+The results represent a specific dataset and implementation state rather than
+a general measure of how the service will perform for every corpus or query.
+
+## Evaluation dataset
+
+**Dataset version:** current-dataset-version  
+**Evaluation version:** current-evaluation-version
+
+The evaluation dataset contains the test cases used to measure retrieval and
+answer behavior for this implementation.
+
+## Retrieval results
+
+| Metric | Result |
+| --- | ---: |
+| Precision@5 | result |
+| Recall@5 | result |
+| Reciprocal rank | result |
+
+These metrics measure whether relevant documentation is retrieved and how
+highly relevant results appear in the ranked result set.
+
+## Support-detection results
+
+| Metric | Result |
+| --- | ---: |
+| Supported queries handled correctly | result |
+| Unsupported queries handled correctly | result |
+
+Support-detection evaluation checks whether the service can distinguish
+between queries the indexed documentation can support and queries for which it
+should return no supported result or answer.
+
+## Answer-structure results
+
+| Check | Result |
+| --- | ---: |
+| Grounded answer structure | result |
+| Source citation structure | result |
+| Evidence sufficiency behavior | result |
+
+These checks evaluate whether generated answers follow the expected response
+structure and represent supporting evidence correctly.
+
+## Qualitative results
+
+Summarize the human-reviewed answer quality results here, including recurring
+strengths or problems found across the evaluated cases.
+
+## Findings
+
+Summarize the most important conclusions from the current evaluation.
+
+For example:
+
+- Identify retrieval patterns that consistently perform well.
+- Call out cases where relevant content is retrieved but does not fully support
+  the query.
+- Note recurring answer or citation issues.
+- Identify improvements or regressions compared with the previous evaluated
+  implementation when a comparison is available.
+
+## Limitations
+
+These results apply to the current evaluation dataset, corpus, configuration,
+and implementation. They do not establish performance for other documentation
+sets or every possible user query.
+
+Document any additional limitations that affect how the current results should
+be interpreted.
+
+## Next steps
+
+[Known limitations](): Review known limitations that affect the current service and evaluation results.
+
+## Related pages
+
+- [How evaluation works](): Understand what the service evaluates and why.
+- [Retrieval evaluation](): Look up the metrics and criteria used to evaluate retrieval.
+- [Answer evaluation](): Look up the checks and criteria used to evaluate generated answers.
+- [Evaluation architecture](): Understand how evaluation datasets, commands, result artifacts, and review fit together.

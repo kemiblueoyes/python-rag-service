@@ -1,0 +1,97 @@
+---
+id: RtrvPipe
+title: Retrieval pipeline
+subtitle: Understand how queries move through hybrid retrieval, reciprocal rank fusion, reranking, and support detection before results are returned.
+description: Learn how queries move through vector and BM25 retrieval, reciprocal rank fusion, reranking, and the support gate in the Python RAG service.
+content_type: explanation
+lifecycle_status: draft
+topics: [topic-architecture, topic-semantic-retrieval, topic-lexical-retrieval, topic-hybrid-search, topic-reranking, topic-support-detection]
+components: [component-retrieval-service]
+next_steps: [AnsGenCit]
+related_pages: [SrchDoc, RtrvlEv, CurEvRes, SysArch, IndxPipe]
+last_modified: 2026-09-14
+---
+
+The retrieval pipeline determines which indexed documentation is relevant enough to return for a query. Rather than relying on a single retrieval method, the service combines vector and lexical retrieval, merges their rankings, reranks the strongest candidates, and then checks whether the remaining results actually support the query.
+
+At a high level, a query moves through the pipeline like this:
+
+**Query → Vector retrieval + BM25 retrieval → Reciprocal rank fusion → Reranking → Support gate → Results**
+
+If the pipeline does not find sufficiently supported documentation, it can return no results instead of returning content simply because it is the closest available match.
+
+## Why use hybrid retrieval
+
+Vector and lexical retrieval approach relevance differently.
+
+**Vector retrieval** is useful when relevant content expresses the same idea as the query without using exactly the same words.
+
+**BM25 lexical retrieval** is useful when specific terms, names, phrases, or other exact language in the query are important to finding the right documentation.
+
+Using both gives the retrieval pipeline more than one way to find useful candidates. A result that one retrieval method misses may still be found by the other.
+
+The service therefore treats vector and BM25 retrieval as complementary signals rather than choosing one as the only source of results.
+
+## Retrieve candidates
+
+When a query enters the retrieval service, the service runs vector and BM25 retrieval against the indexed documentation.
+
+Each retrieval method produces its own ranked candidate results.
+
+At this stage, the rankings represent two different views of which chunks are most relevant to the query. They cannot simply be treated as one shared ranking yet.
+
+## Combine rankings with reciprocal rank fusion
+
+The service combines the vector and BM25 result lists using **reciprocal rank fusion (RRF)**.
+
+RRF combines results based on where they rank in the separate retrieval lists. This allows a document that performs well across both retrieval methods—or particularly well in one of them—to move forward as a strong candidate without requiring the two retrieval systems to produce directly comparable scores.
+
+The result is a single combined ranking that represents evidence from both semantic and lexical retrieval.
+
+## Rerank the combined results
+
+The strongest candidates from the combined ranking are reranked.
+
+Reranking takes a closer look at the relationship between the query and the candidate content and produces a more focused ordering of the results.
+
+This stage helps distinguish between documents that are generally related to the query and documents that are more useful for answering what the query is actually asking.
+
+## Apply the support gate
+
+A high ranking does not automatically mean that the documentation answers the query.
+
+Retrieval systems can still return the closest available content even when the corpus does not contain a satisfactory answer. That content may be topically related without actually supporting the user's question.
+
+The support gate adds a final decision:
+
+**Do the retrieved results provide enough support for this query to be returned?**
+
+If they do, the service returns the supported results.
+
+If they do not, the service can return an empty result instead of presenting weak or misleading documentation as relevant.
+
+This distinction is especially important for queries whose answer does not exist in the indexed corpus.
+
+## How the stages work together
+
+Each stage solves a different retrieval problem:
+
+- **Vector retrieval** finds candidates using semantic similarity.
+- **BM25 retrieval** finds candidates using lexical matching.
+- **Reciprocal rank fusion** combines the two rankings.
+- **Reranking** improves the ordering of the strongest combined candidates.
+- **The support gate** decides whether the final results sufficiently support the query.
+
+The pipeline therefore narrows the candidate set in stages rather than asking a single retrieval score to make every relevance decision.
+
+## Next steps
+
+[Answer generation and citations](): Learn how retrieved evidence is assembled and used to generate grounded answers.
+
+## Related pages
+
+- [Search documentation](): Use the retrieval pipeline through `/v1/search`.
+- [Retrieval evaluation](): Review how retrieval quality is measured.
+- [Current evaluation results](): See how the current retrieval system performs against the evaluation dataset.
+- [System architecture](): See where the retrieval service fits within the larger RAG system.
+- [Indexing pipeline](): Understand how documentation is prepared and stored before retrieval.

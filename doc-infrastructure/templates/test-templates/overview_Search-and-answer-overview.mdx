@@ -1,0 +1,91 @@
+---
+id: SrchAnsOvrvw
+title: Search and answer overview
+subtitle: Understand how documentation search and grounded answer generation work together, and choose the right API for your use case.
+description: Understand how search and grounded answer generation differ, how each request flows through retrieval, and when to use /v1/search or /v1/answer.
+content_type: overview
+lifecycle_status: draft
+topics: [topic-retrieval, topic-answer-generation, topic-api]
+components: [component-retrieval-service, component-answer-generation-service, component-public-api]
+next_steps: [SrchDoc, GenAns]
+related_pages: [SrchAPI, AnsAPI, RtrvPipe, AnsGenCit]
+last_modified: 2026-09-14
+---
+
+The RAG API provides two ways to work with indexed documentation: retrieve relevant source content with `/v1/search`, or generate a grounded answer from retrieved documentation with `/v1/answer`.
+
+Both begin with retrieval. The difference is what happens after relevant documentation is found. Search returns the retrieved documentation so your application can decide how to use it. Answer continues into generation and returns an answer grounded in the retrieved evidence.
+
+## Choose search or answer
+
+Use **search** when your application needs the retrieved documentation itself. Use **answer** when you want the service to use that documentation to generate a response.
+
+| Use | `/v1/search` | `/v1/answer` |
+| --- | --- | --- |
+| Retrieve relevant documentation | Yes | Yes, as part of answer generation |
+| Return retrieval results directly | Yes | No |
+| Generate a natural-language answer | No | Yes |
+| Ground the response in retrieved documentation | n/a | Yes |
+| Best fit | Search experiences, retrieval workflows, custom downstream processing | Question answering and experiences that need a generated response |
+
+## How search and answer work together
+
+At a high level, both requests begin the same way:
+
+**Query → Retrieval**
+
+A search request stops after retrieval and returns the relevant documentation:
+
+**Query → Retrieval → Search results**
+
+An answer request uses the retrieved documentation as evidence for generation:
+
+**Query → Retrieval → Answer generation → Grounded answer + sources**
+
+This shared retrieval step is important. `/v1/answer` does not answer independently of the documentation index; it builds on the same retrieval system used by `/v1/search`.
+
+## Key capabilities
+
+<CardGroup cols={2}>
+
+<Card
+  title="Search documentation"
+  href="/search-and-answer/search-documentation"
+>
+  Retrieve documentation relevant to a query, refine retrieval with supported
+  filters, and work directly with the returned results.
+
+  **Explore search →**
+</Card>
+
+<Card
+  title="Generate grounded answers"
+  href="/search-and-answer/generate-grounded-answers"
+>
+  Generate an answer from retrieved documentation and return source information
+  that connects the response to its supporting evidence.
+
+  **Explore grounded answers →**
+</Card>
+
+</CardGroup>
+
+## What each API returns
+
+`/v1/search` returns the documentation selected by retrieval. Applications can use those results to build a search interface, display source material, or pass the retrieved content into another workflow.
+
+`/v1/answer` returns a generated response based on retrieved documentation along with source information that allows the response to be connected back to its evidence.
+
+The API reference pages provide the complete request and response schemas for each endpoint.
+
+## Next steps
+
+- [Search documentation](): Retrieve relevant documentation directly with `/v1/search`.
+- [Generate grounded answers](): Generate an answer grounded in retrieved documentation with `/v1/answer`.
+
+## Related pages
+
+- [Search API](): Review the request and response contract for `/v1/search`.
+- [Answer API](): Review the request and response contract for `/v1/answer`.
+- [Retrieval pipeline](): Understand how documentation is retrieved and ranked before results are returned or used for answer generation.
+- [Answer generation and citations](): Understand how retrieved evidence becomes a grounded answer with source information.

@@ -1,9 +1,63 @@
 instances:
   - url: https://python-rag-service.docs.buildwithfern.com
 title: Python RAG Service | Documentation
-navigation:
-  - api: API Reference
-    paginated: true
+
+default-language: python
+
+metadata:
+  og:site_name: "Python RAG Service Documentation"
+  og:title: "Python RAG Service Documentation"
+  og:description: "to come"
+  og:url: "https://python-rag-service.docs.buildwithfern.com/"
+  og:locale: "en_US"
+
+theme:
+  page-actions: toolbar
+
+layout:
+  tabs-placement: header
+  hide-nav-links: true
+css: styles.css
 colors:
   accentPrimary: '#ffffff'
-  background: '#000000'
+  background: '#02235b'
+
+tabs:
+  docs:
+    display-name: Docs
+    icon: book-open
+    slug: docs
+  api:
+    display-name: API Reference
+    icon: puzzle
+    slug: reference
+navigation:
+  - tab: docs
+    layout:
+      - page: Home
+        path: docs/pages/home.mdx
+      - section: Get started
+        contents:
+          - page: Quickstart
+            path: docs/pages/quickstart.mdx
+          - page: Install
+            path: docs/pages/install.mdx
+          - page: Configure the service
+            path: docs/pages/configure-service.mdx
+          - page: Authentication
+            path: docs/pages/authentication.mdx
+  - tab: api
+    layout:
+      - api: API Reference
+        paginated: true
+        skip-slug: true
+        layout:
+          - endpoint: POST /v1/search
+            slug: search
+            title: Search indexed docs
+          - endpoint: POST /v1/answer
+            slug: answer
+            title: Generate grounded answer
+          - endpoint: GET /health
+            slug: health
+            title: Health check

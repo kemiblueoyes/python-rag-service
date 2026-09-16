@@ -1,0 +1,40 @@
+---
+title: Search
+description: Retrieve ranked documentation chunks through the shared hybrid retrieval pipeline without generating an answer.
+---
+
+`POST /v1/search` retrieves documentation chunks through the shared hybrid retrieval pipeline without generating an answer.
+
+The endpoint validates the request, generates the query embedding, searches the vector database, searches indexed chunks with BM25, removes duplicates, fuses the ranked lists, reranks the fused candidates, and applies the query-level support gate.
+
+## Request
+
+```json
+{
+  "query": "How does metadata improve retrieval?",
+  "filters": {
+    "source": "wordpress",
+    "content_type": "page"
+  },
+  "limit": 5
+}
+```
+
+- `query` is required. Empty or whitespace-only queries are rejected.
+- `filters` is optional. Supported keys are `document_id`, `source`, `source_id`, and `content_type`. Each value may be a single non-empty string or a list of non-empty strings.
+- `limit` is optional. The default is `5`. The value must be at least `1`.
+
+## Successful response
+
+A matching query returns `200 OK` with ranked results. A valid query that does not pass the retrieval support gate also returns `200 OK`, with an empty `results` array.
+
+See the [API Reference](/reference/search) for the full request and response schemas.
+
+## Errors
+
+| Status | Code | When |
+|---|---|---|
+| `401` | `authentication_failed` | The API key is missing or incorrect. |
+| `422` | `validation_error` | The request does not match the public schema. |
+| `503` | `authentication_unavailable` | `RAG_API_KEY` is not configured on the server. |
+| `503` | `retrieval_unavailable` | A retrieval dependency cannot complete the request. |

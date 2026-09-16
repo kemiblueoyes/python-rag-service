@@ -11,7 +11,7 @@ FilterValue = NonEmptyString | list[NonEmptyString]
 
 
 class SearchFilters(BaseModel):
-    """Supported metadata filters for semantic search."""
+    """Supported metadata filters for hybrid search."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -80,7 +80,7 @@ class SearchResult(BaseModel):
         description="Trusted URL for the source document.",
     )
     score: float = Field(
-        description="Semantic similarity score for the result.",
+        description="Rerank score for the result.",
     )
 
 

@@ -1,0 +1,14 @@
+/* hide-nav-links is set in docs.yml, but the preview bundle still
+   renders the footer Previous/Next toolbar. */
+nav[aria-label="Up next"] {
+  display: none !important;
+}
+
+.fern-sidebar-link[data-state="active"]{
+    background-color: #696900;
+    color: #fff;
+}
+
+.fern-layout-guide .fern-mdx-link{ 
+    color: #a9a901;
+}

@@ -24,7 +24,7 @@ router = APIRouter(
     response_model=SearchResponse,
     summary="Search indexed documentation",
     description=(
-        "Retrieve documentation chunks ranked by semantic similarity "
+        "Retrieve documentation chunks through the hybrid retrieval pipeline "
         "without generating an answer."
     ),
     responses={

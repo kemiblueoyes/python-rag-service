@@ -1,0 +1,54 @@
+---
+id: IndxWP
+title: Index WordPress content
+subtitle: Create your initial documentation index from a configured WordPress source.
+description: Create an initial WordPress documentation index and verify canonical documents, chunks, embeddings, and vector records were created successfully.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-indexing]
+components: [component-wordpress-connector, component-indexing-pipeline]
+prerequisites: [ConfSrv]
+next_steps: [Auth]
+related_pages: [RIndxUpdt, TutIndx, IndxPipe]
+last_modified: 2026-09-14
+---
+
+Use the full indexing workflow to create the initial documentation index from a
+configured WordPress source. The indexing process creates canonical documents,
+chunks, embeddings, and vector records that make the source content available
+for retrieval.
+
+## Prerequisites
+
+[Configure the service](): Configure the required providers and content source.
+
+<Steps toc={true}>
+
+## Run the full indexing command
+
+Run the project's full indexing command against the configured WordPress source.
+
+Allow the indexing process to complete before verifying the generated artifacts.
+
+</Steps>
+
+The initial WordPress documentation index is now created and ready to verify.
+
+## Verification
+
+Confirm that the indexing run produced the expected artifacts:
+
+- **Canonical documents** — WordPress source content was converted into the canonical document model.
+- **Chunks** — the canonical documents were divided into retrieval-ready chunks.
+- **Embeddings** — embeddings were generated for the indexed chunks.
+- **Vector records** — the resulting records were stored for retrieval.
+
+## Next steps
+
+[Authentication](): Secure requests to the RAG API.
+
+## Related pages
+
+- [Re-index and update content](): Keep an existing documentation index synchronized with WordPress.
+- [Build and inspect your first documentation index](): Learn how source content moves through the indexing process.
+- [Indexing pipeline](): Understand how WordPress content becomes retrieval-ready content.

@@ -1,0 +1,67 @@
+---
+id: Home
+title: Python RAG Service
+subtitle: Index documentation, retrieve relevant content, and generate grounded answers through a reusable RAG service and API.
+description: Learn what the Python RAG service does, its core capabilities and use cases, and where to start for deployment, integration, evaluation, or extension.
+content_type: overview
+lifecycle_status: draft
+topics: [topic-architecture]
+next_steps: [Qstrt, SysArch, HowEv]
+last_modified: 2026-09-14
+---
+
+The Python RAG Service is a platform-agnostic service for making documentation
+retrievable and usable by AI applications. It takes documentation from a
+content source, prepares it for retrieval, exposes search and answer
+capabilities through an API, and provides an evaluation framework for checking
+how well those systems perform.
+
+The documentation is designed for readers who want to deploy or integrate the
+service as well as those who want to understand, evaluate, or extend how it
+works.
+
+## Key capabilities
+
+<CardGroup cols={2}>
+
+<Card title="Index documentation" href="/">
+Retrieve source content and transform it into canonical documents, chunks,
+embeddings, and records that can be used for retrieval.
+</Card>
+
+<Card title="Search documentation" href="/">
+Retrieve relevant documentation using a pipeline that combines vector and
+lexical retrieval, ranking, and support detection.
+</Card>
+
+<Card title="Generate grounded answers" href="/">
+Generate answers from retrieved documentation and return source information
+that connects the answer back to its evidence.
+</Card>
+
+<Card title="Integrate through an API" href="/">
+Use the public Search and Answer APIs from applications and reference clients.
+</Card>
+
+<Card title="Evaluate retrieval and answers" href="/">
+Run versioned evaluations to examine retrieval quality, support detection,
+answer behavior, and qualitative answer quality.
+</Card>
+
+</CardGroup>
+
+## Common use cases
+
+Use the Python RAG Service when you want to:
+
+- make an existing documentation collection searchable through a RAG API
+- add documentation search or grounded answers to another application
+- use WordPress as a documentation source or reference client
+- inspect and experiment with indexing, retrieval, and answer-generation pipelines
+- evaluate how well a RAG implementation retrieves evidence and produces grounded answers
+
+## Next steps
+
+- [Quickstart](): Get the service running locally and make your first successful API request.
+- [System architecture](): Understand the major components of the service and how they fit together.
+- [How evaluation works](): Understand what the service evaluates and why.

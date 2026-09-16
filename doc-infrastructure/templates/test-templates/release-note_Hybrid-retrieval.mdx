@@ -1,0 +1,34 @@
+---
+id: hybrid-retrieval
+title: Hybrid retrieval
+subtitle: Search now combines semantic and lexical retrieval before reranking results.
+description: Hybrid retrieval combines vector search and BM25 lexical search using reciprocal rank fusion before reranking results.
+content_type: release_note
+lifecycle_status: published
+topics: [topic-semantic-retrieval, topic-lexical-retrieval, topic-hybrid-search, topic-reranking]
+components: [component-retrieval-service]
+tags: [retrieval, search]
+related_pages: [RtrvPipe, SrchDoc, RtrvlEv, CurEvRes]
+last_modified: 2026-09-15
+---
+
+Search now retrieves candidates using both vector similarity and BM25 lexical
+matching before combining and reranking the results. This gives the retrieval
+pipeline access to both semantic similarity and exact-term matching.
+
+### What's changed
+
+The retrieval pipeline now:
+
+- retrieves candidates from vector search and BM25 search
+- combines the two ranked result sets using reciprocal rank fusion
+- reranks the combined candidates before returning results
+- applies support detection after retrieval to avoid returning results for
+  queries the indexed documentation does not support
+
+### Related documentation
+
+- [Retrieval pipeline](): Understand how hybrid retrieval, reciprocal rank fusion, reranking, and support detection work together.
+- [Search documentation](): Learn how to retrieve documentation through the Search API.
+- [Retrieval evaluation](): See how retrieval quality is measured.
+- [Current evaluation results](): Review the latest retrieval and support-detection results.
