@@ -1,0 +1,4 @@
+Hybrid retrieval
+Hybrid search
+Lexical search
+Semantic search

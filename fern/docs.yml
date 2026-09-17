@@ -46,6 +46,10 @@ navigation:
             path: docs/pages/configure-service.mdx
           - page: Authentication
             path: docs/pages/authentication.mdx
+      - section: Reference
+        contents:
+          - page: Glossary
+            path: docs/pages/reference/glossary.mdx
   - tab: api
     layout:
       - api: API Reference
