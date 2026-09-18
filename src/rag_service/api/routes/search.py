@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends
 
 from rag_service.api.auth import require_api_key
 from rag_service.api.dependencies import get_retrieval_service
@@ -18,6 +18,63 @@ router = APIRouter(
     dependencies=[Depends(require_api_key)],
 )
 
+RESULTS_FOUND_REQUEST = {
+    "query": "How does metadata improve retrieval?",
+    "filters": {
+        "content_type": "page",
+    },
+    "limit": 3,
+}
+
+RESULTS_FOUND_RESPONSE = {
+    "query": "How does metadata improve retrieval?",
+    "results": [
+        {
+            "chunk_id": "wordpress:page:1:chunk:0",
+            "document_id": "wordpress:page:1",
+            "title": "Metadata Strategy",
+            "heading_path": ["Metadata filtering"],
+            "anchor": "metadata-filtering",
+            "excerpt": (
+                "Metadata can narrow the documents considered "
+                "during retrieval."
+            ),
+            "url": "https://example.test/metadata",
+            "score": 0.91,
+        }
+    ],
+}
+
+NO_RESULTS_REQUEST = {
+    "query": "What is the capital of Mars?",
+}
+
+NO_RESULTS_RESPONSE = {
+    "query": "What is the capital of Mars?",
+    "results": [],
+}
+
+SEARCH_REQUEST_EXAMPLES = {
+    "results_found": {
+        "summary": "Results found",
+        "value": RESULTS_FOUND_REQUEST,
+    },
+    "no_results": {
+        "summary": "No relevant results",
+        "value": NO_RESULTS_REQUEST,
+    },
+}
+
+SEARCH_RESPONSE_EXAMPLES = {
+    "results_found": {
+        "summary": "Results found",
+        "value": RESULTS_FOUND_RESPONSE,
+    },
+    "no_results": {
+        "summary": "No relevant results",
+        "value": NO_RESULTS_RESPONSE,
+    },
+}
 
 @router.post(
     "/search",
@@ -28,6 +85,14 @@ router = APIRouter(
         "without generating an answer."
     ),
     responses={
+        200: {
+            "description": "Successful Response",
+            "content": {
+                "application/json": {
+                    "examples": SEARCH_RESPONSE_EXAMPLES,
+                }
+            },
+        },
         401: {
             "model": ErrorResponse,
             "description": "Authentication failed.",
@@ -43,7 +108,10 @@ router = APIRouter(
     },
 )
 def search(
-    request: SearchRequest,
+    request: Annotated[
+        SearchRequest,
+        Body(openapi_examples=SEARCH_REQUEST_EXAMPLES),
+    ],
     retrieval_service: Annotated[
         RetrievalService,
         Depends(get_retrieval_service),

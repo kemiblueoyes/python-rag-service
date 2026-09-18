@@ -1,3 +1,8 @@
+# GENERATED FILE — DO NOT EDIT DIRECTLY.
+# Source: FastAPI application schema.
+# Regenerate with:
+#   uv run python -m rag_service.commands.generate_openapi
+
 openapi: 3.1.0
 info:
   title: Python RAG Service
@@ -8,8 +13,7 @@ paths:
       tags:
       - Search
       summary: Search indexed documentation
-      description:
-        Retrieve documentation chunks through the hybrid retrieval pipeline
+      description: Retrieve documentation chunks through the hybrid retrieval pipeline
         without generating an answer.
       operationId: search_v1_search_post
       requestBody:
@@ -17,6 +21,18 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SearchRequest'
+            examples:
+              results_found:
+                summary: Results found
+                value:
+                  query: How does metadata improve retrieval?
+                  filters:
+                    content_type: page
+                  limit: 3
+              no_results:
+                summary: No relevant results
+                value:
+                  query: What is the capital of Mars?
         required: true
       responses:
         '200':
@@ -25,6 +41,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponse'
+              examples:
+                results_found:
+                  summary: Results found
+                  value:
+                    query: How does metadata improve retrieval?
+                    results:
+                    - chunk_id: wordpress:page:1:chunk:0
+                      document_id: wordpress:page:1
+                      title: Metadata Strategy
+                      heading_path:
+                      - Metadata filtering
+                      anchor: metadata-filtering
+                      excerpt: Metadata can narrow the documents considered during
+                        retrieval.
+                      url: https://example.test/metadata
+                      score: 0.91
+                no_results:
+                  summary: No relevant results
+                  value:
+                    query: What is the capital of Mars?
+                    results: []
         '401':
           description: Authentication failed.
           content:
@@ -50,14 +87,25 @@ paths:
       tags:
       - Answer
       summary: Generate a grounded answer
-      description: Retrieve relevant documentation and generate an answer grounded in validated
-        source content.
+      description: Retrieve relevant documentation and generate an answer grounded
+        in validated source content.
       operationId: answer_v1_answer_post
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/AnswerRequest'
+            examples:
+              grounded_answer:
+                summary: Grounded answer
+                value:
+                  query: Why does inconsistent terminology cause retrieval failures?
+                  filters:
+                    source: wordpress
+              insufficient_evidence:
+                summary: Insufficient evidence
+                value:
+                  query: What is the capital of Mars?
         required: true
       responses:
         '200':
@@ -66,6 +114,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AnswerResponse'
+              examples:
+                grounded_answer:
+                  summary: Grounded answer
+                  value:
+                    query: Why does inconsistent terminology cause retrieval failures?
+                    answer: Inconsistent terminology can cause retrieval failures
+                      because the query and documentation may use different language
+                      for the same concept. [S1]
+                    sources:
+                    - citation_id: S1
+                      chunk_id: wordpress:page:1:chunk:0
+                      document_id: wordpress:page:1
+                      title: Retrieval Failures
+                      heading_path:
+                      - Vocabulary mismatch
+                      anchor: vocabulary-mismatch
+                      excerpt: Inconsistent terminology can make relevant content
+                        harder to retrieve.
+                      url: https://example.test/retrieval-failures
+                    sufficient_evidence: true
+                insufficient_evidence:
+                  summary: Insufficient evidence
+                  value:
+                    query: What is the capital of Mars?
+                    answer: The available documentation does not provide enough information
+                      to answer this question.
+                    sources: []
+                    sufficient_evidence: false
         '401':
           description: Authentication failed.
           content:
@@ -141,8 +217,8 @@ components:
         sufficient_evidence:
           type: boolean
           title: Sufficient Evidence
-          description: Whether the retrieved sources contained enough evidence to answer the
-            question.
+          description: Whether the retrieved sources contained enough evidence to
+            answer the question.
       type: object
       required:
       - query
@@ -225,7 +301,6 @@ components:
       - code
       - message
       title: ErrorBody
-      description: Public API error information.
     ErrorDetail:
       properties:
         field:

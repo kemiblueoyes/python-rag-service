@@ -90,6 +90,7 @@ class SearchResponse(BaseModel):
     query: str = Field(
         description="The search query submitted by the client.",
     )
+
     results: list[SearchResult] = Field(
         description="Ranked search results that met the retrieval threshold.",
     )
@@ -176,9 +177,8 @@ class ErrorDetail(BaseModel):
     )
 
 
+# Public API error information.
 class ErrorBody(BaseModel):
-    """Public API error information."""
-
     code: str = Field(
         description="Stable machine-readable error code.",
         examples=["validation_error"],
