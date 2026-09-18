@@ -36,6 +36,10 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
+      # Install Fern so documentation validation can run
+      - name: Install Fern CLI
+        run: npm install -g fern-api
+
       # Lint / static checks with Ruff
       - name: Run Ruff
         run: uv run ruff check .
@@ -43,3 +47,7 @@ jobs:
       # Run the pytest suite
       - name: Run tests
         run: uv run pytest
+
+      # Validate generated OpenAPI and Fern configuration
+      - name: Validate documentation
+        run: uv run python -m rag_service.commands.validate_docs

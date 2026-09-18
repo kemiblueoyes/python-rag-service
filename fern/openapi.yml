@@ -2,6 +2,8 @@
 # Source: FastAPI application schema.
 # Regenerate with:
 #   uv run python -m rag_service.commands.generate_openapi
+# To check if fern/openapi.yml matches the current FastAPI schema.:
+#   uv run python -m rag_service.commands.generate_openapi --check
 
 openapi: 3.1.0
 info:
