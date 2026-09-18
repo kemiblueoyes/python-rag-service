@@ -76,6 +76,35 @@ SEARCH_RESPONSE_EXAMPLES = {
     },
 }
 
+AUTHENTICATION_FAILED_RESPONSE = {
+    "error": {
+        "code": "authentication_failed",
+        "message": "A valid API key is required.",
+        "details": [],
+    }
+}
+
+VALIDATION_ERROR_RESPONSE = {
+    "error": {
+        "code": "validation_error",
+        "message": "Request validation failed.",
+        "details": [
+            {
+                "field": "limit",
+                "message": "Input should be greater than or equal to 1",
+            }
+        ],
+    }
+}
+
+SEARCH_UNAVAILABLE_RESPONSE = {
+    "error": {
+        "code": "retrieval_unavailable",
+        "message": "Search is temporarily unavailable.",
+        "details": [],
+    }
+}
+
 @router.post(
     "/search",
     response_model=SearchResponse,
@@ -96,14 +125,44 @@ SEARCH_RESPONSE_EXAMPLES = {
         401: {
             "model": ErrorResponse,
             "description": "Authentication failed.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "authentication_failed": {
+                            "summary": "Authentication failed",
+                            "value": AUTHENTICATION_FAILED_RESPONSE,
+                        }
+                    }
+                }
+            },
         },
         422: {
             "model": ErrorResponse,
             "description": "Request validation failed.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "validation_error": {
+                            "summary": "Validation error",
+                            "value": VALIDATION_ERROR_RESPONSE,
+                        }
+                    }
+                }
+            },
         },
         503: {
             "model": ErrorResponse,
             "description": "Search is temporarily unavailable.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "search_unavailable": {
+                            "summary": "Search unavailable",
+                            "value": SEARCH_UNAVAILABLE_RESPONSE,
+                        }
+                    }
+                }
+            },
         },
     },
 )

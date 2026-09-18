@@ -6,7 +6,6 @@ import yaml
 
 from rag_service.api.app import app
 
-
 OUTPUT_PATH = Path("fern/openapi.yml")
 
 GENERATED_HEADER = """\

@@ -68,18 +68,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                authentication_failed:
+                  summary: Authentication failed
+                  value:
+                    error:
+                      code: authentication_failed
+                      message: A valid API key is required.
+                      details: []
         '422':
           description: Request validation failed.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_error:
+                  summary: Validation error
+                  value:
+                    error:
+                      code: validation_error
+                      message: Request validation failed.
+                      details:
+                      - field: limit
+                        message: Input should be greater than or equal to 1
         '503':
           description: Search is temporarily unavailable.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                search_unavailable:
+                  summary: Search unavailable
+                  value:
+                    error:
+                      code: retrieval_unavailable
+                      message: Search is temporarily unavailable.
+                      details: []
       security:
       - APIKeyHeader: []
   /v1/answer:
@@ -148,23 +174,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                authentication_failed:
+                  summary: Authentication failed
+                  value:
+                    error:
+                      code: authentication_failed
+                      message: A valid API key is required.
+                      details: []
         '422':
           description: Request validation failed.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validation_error:
+                  summary: Validation error
+                  value:
+                    error:
+                      code: validation_error
+                      message: Request validation failed.
+                      details:
+                      - field: limit
+                        message: Extra inputs are not permitted
         '503':
           description: Answer generation is temporarily unavailable.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                answer_unavailable:
+                  summary: Answer unavailable
+                  value:
+                    error:
+                      code: answer_unavailable
+                      message: Answer generation is temporarily unavailable.
+                      details: []
       security:
       - APIKeyHeader: []
   /health:
     get:
-      summary: Health Check
+      summary: Check service health
+      description: Check whether the Python RAG Service is running and responding
+        to requests.
       operationId: health_check_health_get
       responses:
         '200':
@@ -172,10 +226,7 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties:
-                  type: string
-                type: object
-                title: Response Health Check Health Get
+                $ref: '#/components/schemas/HealthResponse'
 components:
   schemas:
     AnswerRequest:
@@ -329,6 +380,19 @@ components:
       - error
       title: ErrorResponse
       description: Standard error response returned by the public API.
+    HealthResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Current service health status.
+          examples:
+          - ok
+      type: object
+      required:
+      - status
+      title: HealthResponse
+      description: Successful response from GET /health.
     SearchFilters:
       properties:
         document_id:

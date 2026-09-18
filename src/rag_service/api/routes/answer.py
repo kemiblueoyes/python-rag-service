@@ -101,6 +101,34 @@ ANSWER_RESPONSE_EXAMPLES = {
     },
 }
 
+AUTHENTICATION_FAILED_RESPONSE = {
+    "error": {
+        "code": "authentication_failed",
+        "message": "A valid API key is required.",
+        "details": [],
+    }
+}
+
+VALIDATION_ERROR_RESPONSE = {
+    "error": {
+        "code": "validation_error",
+        "message": "Request validation failed.",
+        "details": [
+            {
+                "field": "limit",
+                "message": "Extra inputs are not permitted",
+            }
+        ],
+    }
+}
+
+ANSWER_UNAVAILABLE_RESPONSE = {
+    "error": {
+        "code": "answer_unavailable",
+        "message": "Answer generation is temporarily unavailable.",
+        "details": [],
+    }
+}
 
 @router.post(
     "/answer",
@@ -122,15 +150,45 @@ ANSWER_RESPONSE_EXAMPLES = {
         401: {
             "model": ErrorResponse,
             "description": "Authentication failed.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "authentication_failed": {
+                            "summary": "Authentication failed",
+                            "value": AUTHENTICATION_FAILED_RESPONSE,
+                        }
+                    }
+                }
+            },
         },
         422: {
             "model": ErrorResponse,
             "description": "Request validation failed.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "validation_error": {
+                            "summary": "Validation error",
+                            "value": VALIDATION_ERROR_RESPONSE,
+                        }
+                    }
+                }
+            },
         },
         503: {
             "model": ErrorResponse,
             "description": "Answer generation is temporarily unavailable.",
-        },
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "answer_unavailable": {
+                            "summary": "Answer unavailable",
+                            "value": ANSWER_UNAVAILABLE_RESPONSE,
+                        }
+                    }
+                }
+            },
+        }
     }
 )
 def answer(

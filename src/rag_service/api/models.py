@@ -164,6 +164,14 @@ class AnswerResponse(BaseModel):
         ),
     )
 
+class HealthResponse(BaseModel):
+    """Successful response from GET /health."""
+
+    status: str = Field(
+        description="Current service health status.",
+        examples=["ok"],
+    )
+
 class ErrorDetail(BaseModel):
     """Details about one request error."""
 
