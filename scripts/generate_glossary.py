@@ -334,7 +334,7 @@ def render_glossary(
         "---",
         "id: Gloss",
         "title: Glossary",
-        "content_type: glossary",
+        "content_type: general_reference",
         (
             "description: Look up concise definitions for RAG, "
             "retrieval, indexing, evaluation, API, and "
@@ -342,7 +342,7 @@ def render_glossary(
             "documentation."
         ),
         "lifecycle_status: draft",
-        "topics: [terminology]",
+        "topics: [topic-terminology]",
         "max-toc-depth: 3",
         "last_modified: <generated>",
         "---",

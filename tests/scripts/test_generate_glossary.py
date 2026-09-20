@@ -40,7 +40,7 @@ terms:
     result = generate_glossary.render_glossary(terms)
 
     assert "id: Gloss" in result
-    assert "content_type: glossary" in result
+    assert "content_type: general_reference" in result
     assert "max-toc-depth: 3" in result
 
     assert result.index("### Hybrid search") < result.index(
