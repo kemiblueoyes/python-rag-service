@@ -263,3 +263,81 @@ def test_write_if_changed_reports_status(
     assert output.read_text(
         encoding="utf-8"
     ) == "second\n"
+
+def test_check_outputs_passes_when_files_are_current(
+    tmp_path: Path,
+) -> None:
+    glossary_path = tmp_path / "glossary.mdx"
+    vale_path = tmp_path / "accept.txt"
+
+    glossary_path.write_text(
+        "generated glossary\n",
+        encoding="utf-8",
+    )
+    vale_path.write_text(
+        "generated vocabulary\n",
+        encoding="utf-8",
+    )
+
+    errors = generate_glossary.check_outputs(
+        "generated glossary\n",
+        "generated vocabulary\n",
+        glossary_path=glossary_path,
+        vale_path=vale_path,
+    )
+
+    assert errors == []
+
+
+def test_check_outputs_detects_stale_file(
+    tmp_path: Path,
+) -> None:
+    glossary_path = tmp_path / "glossary.mdx"
+    vale_path = tmp_path / "accept.txt"
+
+    glossary_path.write_text(
+        "old glossary\n",
+        encoding="utf-8",
+    )
+    vale_path.write_text(
+        "generated vocabulary\n",
+        encoding="utf-8",
+    )
+
+    errors = generate_glossary.check_outputs(
+        "new glossary\n",
+        "generated vocabulary\n",
+        glossary_path=glossary_path,
+        vale_path=vale_path,
+    )
+
+    assert any(
+        "out of date" in error
+        and "glossary.mdx" in error
+        for error in errors
+    )
+
+
+def test_check_outputs_detects_missing_file(
+    tmp_path: Path,
+) -> None:
+    glossary_path = tmp_path / "glossary.mdx"
+    vale_path = tmp_path / "accept.txt"
+
+    glossary_path.write_text(
+        "generated glossary\n",
+        encoding="utf-8",
+    )
+
+    errors = generate_glossary.check_outputs(
+        "generated glossary\n",
+        "generated vocabulary\n",
+        glossary_path=glossary_path,
+        vale_path=vale_path,
+    )
+
+    assert any(
+        "Missing generated file" in error
+        and "accept.txt" in error
+        for error in errors
+    )

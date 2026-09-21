@@ -1,0 +1,103 @@
+version: 1
+
+# Canonical documentation pages.
+
+pages:
+  - id: Home
+    content_type: overview
+
+  - id: Qstrt
+    content_type: how_to
+
+  - id: Instl
+    content_type: how_to
+
+  - id: ConfSrv
+    content_type: how_to
+
+  - id: Auth
+    content_type: how_to
+
+  - id: IndxWP
+    content_type: how_to
+
+  - id: RIndxUpdt
+    content_type: how_to
+
+  - id: TutIndx
+    content_type: tutorial
+
+  - id: SrchAnsOvrvw
+    content_type: overview
+
+  - id: SrchDoc
+    content_type: how_to
+
+  - id: GenAns
+    content_type: how_to
+
+  - id: TutSrch
+    content_type: tutorial
+
+  - id: IntApp
+    content_type: how_to
+
+  - id: IntWP
+    content_type: how_to
+
+  - id: HowEv
+    content_type: explanation
+
+  - id: RnEv
+    content_type: how_to
+
+  - id: RtrvlEv
+    content_type: general_reference
+
+  - id: AnsEv
+    content_type: general_reference
+
+  - id: CurEvRes
+    content_type: eval_results
+
+  - id: KnLmt
+    content_type: general_reference
+
+  - id: SysArch
+    content_type: explanation
+
+  - id: IndxPipe
+    content_type: explanation
+
+  - id: RtrvPipe
+    content_type: explanation
+
+  - id: AnsGenCit
+    content_type: explanation
+
+  - id: EvArch
+    content_type: explanation
+
+  - id: APIOvrvw
+    content_type: overview
+
+  - id: SrchAPI
+    content_type: api_reference
+
+  - id: AnsAPI
+    content_type: api_reference
+
+  - id: HlthAPI
+    content_type: api_reference
+
+  - id: Errs
+    content_type: api_reference
+
+  - id: CnfgRef
+    content_type: general_reference
+
+  - id: Gloss
+    content_type: general_reference
+
+  - id: RN
+    content_type: release_note

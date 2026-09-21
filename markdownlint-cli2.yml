@@ -1,0 +1,19 @@
+config:
+  default: true
+
+  # Prose and code examples often need longer lines.
+  MD013: false
+
+  # Fern supplies the page H1 from frontmatter.
+  MD041: false
+
+  # Fern/MDX components such as <Steps>, <Card>, etc.
+  MD033: false
+
+  # Duplicate headings are acceptable when they occur
+  # in separate sibling sections/components.
+  MD024:
+    siblings_only: true
+
+  # Keep table formatting flexible.
+  MD060: false

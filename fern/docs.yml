@@ -22,6 +22,17 @@ colors:
   accentPrimary: '#ffffff'
   background: '#02235b'
 
+check:
+  rules:
+    broken-links: error
+    # request/response examples in the OpenAPI spec must match their schemas. This defaults to warn
+    example-validation: error
+    # OpenAPI $ref values shouldn’t point to unsupported locations outside #/components
+    no-non-component-refs: error
+    # local OpenAPI $refs must actually point to something that exists. This also defaults to warn.
+    valid-local-references: error
+    valid-docs-endpoints: error
+
 tabs:
   docs:
     display-name: Docs

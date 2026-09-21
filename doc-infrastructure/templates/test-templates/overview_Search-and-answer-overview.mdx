@@ -32,15 +32,15 @@ Use **search** when your application needs the retrieved documentation itself. U
 
 At a high level, both requests begin the same way:
 
-**Query → Retrieval**
+Query → Retrieval
 
 A search request stops after retrieval and returns the relevant documentation:
 
-**Query → Retrieval → Search results**
+Query → Retrieval → Search results
 
 An answer request uses the retrieved documentation as evidence for generation:
 
-**Query → Retrieval → Answer generation → Grounded answer + sources**
+Query → Retrieval → Answer generation → Grounded answer + sources
 
 This shared retrieval step is important. `/v1/answer` does not answer independently of the documentation index; it builds on the same retrieval system used by `/v1/search`.
 
@@ -80,12 +80,12 @@ The API reference pages provide the complete request and response schemas for ea
 
 ## Next steps
 
-- [Search documentation](): Retrieve relevant documentation directly with `/v1/search`.
-- [Generate grounded answers](): Generate an answer grounded in retrieved documentation with `/v1/answer`.
+- [Search documentation](/#): Retrieve relevant documentation directly with `/v1/search`.
+- [Generate grounded answers](/#): Generate an answer grounded in retrieved documentation with `/v1/answer`.
 
 ## Related pages
 
-- [Search API](): Review the request and response contract for `/v1/search`.
-- [Answer API](): Review the request and response contract for `/v1/answer`.
-- [Retrieval pipeline](): Understand how documentation is retrieved and ranked before results are returned or used for answer generation.
-- [Answer generation and citations](): Understand how retrieved evidence becomes a grounded answer with source information.
+- [Search API](/#): Review the request and response contract for `/v1/search`.
+- [Answer API](/#): Review the request and response contract for `/v1/answer`.
+- [Retrieval pipeline](/#): Understand how documentation is retrieved and ranked before results are returned or used for answer generation.
+- [Answer generation and citations](/#): Understand how retrieved evidence becomes a grounded answer with source information.

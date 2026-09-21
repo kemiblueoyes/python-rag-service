@@ -16,7 +16,7 @@ The retrieval pipeline determines which indexed documentation is relevant enough
 
 At a high level, a query moves through the pipeline like this:
 
-**Query → Vector retrieval + BM25 retrieval → Reciprocal rank fusion → Reranking → Support gate → Results**
+Query → Vector retrieval + BM25 retrieval → Reciprocal rank fusion → Reranking → Support gate → Results
 
 If the pipeline does not find sufficiently supported documentation, it can return no results instead of returning content simply because it is the closest available match.
 
@@ -86,12 +86,12 @@ The pipeline therefore narrows the candidate set in stages rather than asking a 
 
 ## Next steps
 
-[Answer generation and citations](): Learn how retrieved evidence is assembled and used to generate grounded answers.
+[Answer generation and citations](/#): Learn how retrieved evidence is assembled and used to generate grounded answers.
 
 ## Related pages
 
-- [Search documentation](): Use the retrieval pipeline through `/v1/search`.
-- [Retrieval evaluation](): Review how retrieval quality is measured.
-- [Current evaluation results](): See how the current retrieval system performs against the evaluation dataset.
-- [System architecture](): See where the retrieval service fits within the larger RAG system.
-- [Indexing pipeline](): Understand how documentation is prepared and stored before retrieval.
+- [Search documentation](/#): Use the retrieval pipeline through `/v1/search`.
+- [Retrieval evaluation](/#): Review how retrieval quality is measured.
+- [Current evaluation results](/#): See how the current retrieval system performs against the evaluation dataset.
+- [System architecture](/#): See where the retrieval service fits within the larger RAG system.
+- [Indexing pipeline](/#): Understand how documentation is prepared and stored before retrieval.

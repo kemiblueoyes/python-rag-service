@@ -1,0 +1,22 @@
+name: Documentation link check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 15 * * 1" # Run every Monday at 3pm UTC
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install Fern CLI
+        run: npm install -g fern-api
+
+      - name: Check published documentation links
+        run: >
+          fern docs link check
+          --url https://python-rag-service.docs.buildwithfern.com

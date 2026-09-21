@@ -1,0 +1,88 @@
+version: 1
+
+required_base_fields:
+  - id
+  - title
+  - subtitle
+  - description
+  - content_type
+  - lifecycle_status
+  - topics
+  - last_modified
+
+content_types:
+  overview: {}
+  how_to: {}
+  tutorial: {}
+  explanation: {}
+  general_reference: {}
+
+  eval_results:
+    required_fields:
+      - dataset_version
+
+  release_note:
+    required_fields:
+      - tags
+
+  api_reference:
+    required_fields:
+      - api_version
+
+lifecycle_statuses:
+  - draft
+  - review
+  - published
+  - deprecated
+  - archived
+
+list_fields:
+  - topics
+  - components
+  - prerequisites
+  - next_steps
+  - related_pages
+  - related_terms
+  - tags
+
+topics:
+  - topic-architecture
+  - topic-installation
+  - topic-configuration
+  - topic-provider-configuration
+  - topic-content-source-configuration
+  - topic-retrieval-configuration
+  - topic-authentication
+  - topic-indexing
+  - topic-incremental-indexing
+  - topic-retrieval
+  - topic-semantic-retrieval
+  - topic-lexical-retrieval
+  - topic-hybrid-search
+  - topic-reranking
+  - topic-support-detection
+  - topic-answer-generation
+  - topic-grounding
+  - topic-evidence-sufficiency
+  - topic-citations
+  - topic-api
+  - topic-error-handling
+  - topic-integration
+  - topic-evaluation
+  - topic-retrieval-evaluation
+  - topic-answer-evaluation
+  - topic-limitations
+  - topic-terminology
+  - topic-release-history
+
+components:
+  - component-wordpress-connector
+  - component-indexing-pipeline
+  - component-retrieval-service
+  - component-answer-generation-service
+  - component-public-api
+  - component-evaluation-framework
+  - component-wordpress-client
+  - component-vector-database
+  - component-embedding-provider
+  - component-language-model-provider

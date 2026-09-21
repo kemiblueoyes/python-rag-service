@@ -40,6 +40,10 @@ jobs:
       - name: Install Fern CLI
         run: npm install -g fern-api
 
+      # Install markdownlint-cli2 from package-lock.json
+      - name: Install documentation lint dependencies
+        run: npm ci
+
       # Lint / static checks with Ruff
       - name: Run Ruff
         run: uv run ruff check .
@@ -48,6 +52,12 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
+      # Install Vale to check prose and terminology
+      - name: Install Vale
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y vale
+
       # Validate generated OpenAPI and Fern configuration
       - name: Validate documentation
-        run: uv run python -m rag_service.commands.validate_docs
+        run: uv run python -m rag_service.commands.documentation.validate_docs

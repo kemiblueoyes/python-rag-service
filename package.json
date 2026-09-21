@@ -1,0 +1,29 @@
+{
+  "name": "python-rag-service",
+  "version": "1.0.0",
+  "description": "A platform-agnostic Python service for indexing documentation, performing hybrid retrieval, and generating grounded answers with citations.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint:docs": "markdownlint-cli2 --config markdownlint-cli2.yml \"fern/docs/pages/**/*.mdx\" \"doc-infrastructure/templates/**/*.mdx\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kemiblueoyes/python-rag-service.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kemiblueoyes/python-rag-service/issues"
+  },
+  "homepage": "https://github.com/kemiblueoyes/python-rag-service#readme",
+  "devDependencies": {
+    "markdownlint-cli2": "^0.23.3"
+  }
+}
