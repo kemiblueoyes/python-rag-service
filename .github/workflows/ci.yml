@@ -52,12 +52,14 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
-      # Vale is not in Ubuntu 24.04 apt. Install the pinned Linux binary.
+      # Vale is not in Ubuntu 24.04 apt. Pin the same GitHub release
+      # as local Homebrew (3.22.0). 3.17.1 cannot lint MDX without
+      # the separate mdx2vast helper.
       - name: Install Vale
         env:
-          VALE_VERSION: "3.17.1"
+          VALE_VERSION: "3.22.0"
         run: |
-          curl -sSfL "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" \
+          curl -sSfL "https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" \
             | sudo tar -xz -C /usr/local/bin vale
           vale --version
 
