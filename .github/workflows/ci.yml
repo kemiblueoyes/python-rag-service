@@ -52,11 +52,14 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
-      # Install Vale to check prose and terminology
+      # Vale is not in Ubuntu 24.04 apt. Install the pinned Linux binary.
       - name: Install Vale
+        env:
+          VALE_VERSION: "3.17.1"
         run: |
-          sudo apt-get update
-          sudo apt-get install -y vale
+          curl -sSfL "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin vale
+          vale --version
 
       # Validate generated OpenAPI and Fern configuration
       - name: Validate documentation
