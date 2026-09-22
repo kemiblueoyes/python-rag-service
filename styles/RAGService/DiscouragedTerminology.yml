@@ -1,0 +1,9 @@
+extends: existence
+message: "Review '%s'. Use the specific project term or component name instead."
+level: warning
+ignorecase: true
+
+tokens:
+  - '\bAI engine\b'
+  - '\bAI search\b'
+  - '\bsmart search\b'

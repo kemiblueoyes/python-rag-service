@@ -1,0 +1,13 @@
+extends: existence
+message: "Use descriptive, durable cross-reference text instead of '%s'."
+level: warning
+ignorecase: true
+
+tokens:
+  - '\bsee here\b'
+  - '\bclick (?:this|the) link\b'
+  - '\bsee (?:the )?link (?:above|below)\b'
+  - '\b(?:as )?(?:described|shown|mentioned) above\b'
+  - '\b(?:as )?(?:described|shown|mentioned) below\b'
+  - '\bin the previous section\b'
+  - '\bin the next section\b'

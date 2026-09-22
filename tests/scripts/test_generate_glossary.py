@@ -75,12 +75,42 @@ terms:
 
     terms = generate_glossary.load_glossary(source)
     result = generate_glossary.render_vale_vocabulary(
-        terms
+        terms,
+        ["Pydantic", "pytest"],
     )
 
     assert result == (
         "Hybrid retrieval\n"
         "Hybrid search\n"
+        "Pydantic\n"
+        "pytest\n"
+    )
+
+
+def test_vale_vocabulary_orders_case_variants_deterministically(
+    tmp_path: Path,
+) -> None:
+    source = write_glossary(
+        tmp_path,
+        """
+version: 1
+
+terms:
+  - id: reranking
+    term: Reranking
+    definition: A second ranking pass.
+""",
+    )
+
+    terms = generate_glossary.load_glossary(source)
+    result = generate_glossary.render_vale_vocabulary(
+        terms,
+        ["reranking"],
+    )
+
+    assert result == (
+        "Reranking\n"
+        "reranking\n"
     )
 
 
@@ -341,3 +371,26 @@ def test_check_outputs_detects_missing_file(
         and "accept.txt" in error
         for error in errors
     )
+
+def test_loads_vale_only_terms(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "vale-accept.txt"
+    source.write_text(
+        """
+# Vale-only terms
+
+Pydantic
+pytest
+""",
+        encoding="utf-8",
+    )
+
+    result = generate_glossary.load_vale_accept_terms(
+        source
+    )
+
+    assert result == [
+        "Pydantic",
+        "pytest",
+    ]

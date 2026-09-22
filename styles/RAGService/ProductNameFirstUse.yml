@@ -1,0 +1,9 @@
+extends: conditional
+message: "Use 'Python RAG Service' before the shortened form '%s'."
+level: warning
+scope: text
+ignorecase: false
+vocab: false
+
+first: '\b(RAG service)\b'
+second: '\bPython RAG Service\b'

@@ -1,0 +1,12 @@
+extends: existence
+message: "Use a more specific, descriptive heading instead of '%s'."
+level: warning
+scope: heading
+ignorecase: true
+
+tokens:
+  - '^Details$'
+  - '^More information$'
+  - '^Configuration$'
+  - '^How it works$'
+  - '^Other considerations$'

@@ -1,0 +1,6 @@
+# Terms Vale should accept that are not glossary terms.
+# One term or phrase per line.
+
+Pydantic
+pytest
+reranking

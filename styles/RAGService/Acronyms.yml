@@ -1,0 +1,20 @@
+extends: conditional
+message: "Define '%s' on first use."
+level: warning
+scope: text
+ignorecase: false
+vocab: false
+
+first: '\b([A-Z]{3,5})\b'
+second: '(?:\b[A-Z][a-z]+ )+\(([A-Z]{3,5})\)'
+
+exceptions:
+  - API
+  - URL
+  - HTTP
+  - JSON
+  - HTML
+  - YAML
+  - SDK
+  - CLI
+  - RAG

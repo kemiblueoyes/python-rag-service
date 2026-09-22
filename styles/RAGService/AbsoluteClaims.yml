@@ -1,0 +1,11 @@
+extends: existence
+message: "Review '%s' for an absolute claim. Use it only when the implementation guarantees this behavior in all supported cases."
+level: warning
+ignorecase: true
+
+tokens:
+  - '\balways\b'
+  - '\bnever\b'
+  - '\bensures?\b'
+  - '\bguarantees?\b'
+  - '\bprevents?\s+hallucinations?\b'

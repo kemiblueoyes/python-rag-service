@@ -1,0 +1,11 @@
+extends: existence
+message: "Describe the specific system or component behavior instead of using '%s'."
+level: warning
+ignorecase: true
+
+tokens:
+  - '\b(?:the\s+)?AI\s+knows?\b'
+  - '\b(?:the\s+)?LLM\s+knows?\b'
+  - '\b(?:the\s+)?AI\s+decides?\b'
+  - '\b(?:the\s+)?LLM\s+decides?\b'
+  - '\b(?:the\s+)?system\s+understands?\b'

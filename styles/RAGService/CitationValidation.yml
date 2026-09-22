@@ -1,0 +1,8 @@
+extends: existence
+message: "The application validates citations; do not attribute citation validation to the model."
+level: error
+ignorecase: true
+
+tokens:
+  - '\b(?:the\s+)?model\s+(?:validates?|verifies?)\s+(?:its\s+)?citations?\b'
+  - '\b(?:the\s+)?model\s+verifies?\s+(?:its\s+)?sources?\b'

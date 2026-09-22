@@ -1,3 +1,40 @@
 ---
-title: Python RAG Service overview
+id: Home
+title: Python RAG Service
+subtitle: Index documentation, retrieve relevant content, and generate grounded answers through a platform-agnostic Python service.
+description: Learn what the Python RAG service does, its core capabilities and use cases, and where to start for deployment, integration, evaluation, or extension.
+content_type: overview
+lifecycle_status: draft
+topics: [topic-architecture]
+next_steps: [Qstrt, SysArch, HowEv]
+last_modified: 2026-09-21
 ---
+
+The Python RAG Service turns documentation into retrievable evidence for search and grounded answer generation.
+
+The first implementation uses WordPress as its content source and reference client, while the core indexing, retrieval, answer-generation, API, and evaluation layers remain independent of WordPress. This makes it possible to add other content sources and clients without rebuilding the core retrieval system.
+
+## Key capabilities
+
+- **Index documentation** — Retrieve WordPress content, normalize it into a platform-neutral document model, split it into retrieval-ready chunks, generate embeddings, and maintain the search index.
+- **Retrieve relevant content** — Combine semantic vector search and BM25 lexical search with reciprocal rank fusion, reranking, and support detection.
+- **Search through an API** — Use `POST /v1/search` to retrieve ranked documentation without generating an answer.
+- **Generate grounded answers** — Use `POST /v1/answer` to generate answers from retrieved evidence with evidence-sufficiency handling and validated citations.
+- **Integrate with applications** — Connect applications to the public API or use the included WordPress reference client as an example integration.
+- **Evaluate system quality** — Run repeatable retrieval and answer evaluations using versioned datasets, automated checks, and qualitative review.
+
+## Common use cases
+
+Use the service when you want to:
+
+- add documentation search to an application or website
+- generate answers grounded in an indexed documentation corpus
+- experiment with and evaluate retrieval strategies such as hybrid search and reranking
+- understand how indexing, retrieval, grounded generation, and evaluation fit together in a RAG system
+- extend the service with additional content sources or client applications
+
+## Next steps
+
+- **Quickstart** — Get the service running locally, index content, and make your first search request.
+- **System architecture** — Understand the major components and how content and requests move through the system.
+- **How evaluation works** — Learn how retrieval and generated answers are evaluated and why the two are measured separately.

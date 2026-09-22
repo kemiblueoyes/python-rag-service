@@ -39,6 +39,10 @@ PAGE_FIXTURES = [
     TEST_TEMPLATE_DIR / "release-note_Hybrid-retrieval.mdx",
 ]
 
+PUBLIC_PAGES = [
+    REPO_ROOT / "fern" / "docs" / "pages" / "home.mdx",
+]
+
 def main() -> None:
     """Run all documentation validation checks."""
 
@@ -48,7 +52,7 @@ def main() -> None:
     registry = load_page_registry(model)
 
     frontmatter_errors = validate_frontmatter_paths(
-        PAGE_FIXTURES,
+        PUBLIC_PAGES,
         model,
         registry,
     )
@@ -66,7 +70,7 @@ def main() -> None:
     print("\nChecking content-type structure...")
 
     structure_errors = validate_structure_paths(
-        PAGE_FIXTURES,
+        PUBLIC_PAGES,
     )
 
     if structure_errors:
