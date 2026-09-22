@@ -6,5 +6,3 @@ ignorecase: false
 swap:
   re-ranking: reranking
   Re-ranking: Reranking
-  RAG engine: RAG service
-  RAG Engine: RAG service

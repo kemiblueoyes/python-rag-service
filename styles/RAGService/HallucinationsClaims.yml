@@ -1,0 +1,7 @@
+extends: existence
+message: "Review for an absolute claim that a mechanism '%s'. Describe what the mechanism does and its limitations instead."
+level: warning
+ignorecase: true
+
+tokens:
+  - '\bprevent(?:s)?\s+hallucinations?\b'

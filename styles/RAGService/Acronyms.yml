@@ -6,15 +6,22 @@ ignorecase: false
 vocab: false
 
 first: '\b([A-Z]{3,5})\b'
-second: '(?:\b[A-Z][a-z]+ )+\(([A-Z]{3,5})\)'
+second: '(?:\b[A-Za-z][A-Za-z-]* )+\(([A-Z]{3,5})\)'
 
 exceptions:
   - API
   - URL
   - HTTP
+  - HTTPS
   - JSON
   - HTML
   - YAML
   - SDK
   - CLI
   - RAG
+  - POST
+  - GET
+  - PUT
+  - DELETE
+  - REST
+  - MIT

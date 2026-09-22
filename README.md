@@ -193,8 +193,8 @@ The implemented system includes:
 * a platform-neutral canonical document model
 * content normalization and heading-aware chunking
 * embedding generation
-* vector storage, BM25 lexical retrieval, RRF fusion, Voyage reranking, and query-level support gating
-* shared retrieval logic with validation, filtering, ranking, duplicate removal, BM25 lexical retrieval, RRF fusion, Voyage reranking, and query-level support gating
+* vector storage, BM25 lexical retrieval, Reciprocal Rank Fusion (RRF), Voyage reranking, and query-level support gating
+* shared retrieval logic with validation, filtering, ranking, duplicate removal, BM25 lexical retrieval, RRF, Voyage reranking, and query-level support gating
 * public search and answer APIs
 * token-budgeted context assembly that preserves ranked source order
 * grounded prompt construction
@@ -207,7 +207,7 @@ The implemented system includes:
 
 The WordPress connector and WordPress client serve different responsibilities. The connector brings WordPress content into the RAG system for indexing. The client is a consumer of the public API and presents search results and generated answers to site visitors.
 
-The connector, retrieval pipeline, API layer, answer-generation layer, and client remain separate so source- and client-specific behavior does not spread through the core RAG engine.
+The connector, retrieval pipeline, API layer, answer-generation layer, and client remain separate so source- and client-specific behavior does not spread through the core RAG logic.
 
 ## WordPress client
 
@@ -554,7 +554,7 @@ The report includes each query, returned result count, rerank scores, titles, he
 
 ## WordPress connector profiles
 
-WordPress installations commonly add custom post types, REST metadata, ACF
+WordPress installations commonly add custom post types, REST metadata, Advanced Custom Fields (ACF)
 fields, and site-specific meanings for parent and child pages. Those decisions
 belong in a connector profile rather than the reusable WordPress client,
 mapper, or connector.
@@ -652,7 +652,7 @@ OPENAI_API_KEY=your-openai-api-key
 
 `GENERATION_CONTEXT_BUDGET_TOKENS` applies to the fully rendered evidence blocks. Sources are included whole and in retrieval order; chunks are not truncated to fit the budget.
 
-Citation identifiers such as `S1` and `S2` are local to one answer-generation request. Validation first ensures that every citation refers to evidence supplied to the model. The final response then renumbers cited sources sequentially by first appearance so clients receive compact citation sequences without gaps.
+Citation identifiers such as `S1` and `S2` are local to one answer-generation request. Validation ensures that every citation refers to evidence supplied to the model. The final response then renumbers cited sources sequentially by first appearance so clients receive compact citation sequences without gaps.
 
 ### Live answer-generation smoke test
 
