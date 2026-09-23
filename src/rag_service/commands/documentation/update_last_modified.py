@@ -39,23 +39,42 @@ LAST_MODIFIED_PATTERN = re.compile(
     r"(?m)^last_modified:\s*.*$"
 )
 
+LAST_MODIFIED_LINE_PATTERN = re.compile(
+    r"^\s*last_modified:\s*.*$"
+)
 
 class LastModifiedError(ValueError):
     """Raised when last_modified metadata cannot be generated."""
 
+def _patch_has_substantive_changes(patch: str) -> bool:
+    """Return whether a Git patch changes more than last_modified."""
+    for line in patch.splitlines():
+        if line.startswith(("+++", "---")):
+            continue
+
+        if not line.startswith(("+", "-")):
+            continue
+
+        changed_line = line[1:]
+
+        if LAST_MODIFIED_LINE_PATTERN.fullmatch(
+            changed_line
+        ):
+            continue
+
+        return True
+
+    return False
 
 def git_last_modified_date(
     path: Path,
     *,
     repo_root: Path = REPO_ROOT,
 ) -> str:
-    """Return the Git-derived last-modified date for a file.
+    """Return the last substantive modification date for a file.
 
-    Untracked files and tracked files with substantive uncommitted
-    changes use today's date.
-
-    A change only to the generated last_modified field does not count
-    as a substantive content change.
+    Changes only to the generated last_modified field are ignored.
+    Substantive uncommitted changes use today's date.
     """
     resolved_root = repo_root.resolve()
     resolved_path = path.resolve()
@@ -87,34 +106,14 @@ def git_last_modified_date(
     if tracked.returncode != 0:
         return date.today().isoformat()
 
-    diff = subprocess.run(
+    # Check current staged and unstaged changes against HEAD.
+    working_diff = subprocess.run(
         [
             "git",
             "diff",
-            "--quiet",
-            "--ignore-matching-lines="
-            "^last_modified:[[:space:]]*",
             "HEAD",
-            "--",
-            relative,
-        ],
-        cwd=resolved_root,
-    )
-
-    if diff.returncode == 1:
-        return date.today().isoformat()
-
-    if diff.returncode != 0:
-        raise LastModifiedError(
-            f"Could not inspect Git changes for {relative}."
-        )
-
-    history = subprocess.run(
-        [
-            "git",
-            "log",
-            "-1",
-            "--format=%cs",
+            "--unified=0",
+            "--no-ext-diff",
             "--",
             relative,
         ],
@@ -124,15 +123,58 @@ def git_last_modified_date(
         text=True,
     )
 
-    value = history.stdout.strip()
+    if _patch_has_substantive_changes(
+        working_diff.stdout
+    ):
+        return date.today().isoformat()
 
-    if not value:
-        raise LastModifiedError(
-            f"No Git history found for {relative}."
+    history = subprocess.run(
+        [
+            "git",
+            "log",
+            "--format=%H%x09%cs",
+            "--",
+            relative,
+        ],
+        cwd=resolved_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    for entry in history.stdout.splitlines():
+        commit_hash, commit_date = entry.split(
+            "\t",
+            maxsplit=1,
         )
 
-    return value
+        patch = subprocess.run(
+            [
+                "git",
+                "show",
+                "-m",
+                "--format=",
+                "--unified=0",
+                "--no-ext-diff",
+                "--no-renames",
+                commit_hash,
+                "--",
+                relative,
+            ],
+            cwd=resolved_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
 
+        if _patch_has_substantive_changes(
+            patch.stdout
+        ):
+            return commit_date
+
+    raise LastModifiedError(
+        f"No substantive Git history found for {relative}."
+    )
 
 def latest_git_date(
     paths: list[Path],

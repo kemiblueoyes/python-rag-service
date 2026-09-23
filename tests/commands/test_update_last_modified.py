@@ -205,3 +205,69 @@ Updated content.
         page,
         repo_root=repo,
     ) == date.today().isoformat()
+
+def test_last_modified_ignores_committed_metadata_only_change(
+    tmp_path: Path,
+) -> None:
+    repo = initialize_git_repo(tmp_path)
+    page = repo / "page.mdx"
+
+    page.write_text(
+        """\
+---
+title: Test
+---
+
+Original content.
+""",
+        encoding="utf-8",
+    )
+
+    subprocess.run(
+        ["git", "add", "page.mdx"],
+        cwd=repo,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Add page"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+
+    substantive_date = git_last_modified_date(
+        page,
+        repo_root=repo,
+    )
+
+    page.write_text(
+        """\
+---
+title: Test
+last_modified: 2099-01-01
+---
+
+Original content.
+""",
+        encoding="utf-8",
+    )
+
+    subprocess.run(
+        ["git", "add", "page.mdx"],
+        cwd=repo,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "Generate metadata"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+
+    assert (
+        git_last_modified_date(
+            page,
+            repo_root=repo,
+        )
+        == substantive_date
+    )
