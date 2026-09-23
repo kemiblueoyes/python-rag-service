@@ -4,6 +4,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+from rag_service.commands.documentation.update_last_modified import (
+    authored_pages,
+)
+from rag_service.commands.documentation.update_last_modified import (
+    check_pages as check_last_modified_pages,
+)
 from rag_service.commands.documentation.validate_doc_structure import (
     validate_paths as validate_structure_paths,
 )
@@ -112,6 +118,28 @@ def main() -> None:
         raise SystemExit(1) from None
 
     print("Markdown/MDX linting passed.")
+
+    print("\nChecking generated last_modified metadata...")
+
+    last_modified_errors = check_last_modified_pages(
+        authored_pages()
+    )
+
+    if last_modified_errors:
+        print("\nlast_modified validation failed:")
+
+        for error in last_modified_errors:
+            print(f"- {error}")
+
+        print(
+            "\nRun this command to update authored pages:\n"
+            "uv run python -m "
+            "rag_service.commands.documentation.update_last_modified"
+        )
+
+        raise SystemExit(1)
+
+    print("Authored-page last_modified metadata is current.")
 
     print("\nChecking generated glossary and terminology artifacts...")
 

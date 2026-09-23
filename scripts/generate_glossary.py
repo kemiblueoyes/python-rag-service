@@ -44,6 +44,11 @@ from typing import Any
 
 import yaml
 
+from rag_service.commands.documentation.update_last_modified import (
+    LastModifiedError,
+    git_last_modified_date,
+)
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 SOURCE_PATH = REPO_ROOT / "docs" / "data" / "glossary.yml"
@@ -333,6 +338,7 @@ def _string_list(
 
 def render_glossary(
     terms: list[GlossaryTerm],
+    last_modified: str,
 ) -> str:
     """Render the complete generated glossary MDX page."""
     sorted_terms = sorted(
@@ -363,7 +369,7 @@ def render_glossary(
         "lifecycle_status: draft",
         "topics: [topic-terminology]",
         "max-toc-depth: 3",
-        "last_modified: <generated>",
+        f"last_modified: {last_modified}",
         "---",
         "",
         GENERATED_NOTE,
@@ -626,11 +632,26 @@ def main() -> int:
             VALE_ACCEPT_SOURCE_PATH
         )
 
-        glossary = render_glossary(terms)
+        glossary_last_modified = git_last_modified_date(
+            SOURCE_PATH,
+            repo_root=REPO_ROOT,
+        )
+
+        glossary = render_glossary(
+            terms,
+            glossary_last_modified,
+        )
         vale_vocabulary = render_vale_vocabulary(
             terms,
             vale_only_terms,
         )
+
+    except LastModifiedError as exc:
+        print(
+            f"Could not determine glossary last_modified: {exc}",
+            file=sys.stderr,
+        )
+        return 1
 
     except FileNotFoundError as exc:
         print(

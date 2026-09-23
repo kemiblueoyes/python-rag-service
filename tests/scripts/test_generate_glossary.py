@@ -37,8 +37,12 @@ terms:
     )
 
     terms = generate_glossary.load_glossary(source)
-    result = generate_glossary.render_glossary(terms)
+    result = generate_glossary.render_glossary(
+         terms,
+        "2026-09-23",
+    )
 
+    assert "last_modified: 2026-09-23" in result
     assert "id: Gloss" in result
     assert "content_type: general_reference" in result
     assert "max-toc-depth: 3" in result

@@ -7,21 +7,49 @@ content_type: overview
 lifecycle_status: draft
 topics: [topic-architecture]
 next_steps: [Qstrt, SysArch, HowEv]
-last_modified: 2026-09-21
+last_modified: 2026-09-23
 ---
 
-The Python RAG Service turns documentation into retrievable evidence for search and grounded answer generation.
+The Python RAG Service turns documentation into retrievable evidence
+for search and grounded answer generation.
 
-The first implementation uses WordPress as its content source and reference client, while the core indexing, retrieval, answer-generation, API, and evaluation layers remain independent of WordPress. This makes it possible to add other content sources and clients without rebuilding the core retrieval system.
+The first implementation uses WordPress as its content source and
+reference client, while the core indexing, retrieval,
+answer-generation, API, and evaluation layers remain independent of
+WordPress. This makes it possible to add other content sources and
+clients without rebuilding the core retrieval system.
 
 ## Key capabilities
 
-- **Index documentation** — Retrieve WordPress content, normalize it into a platform-neutral document model, split it into retrieval-ready chunks, generate embeddings, and maintain the search index.
-- **Retrieve relevant content** — Combine semantic vector search and BM25 lexical search with reciprocal rank fusion, reranking, and support detection.
-- **Search through an API** — Use `POST /v1/search` to retrieve ranked documentation without generating an answer.
-- **Generate grounded answers** — Use `POST /v1/answer` to generate answers from retrieved evidence with evidence-sufficiency handling and validated citations.
-- **Integrate with applications** — Connect applications to the public API or use the included WordPress reference client as an example integration.
-- **Evaluate system quality** — Run repeatable retrieval and answer evaluations using versioned datasets, automated checks, and qualitative review.
+<CardGroup cols={2}>
+
+<Card title="Index documentation">
+Retrieve WordPress content, normalize it into a platform-neutral
+document model, split it into retrieval-ready chunks, generate
+embeddings, and maintain the search index.
+</Card>
+
+<Card title="Retrieve relevant content">
+Combine semantic vector search and BM25 lexical search with reciprocal rank fusion, reranking, and support detection.
+</Card>
+
+<Card title="Search through an API">
+Use `POST /v1/search` to retrieve ranked documentation without generating an answer.
+</Card>
+
+<Card title="Generate grounded answers">
+Use `POST /v1/answer` to generate answers from retrieved evidence with evidence-sufficiency handling and validated citations.
+</Card>
+
+<Card title="Integrate with applications">
+Connect applications to the public API or use the included WordPress reference client as an example integration.
+</Card>
+
+<Card title="Evaluate system quality">
+Run repeatable retrieval and answer evaluations using versioned datasets, automated checks, and qualitative review.
+</Card>
+
+</CardGroup>
 
 ## Common use cases
 
