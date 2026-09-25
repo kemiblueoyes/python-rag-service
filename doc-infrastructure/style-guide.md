@@ -32,6 +32,16 @@ Over:
 
 Do not simplify language so much that technical meaning becomes less precise.
 
+### Contractions
+
+Use common contractions, such as it’s, you’re, that's, and don’t, to create a friendly, informal tone.
+
+Don't mix contractions and their spelled-out equivalents in UI text. For example, don’t use can’t and cannot in the same UI.
+
+Never form a contraction from a noun and a verb, such as "Microsoft’s developing a lot of new cloud services".
+
+Avoid ambiguous or awkward contractions, such as there’d, it’ll, and they’d.
+
 ### Technical Depth
 
 Write at the level of technical detail the reader needs to complete their goal without guessing.
@@ -50,15 +60,31 @@ Do not explain common developer concepts unless the explanation is necessary for
 
 For unfamiliar or project-specific terms, use the correct term rather than replacing it with vague language, and explain it in plain language when needed.
 
-### Audience focus
+## Audience focus
+
+Every documentation page declares one or more intended audience groups in the
+`audience` frontmatter field. Either `primary`, `secondary`, or both.
+
+Do not add background information only to make a page useful to every possible audience. Keep each page focused on its purpose, and link to supporting explanation when deeper context is useful. 
 
 Write each page for the reader most likely to use it.
 
-For task-oriented documentation, prioritize developers who are installing, configuring, integrating with, or using the service. Give them the information they need to complete the task without requiring them to understand the entire system first.
+A page can target both audiences when its purpose is useful to both groups.
 
-For architecture, evaluation, and explanation content, provide enough context for developers and documentation engineers who want to understand, evaluate, or extend the service.
+### Primary
 
-Do not add background information only to make a page useful to every possible audience. Keep each page focused on its purpose, and link to supporting explanation when deeper context is useful.
+Developers integrating with or deploying the Python RAG Service.
+
+Primary-audience documentation should prioritize the information needed to install,
+configure, index content, use the API, and integrate the service into an application.
+
+### Secondary
+
+Developers and documentation engineers who want to understand, evaluate, or extend
+the Python RAG Service.
+
+Secondary-audience documentation can include deeper architectural, retrieval,
+evaluation, and implementation context.
 
 ## AI and system behavior language
 
@@ -203,4 +229,3 @@ Add a glossary term when readers are likely to need a definition to understand t
 Do not add every technical word to the terminology reference or glossary. Common industry terms do not need project-specific rules unless this project uses them in a particular way.
 
 When a new preferred term is needed, define the terminology decision first, then update the glossary and Vale rules where appropriate.
-

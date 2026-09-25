@@ -4,13 +4,14 @@ title: Python RAG Service
 subtitle: Index documentation, retrieve relevant content, and generate grounded answers through a platform-agnostic Python service.
 description: Learn what the Python RAG service does, its core capabilities and use cases, and where to start for deployment, integration, evaluation, or extension.
 content_type: overview
-lifecycle_status: draft
+lifecycle_status: published
 topics: [topic-architecture]
 next_steps: [Qstrt, SysArch, HowEv]
-last_modified: 2026-09-23
+last_modified: 2026-09-24
+audience: [primary, secondary]
 ---
 
-The Python RAG Service turns documentation into retrievable evidence
+The Python RAG Service turns documentation into retrievable chunks
 for search and grounded answer generation.
 
 The first implementation uses WordPress as its content source and
@@ -23,30 +24,43 @@ clients without rebuilding the core retrieval system.
 
 <CardGroup cols={2}>
 
-<Card title="Index documentation">
-Retrieve WordPress content, normalize it into a platform-neutral
-document model, split it into retrieval-ready chunks, generate
-embeddings, and maintain the search index.
+<Card href="/#" title="Index documentation">
+Retrieve WordPress content through the connector, then chunk it,
+generate embeddings, and update the index.
+<br/>
+View [Index WordPress content](/#)
 </Card>
 
-<Card title="Retrieve relevant content">
-Combine semantic vector search and BM25 lexical search with reciprocal rank fusion, reranking, and support detection.
+<Card href="/#" title="Retrieve relevant content">
+Find relevant chunks with hybrid retrieval and apply a support gate that returns no results for unsupported queries.
+<br/>
+View [Retrieval pipeline](/#)
 </Card>
 
-<Card title="Search through an API">
-Use `POST /v1/search` to retrieve ranked documentation without generating an answer.
+<Card href="/#" title="Search through an API">
+Use `POST /v1/search` to retrieve ranked documentation without generating an answer. Narrow
+results with metadata filters, and get an empty results list rather than an error when there are no relevant results.
+<br/>
+View [Search documentation](/#)
 </Card>
 
-<Card title="Generate grounded answers">
-Use `POST /v1/answer` to generate answers from retrieved evidence with evidence-sufficiency handling and validated citations.
+<Card href="/#" title="Generate grounded answers">
+Use `POST /v1/answer` to generate an answer from retrieved evidence. Get validated
+citations and an insufficient-evidence response when the sources can't answer the query.
+<br/>
+View [Generate grounded answers](/#)
 </Card>
 
-<Card title="Integrate with applications">
+<Card href="/#" title="Integrate with applications">
 Connect applications to the public API or use the included WordPress reference client as an example integration.
+<br/>
+View [Integrate the RAG API into an application](/#)
 </Card>
 
-<Card title="Evaluate system quality">
+<Card href="/#" title="Evaluate system quality">
 Run repeatable retrieval and answer evaluations using versioned datasets, automated checks, and qualitative review.
+<br/>
+Explore [How evaluation works](/#)
 </Card>
 
 </CardGroup>
@@ -57,12 +71,12 @@ Use the service when you want to:
 
 - add documentation search to an application or website
 - generate answers grounded in an indexed documentation corpus
-- experiment with and evaluate retrieval strategies such as hybrid search and reranking
+- experiment with and evaluate retrieval strategies such as hybrid retrieval and reranking
 - understand how indexing, retrieval, grounded generation, and evaluation fit together in a RAG system
 - extend the service with additional content sources or client applications
 
 ## Next steps
 
-- **Quickstart** — Get the service running locally, index content, and make your first search request.
-- **System architecture** — Understand the major components and how content and requests move through the system.
-- **How evaluation works** — Learn how retrieval and generated answers are evaluated and why the two are measured separately.
+- **[Quickstart](/#)**: Get the service running locally, index content, and make your first search request.
+- **[System architecture](/#)**: Understand the major components and how content and requests move through the system.
+- **[How evaluation works](/#)**: Learn how the service evaluates retrieval and generated answers, and why it measures the two separately.

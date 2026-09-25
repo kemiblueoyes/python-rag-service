@@ -9,6 +9,7 @@ required_base_fields:
   - lifecycle_status
   - topics
   - last_modified
+  - audience
 
 content_types:
   overview: {}
@@ -29,6 +30,10 @@ content_types:
     required_fields:
       - api_version
 
+audience:
+  - primary
+  - secondary
+
 lifecycle_statuses:
   - draft
   - review
@@ -44,6 +49,7 @@ list_fields:
   - related_pages
   - related_terms
   - tags
+  - audience
 
 topics:
   - topic-architecture

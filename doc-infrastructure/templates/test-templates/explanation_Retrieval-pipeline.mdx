@@ -10,6 +10,7 @@ components: [component-retrieval-service]
 next_steps: [AnsGenCit]
 related_pages: [SrchDoc, RtrvlEv, CurEvRes, SysArch, IndxPipe]
 last_modified: 2026-09-14
+audience: [secondary]
 ---
 
 The retrieval pipeline determines which indexed documentation is relevant enough to return for a query. Rather than relying on a single retrieval method, the service combines vector and lexical retrieval, merges their rankings, reranks the strongest candidates, and then checks whether the remaining results actually support the query.
@@ -86,12 +87,12 @@ The pipeline therefore narrows the candidate set in stages rather than asking a 
 
 ## Next steps
 
-[Answer generation and citations](/#): Learn how retrieved evidence is assembled and used to generate grounded answers.
+**[Answer generation and citations](/#)**: Learn how retrieved evidence is assembled and used to generate grounded answers.
 
 ## Related pages
 
-- [Search documentation](/#): Use the retrieval pipeline through `/v1/search`.
-- [Retrieval evaluation](/#): Review how retrieval quality is measured.
-- [Current evaluation results](/#): See how the current retrieval system performs against the evaluation dataset.
-- [System architecture](/#): See where the retrieval service fits within the larger RAG system.
-- [Indexing pipeline](/#): Understand how documentation is prepared and stored before retrieval.
+- **[Search documentation](/#)**: Use the retrieval pipeline through `/v1/search`.
+- **[Retrieval evaluation](/#)**: Review how retrieval quality is measured.
+- **[Current evaluation results](/#)**: See how the current retrieval system performs against the evaluation dataset.
+- **[System architecture](/#)**: See where the retrieval service fits within the larger RAG system.
+- **[Indexing pipeline](/#)**: Understand how documentation is prepared and stored before retrieval.

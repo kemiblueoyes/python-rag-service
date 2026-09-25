@@ -207,6 +207,7 @@ content_type: overview
 lifecycle_status: draft
 topics: [topic-architecture]
 last_modified: 2026-09-20
+audience: [primary]
 ---
 
 Test content.
@@ -384,5 +385,65 @@ Test content.
     assert any(
         "page 'SrchDoc' must use content_type 'how_to'"
         in error
+        for error in errors
+    )
+
+def test_unknown_audience_is_rejected(tmp_path: Path) -> None:
+    page = tmp_path / "bad-audience.mdx"
+    page.write_text(
+        """\
+---
+id: Test
+title: Test
+subtitle: Test subtitle
+description: Test description
+content_type: overview
+lifecycle_status: draft
+audience: [everyone]
+topics: [topic-architecture]
+last_modified: 2026-09-20
+---
+
+Test content.
+""",
+        encoding="utf-8",
+    )
+
+    model, registry = load_validation_contracts()
+
+    errors = validate_document(page, model, registry)
+
+    assert any(
+        "unknown audience 'everyone'" in error
+        for error in errors
+    )
+
+def test_audience_must_not_be_empty(tmp_path: Path) -> None:
+    page = tmp_path / "empty-audience.mdx"
+    page.write_text(
+        """\
+---
+id: Test
+title: Test
+subtitle: Test subtitle
+description: Test description
+content_type: overview
+lifecycle_status: draft
+audience: []
+topics: [topic-architecture]
+last_modified: 2026-09-20
+---
+
+Test content.
+""",
+        encoding="utf-8",
+    )
+
+    model, registry = load_validation_contracts()
+
+    errors = validate_document(page, model, registry)
+
+    assert any(
+        "'audience' must contain at least one value" in error
         for error in errors
     )

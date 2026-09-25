@@ -136,6 +136,5 @@ The review request should provide:
 
 * the documentation page to review
 * the relevant content-type template
-* intended audience
 * page or user goal
 * relevant product/source material when needed to assess technical depth or system behavior

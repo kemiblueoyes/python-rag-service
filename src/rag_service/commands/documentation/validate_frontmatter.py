@@ -32,6 +32,7 @@ class ContentModel:
     required_base_fields: frozenset[str]
     content_types: dict[str, frozenset[str]]
     lifecycle_statuses: frozenset[str]
+    audiences: frozenset[str]
     list_fields: frozenset[str]
     topics: frozenset[str]
     components: frozenset[str]
@@ -231,6 +232,7 @@ def load_content_model(path: Path = DEFAULT_MODEL_PATH) -> ContentModel:
         required_base_fields=_string_set(raw, "required_base_fields"),
         content_types=content_types,
         lifecycle_statuses=_string_set(raw, "lifecycle_statuses"),
+        audiences=_string_set(raw, "audience"),
         list_fields=_string_set(raw, "list_fields"),
         topics=_string_set(raw, "topics"),
         components=_string_set(raw, "components"),
@@ -348,6 +350,23 @@ def validate_document(
                 label,
                 errors,
             )
+
+    audience = frontmatter.get("audience")
+
+    if isinstance(audience, list):
+        if not audience:
+            errors.append(
+                f"{label}: 'audience' must contain at least one value."
+            )
+
+        for audience_value in audience:
+            if (
+                isinstance(audience_value, str)
+                and audience_value not in model.audiences
+            ):
+                errors.append(
+                    f"{label}: unknown audience {audience_value!r}."
+                )
 
     topics = frontmatter.get("topics")
 

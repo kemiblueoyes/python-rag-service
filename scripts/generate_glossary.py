@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the public glossary page and Vale vocabulary from glossary.yml.
+"""Generate the public glossary page and Vale vocabulary from docs/data/glossary.yml.
 
 Reads docs/data/glossary.yml, checks every term, then writes two generated
 files. Do not edit those files by hand. Terms Vale should allow that are not
@@ -370,6 +370,7 @@ def render_glossary(
         "topics: [topic-terminology]",
         "max-toc-depth: 3",
         f"last_modified: {last_modified}",
+        "audience: [primary, secondary]",
         "---",
         "",
         GENERATED_NOTE,

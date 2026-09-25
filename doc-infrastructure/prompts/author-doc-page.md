@@ -29,6 +29,14 @@ Do not spend time manually reproducing checks handled by the documentation valid
 
 Return a complete MDX page ready for validation.
 
+## Source formatting
+
+Wrap prose in the MDX source at approximately 150 characters per line so the
+file is readable without horizontal scrolling.
+
+Do not force-wrap code blocks, tables, URLs, or other content that cannot be
+wrapped cleanly.
+
 ## Inputs
 
 The authoring request should provide:
@@ -37,7 +45,6 @@ The authoring request should provide:
 - title
 - content-type template
 - description
-- target audience
 - page goal or user goal
 - `topics`
 - `components`, when applicable

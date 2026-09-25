@@ -7,21 +7,30 @@ The first implementation uses WordPress as both:
 * the initial content source
 * the initial client application
 
-The core retrieval and answer-generation logic remains independent of WordPress so that additional content sources and clients can be added later.
+The core retrieval and answer-generation logic remains independent of WordPress so that developers can add other content sources and clients later.
 
 ## Project status
 
-Active development. The core indexing, hybrid-retrieval, grounded-answer-generation, WordPress client, and evaluation workflows are implemented and tested.
+Active development. The project implements and tests the core indexing, hybrid-retrieval, grounded-answer-generation, WordPress client, and evaluation workflows.
 
-The service can retrieve WordPress documents, normalize and chunk them, generate Voyage embeddings, maintain a Qdrant vector index, perform BM25 lexical retrieval, combine vector and lexical results with reciprocal rank fusion, rerank candidates with Voyage, and apply a query-level support gate before returning results.
+The service can:
 
-`POST /v1/search` and `POST /v1/answer` are implemented, tested, and represented in the generated OpenAPI specification. Both endpoints use the same hybrid retrieval pipeline. The answer endpoint adds token-budgeted context assembly, grounded generation through OpenAI, evidence-sufficiency handling, citation-integrity validation, citation normalization, and trusted source references.
+- retrieve WordPress documents, 
+- normalize and chunk them, 
+- generate Voyage embeddings, 
+- maintain a Qdrant vector index, 
+- perform BM25 lexical retrieval, 
+- combine vector and lexical results with reciprocal rank fusion (RRF), 
+- rerank candidates with Voyage, 
+- and apply a query-level support gate before returning results.
 
-A WordPress reference client is also implemented. It proxies browser requests through WordPress to the Python API and provides user-facing Search and Ask workflows, loading and error states, insufficient-evidence handling, source links, heading-anchor links, and clickable inline citations.
+The service implements `POST /v1/search` and `POST /v1/answer`. Tests cover both endpoints, and the generated OpenAPI specification includes them. Both endpoints use the same hybrid retrieval pipeline. The answer endpoint adds token-budgeted context assembly, grounded generation through OpenAI, evidence-sufficiency handling, citation-integrity validation, citation normalization, and trusted source references.
 
-Phase 10 added a versioned evaluation framework for retrieval and generated answers. The current 22-case dataset includes answerable, expected-empty, synonym, ambiguous, confusable, multi-section, and updated-content cases. The final answer evaluation passes all structural checks and all 14 answerable cases pass the human qualitative review. One known retrieval-coverage limitation remains for a compound multi-section query.
+A WordPress reference client is also implemented and proxies browser requests through WordPress to the Python API. It provides user-facing Search and Ask workflows, loading and error states, insufficient-evidence handling, source links, heading-anchor links, and clickable inline citations.
 
-See the implementation roadmap in `docs/design/00-implementation-roadmap.md`.
+There is a versioned evaluation framework for retrieval and generated answers. The current 22-case dataset includes answerable, expected-empty, synonym, ambiguous, confusable, multi-section, and updated-content cases. The final answer evaluation passes all structural checks and all 14 answerable cases pass the human qualitative review. One known retrieval-coverage limitation remains for a compound multi-section query.
+
+See the implementation roadmap in `docs/design/004-implementation-roadmap.md`.
 
 ## Current capabilities
 
@@ -44,7 +53,7 @@ See the implementation roadmap in `docs/design/00-implementation-roadmap.md`.
 * Voyage `rerank-2.5` reranking
 * Query-level retrieval support gate for unsupported questions
 * Query validation and supported metadata filtering
-* Duplicate removal across retrieval candidates
+* Duplicate removal within each retriever's candidate list
 * Configurable vector, lexical, and fused candidate depths
 * Retrieval-service factory for application-wide dependency wiring
 * Shared hybrid retrieval service used by both public endpoints
@@ -105,7 +114,7 @@ The service is intentionally designed around two public endpoints:
 | `POST /v1/search` | Implemented | Retrieve relevant documentation chunks without generating an answer. |
 | `POST /v1/answer` | Implemented | Retrieve relevant documentation and generate a grounded answer with validated sources. |
 
-Both endpoints use the same retrieval pipeline. `POST /v1/answer` builds on the retrieved results by running the grounded answer-generation and citation-validation workflow.
+Both endpoints use the same retrieval pipeline. `POST /v1/answer` retrieves a fixed set of 5 chunks, then runs the grounded answer-generation and citation-validation workflow.
 
 Content indexing runs through an internal command or administrative process rather than a public endpoint.
 
@@ -142,7 +151,7 @@ Example successful response:
   "query": "How does metadata improve retrieval?",
   "results": [
     {
-      "chunk_id": "wordpress:page:1:chunk:0",
+      "chunk_id": "wordpress:page:15:chunk:v1:<sha256>",
       "document_id": "wordpress:page:1",
       "title": "Metadata Strategy",
       "heading_path": ["Metadata filtering"],
@@ -155,7 +164,7 @@ Example successful response:
 }
 ```
 
-A valid query if the reranked result set does not pass the configured retrieval support gate, the endpoint returns `200 OK` with an empty `results` array.
+A valid query if the reranked result set doesn't pass the configured retrieval support gate, the endpoint returns `200 OK` with an empty `results` array.
 
 Invalid requests return `422 Unprocessable Content` using the standard error format:
 
@@ -169,7 +178,7 @@ Invalid requests return `422 Unprocessable Content` using the standard error for
 }
 ```
 
-If retrieval cannot complete because a required dependency such as the embedding provider or vector database is unavailable, the API returns `503 Service Unavailable`:
+If retrieval can't complete because a required dependency such as the embedding provider or vector database is unavailable, the API returns `503 Service Unavailable`:
 
 ```json
 {
@@ -181,7 +190,27 @@ If retrieval cannot complete because a required dependency such as the embedding
 }
 ```
 
-Provider-specific exception details are not exposed through the public API.
+Provider-specific exception details aren't exposed through the public API.
+
+### `POST /v1/answer`
+
+The answer endpoint accepts a natural-language query and optional metadata filters. It does not accept a `limit` field. Extra fields, including `limit`, are rejected with `422 Unprocessable Content` and the `validation_error` response shown above.
+
+The route always retrieves 5 chunks through the same hybrid retrieval pipeline as search, then runs grounded answer generation and citation validation.
+
+If retrieval, the language model, the context budget, or citation validation fails, the API returns `503 Service Unavailable`. It does not return `retrieval_unavailable`:
+
+```json
+{
+  "error": {
+    "code": "answer_unavailable",
+    "message": "Answer generation is temporarily unavailable.",
+    "details": []
+  }
+}
+```
+
+Both endpoints require an `X-API-Key` header. A missing or wrong key returns `401` with `authentication_failed`. If `RAG_API_KEY` is unset, both endpoints return `503` with `authentication_unavailable`.
 
 See `docs/design/003-api-design.md` for the current API contract.
 
@@ -193,7 +222,7 @@ The implemented system includes:
 * a platform-neutral canonical document model
 * content normalization and heading-aware chunking
 * embedding generation
-* vector storage, BM25 lexical retrieval, Reciprocal Rank Fusion (RRF), Voyage reranking, and query-level support gating
+* vector storage, BM25 lexical retrieval, RRF, Voyage reranking, and query-level support gating
 * shared retrieval logic with validation, filtering, ranking, duplicate removal, BM25 lexical retrieval, RRF, Voyage reranking, and query-level support gating
 * public search and answer APIs
 * token-budgeted context assembly that preserves ranked source order
@@ -207,7 +236,7 @@ The implemented system includes:
 
 The WordPress connector and WordPress client serve different responsibilities. The connector brings WordPress content into the RAG system for indexing. The client is a consumer of the public API and presents search results and generated answers to site visitors.
 
-The connector, retrieval pipeline, API layer, answer-generation layer, and client remain separate so source- and client-specific behavior does not spread through the core RAG logic.
+The connector, retrieval pipeline, API layer, answer-generation layer, and client remain separate so source-specific and client-specific behavior doesn't spread through the core RAG logic.
 
 ## WordPress client
 
@@ -223,7 +252,7 @@ The plugin provides a Search and Ask interface through the shortcode:
 [doc_landscape_rag]
 ```
 
-Browser requests are sent to WordPress REST endpoints rather than directly to the Python service:
+The browser sends requests to WordPress REST endpoints rather than directly to the Python service:
 
 ```text
 Browser
@@ -254,9 +283,9 @@ define(
 );
 ```
 
-The WordPress proxy sends the key to the Python service in the `X-API-Key` header. Search and Answer requests fail if either constant is missing or if `DL_RAG_API_KEY` does not exactly match `RAG_API_KEY`.
+The WordPress proxy sends the key to the Python service in the `X-API-Key` header. Search and Answer requests fail if either constant is missing or if `DL_RAG_API_KEY` doesn't exactly match `RAG_API_KEY`.
 
-After changing the reference client, deploy the complete updated `clients/wordpress/doc-landscape-rag` plugin directory to the WordPress site's `wp-content/plugins` directory. Updating the Python service alone does not update the live WordPress proxy or UI.
+After changing the reference client, deploy the complete updated `clients/wordpress/doc-landscape-rag` plugin directory to the WordPress site's `wp-content/plugins` directory. Updating the Python service alone doesn't update the live WordPress proxy or UI.
 
 The client currently supports:
 
@@ -271,7 +300,7 @@ The client currently supports:
 * Clickable inline citations and validated source lists
 * Responsive desktop and mobile layouts
 
-The included plugin is a reference implementation for The Doc Landscape rather than a general-purpose configurable WordPress product. The Python API remains platform-agnostic so other clients can be added independently.
+The included plugin is a reference implementation for The Doc Landscape rather than a general-purpose configurable WordPress product. The Python API remains platform-agnostic so developers can add other clients independently.
 
 During local development, the Python API must be running and reachable from the hosted WordPress installation. A temporary HTTPS tunnel can provide that connection. Production deployment will replace the local server and development tunnel with an always-available hosted API.
 
@@ -339,7 +368,7 @@ http://127.0.0.1:8000/docs
 http://127.0.0.1:8000/openapi.json
 ```
 
-The interactive documentation can also be used to execute `POST /v1/search` against the configured retrieval service without using a terminal HTTP client.
+You can also use the interactive documentation to execute `POST /v1/search` against the configured retrieval service without using a terminal HTTP client.
 
 ## Indexing
 
@@ -350,7 +379,7 @@ The retrieval pipeline uses:
 * [Voyage AI](https://www.voyageai.com/) for embeddings and reranking
 * [Qdrant](https://qdrant.tech/) for vector storage and semantic retrieval
 * BM25 for lexical retrieval over the local indexed chunk corpus
-* reciprocal rank fusion (RRF) to combine vector and lexical candidates
+* RRF to combine vector and lexical candidates
 
 Before indexing or running live retrieval, create a Voyage API key and configure Qdrant.
 
@@ -383,11 +412,11 @@ RERANKING_MODEL=rerank-2.5
 
 `LEXICAL_CORPUS_PATH` identifies the chunk corpus used for BM25 retrieval. The standard WordPress indexing workflow writes that corpus to `data/wordpress-chunks.json`.
 
-The candidate-depth settings control how many results each retrieval stage considers before final results are returned. The default pipeline retrieves up to 20 vector candidates and 20 BM25 candidates, combines their rankings with reciprocal rank fusion, keeps the top 20 fused candidates, and sends them to the configured reranker.
+The candidate-depth settings control how many results each retrieval stage considers before the pipeline returns the final results. The default pipeline retrieves up to 20 vector candidates and 20 BM25 candidates. It combines their rankings with RRF, keeps the top 20 fused candidates, and sends them to the configured reranker.
 
-`RETRIEVAL_SUPPORT_CUTOFF` is a query-level support gate rather than a per-result similarity threshold. After reranking, if the highest rerank score is below `0.70`, the retrieval service returns no results. If the query passes the gate, the requested number of reranked results can be returned.
+`RETRIEVAL_SUPPORT_CUTOFF` is a query-level support gate rather than a per-result similarity threshold. After reranking, if the highest rerank score is below `0.70`, the retrieval service returns no results. If the query passes the gate, the pipeline can return the requested number of reranked results.
 
-The `0.70` cutoff was selected through evaluation against the current corpus and models. It should be re-evaluated if the corpus, embedding model, reranking model, chunking strategy, or retrieval configuration changes.
+We selected the `0.70` cutoff by evaluating the current corpus and models. Re-evaluate it if the corpus, embedding model, reranking model, chunking strategy, or retrieval configuration changes.
 
 ### WordPress configuration
 
@@ -408,13 +437,13 @@ WORDPRESS_COLLECTIONS=["posts","pages","glossary"]
 ```
 
 The default profile makes no assumptions about a site's custom fields or the
-meaning of its page hierarchy. It maps standard WordPress fields, extracts
-supported Yoast schema metadata when available, and records immediate page
-parent relationships.
+meaning of its page hierarchy. Every profile uses the shared mapper, which maps
+standard WordPress fields and extracts supported Yoast schema metadata when
+available. The connector records immediate page parent relationships.
 
 ### Initial vector-index build
 
-Run a full rebuild the first time the Qdrant collection is populated:
+Run a full rebuild to populate the Qdrant collection for the first time:
 
 ```bash
 uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
@@ -441,18 +470,20 @@ uv run python -m rag_service.commands.index_wordpress
 Each run compares current documents with the snapshot from the last successful
 run:
 
-* New documents are processed, embedded, and stored.
-* Updated documents have their old chunks removed before current chunks are
-  stored.
-* Unchanged documents are not sent to Voyage or rewritten in Qdrant.
-* Removed or unpublished documents have all their chunks removed from Qdrant.
+* The indexer processes, embeds, and stores new documents.
+* The indexer removes old chunks from updated documents before storing current
+  chunks.
+* The indexer doesn't send unchanged documents to Voyage or rewrite them in
+  Qdrant.
+* The indexer removes all chunks for deleted or unpublished documents from
+  Qdrant.
 
-The local snapshot is updated only after vector synchronization succeeds. If
+The indexer updates the local snapshot only after vector synchronization succeeds. If
 Voyage or Qdrant fails, the next run can detect and retry the same changes.
 
-Only indexable content documents are chunked. WordPress accordions configured
-by the active connector profile are passed to the generic processing pipeline
-as preserved HTML components.
+The indexer chunks only indexable content documents. The active connector
+profile passes configured WordPress accordions to the generic processing
+pipeline as preserved HTML components.
 
 ### Live embedding and storage smoke test
 
@@ -463,7 +494,7 @@ sample chunk → document embedding → Qdrant storage
 related question → query embedding → Qdrant search and filtering
 ```
 
-Use a dedicated collection so test data cannot mix with indexed documentation:
+Use a dedicated collection so test data can't mix with indexed documentation:
 
 ```dotenv
 QDRANT_COLLECTION=rag_chunks_smoke_test
@@ -476,8 +507,8 @@ uv run python -m rag_service.commands.smoke_embedding_storage
 ```
 
 The command prints the retrieved title, text, similarity score, and filter
-results. It intentionally leaves the test point in Qdrant for inspection. The
-test collection can be deleted from Qdrant after inspection. Restore
+results. It intentionally leaves the test point in Qdrant for inspection. You
+can delete the test collection from Qdrant after inspection. Restore
 `QDRANT_COLLECTION=rag_chunks` before running WordPress indexing.
 
 ## Retrieval service
@@ -515,8 +546,8 @@ top rerank score below support cutoff?
 * generates a query embedding with the configured embedding provider
 * retrieves semantic candidates from Qdrant
 * retrieves lexical candidates with BM25
-* removes duplicate chunks
-* combines vector and lexical rankings with reciprocal rank fusion
+* removes duplicate chunks within each retriever's list
+* combines vector and lexical rankings with RRF, keeping a chunk that appears in both lists so the overlap can raise its fused rank
 * reranks fused candidates with the configured reranking provider
 * applies the query-level support cutoff
 * returns reranked results up to the requested limit
@@ -528,11 +559,11 @@ The current supported retrieval filters are:
 * `source_id`
 * `content_type`
 
-The retrieval service is created through a factory so both public API endpoints use the same configured embedding, vector, lexical, fusion, reranking, and support-gating pipeline.
+A factory creates the retrieval service so both public API endpoints use the same configured embedding, vector, lexical, fusion, reranking, and support-gating pipeline.
 
-Requests with a blank query, a limit below 1, an unsupported filter, or an invalid filter value are rejected before retrieval completes.
+The retrieval service rejects requests with a blank query, a limit below 1, an unsupported filter, or an invalid filter value before retrieval completes.
 
-The support gate addresses a specific retrieval problem: a vector or lexical search will normally return the closest available content even when the corpus does not actually answer the user's question. Evaluation showed that neither raw vector similarity nor lexical matching alone provided a safe global cutoff. The current hybrid-and-reranking pipeline uses the top rerank score to decide whether the corpus provides enough retrieval support to return results.
+The support gate addresses a specific retrieval problem. A vector or lexical search will normally return the closest available content even when the corpus doesn't actually answer the user's question. Evaluation showed that neither raw vector similarity nor lexical matching alone provided a safe global cutoff. The current hybrid-and-reranking pipeline uses the top rerank score to decide whether the corpus provides enough retrieval support to return results.
 
 ### Live retrieval-service smoke test
 
@@ -550,7 +581,7 @@ The command writes a reviewable Markdown report to:
 data/retrieval_smoke_results.md
 ```
 
-The report includes each query, returned result count, rerank scores, titles, heading paths, URLs, chunk IDs, and chunk text. Unsupported queries that do not pass the support gate are recorded with no qualifying results.
+The report includes each query, returned result count, rerank scores, titles, heading paths, URLs, chunk IDs, and chunk text. It records no qualifying results for unsupported queries that don't pass the support gate.
 
 ## WordPress connector profiles
 
@@ -559,12 +590,13 @@ fields, and site-specific meanings for parent and child pages. Those decisions
 belong in a connector profile rather than the reusable WordPress client,
 mapper, or connector.
 
-Profiles are defined with `WordPressConnectorProfile` and can provide:
+Define profiles with `WordPressConnectorProfile`. Each profile can provide:
 
 * metadata mappings from either `acf` or WordPress `meta`
 * optional value-label mappings
 * document enrichers for site-specific relationships or roles
 * HTML block classes that the processing pipeline must preserve intact
+* headings whose sections are excluded from indexed chunks
 
 For example, a profile can expose a multi-value ACF field as canonical
 metadata while preserving its list shape:
@@ -602,8 +634,9 @@ retains `["TW", "DL"]`. Fields without a `value_map` retain their original
 shape and may contain scalar, list, or structured values.
 
 The included `doc_landscape` profile demonstrates a complete site profile. It
-configures The Doc Landscape's ACF fields and interprets selected parent pages
-as series landing pages. Select it with:
+configures The Doc Landscape's ACF fields, interprets selected parent pages
+as series landing pages, and excludes the "Related Terms" and "Related Content"
+sections from indexed chunks. Select it with:
 
 ```dotenv
 WORDPRESS_PROFILE=doc_landscape
@@ -619,13 +652,17 @@ To add another site profile:
 
 Document enrichers receive all source records and mapped canonical documents.
 They can add site-specific metadata or document roles after the connector has
-added generic WordPress parent relationships. They should not be added to
-`src/rag_service/connectors/wordpress/` unless the behavior is meaningful for
-WordPress installations generally.
+added generic WordPress parent relationships. Keep them out of
+`src/rag_service/connectors/wordpress/` unless the behavior applies broadly to
+WordPress installations.
 
 `preserved_block_classes` is also site-profile configuration. Use it for
 components such as accordions or tabs that must remain a single HTML block
 during parsing. The default profile preserves no special block classes.
+
+`excluded_section_headings` names headings whose sections are dropped before
+chunking. Matching is case-insensitive and applies to any heading in the
+section path. The default profile excludes no headings.
 
 ## Answer generation
 
@@ -650,13 +687,13 @@ GENERATION_MAX_OUTPUT_TOKENS=1000
 OPENAI_API_KEY=your-openai-api-key
 ```
 
-`GENERATION_CONTEXT_BUDGET_TOKENS` applies to the fully rendered evidence blocks. Sources are included whole and in retrieval order; chunks are not truncated to fit the budget.
+`GENERATION_CONTEXT_BUDGET_TOKENS` applies to the fully rendered evidence blocks. The workflow includes whole sources in retrieval order. It doesn't truncate chunks to fit the budget.
 
 Citation identifiers such as `S1` and `S2` are local to one answer-generation request. Validation ensures that every citation refers to evidence supplied to the model. The final response then renumbers cited sources sequentially by first appearance so clients receive compact citation sequences without gaps.
 
 ### Live answer-generation smoke test
 
-Make sure Voyage, Qdrant, and OpenAI credentials are configured and that `QDRANT_COLLECTION` points to the indexed documentation collection. Then run:
+Configure the Voyage, Qdrant, and OpenAI credentials, and make sure `QDRANT_COLLECTION` points to the indexed documentation collection. Then run:
 
 ```bash
 uv run python -m rag_service.commands.smoke_answer_generation
@@ -675,13 +712,13 @@ It writes a reviewable Markdown report to:
 data/answer_generation_smoke_result.md
 ```
 
-The report contains the question, generated answer, evidence-sufficiency result, validated source references, retrieval scores, and complete cited source text. It supports manual grounding review. Automated structural evaluation and human qualitative answer evaluation are described in the Evaluation section below.
+The report contains the question, generated answer, evidence-sufficiency result, validated source references, retrieval scores, and complete cited source text. It supports manual grounding review. The Evaluation section below describes automated structural evaluation and human qualitative answer evaluation.
 
 ## Evaluation
 
 The project includes a versioned evaluation framework for testing retrieval and answer generation independently.
 
-The baseline dataset is stored at:
+The project stores the baseline dataset at:
 
 ```text
 evaluation/datasets/baseline.json
@@ -689,9 +726,9 @@ evaluation/datasets/baseline.json
 
 The current dataset contains 22 cases covering answerable and expected-empty queries as well as exact-answer, confusable, ambiguous, synonym, multi-section, and updated-content behavior.
 
-Retrieval and answer quality are evaluated separately because they measure different failures. A retrieval result set can miss part of the gold retrieval target while still providing enough evidence for a correct answer. Conversely, structurally valid retrieval and citations do not guarantee that a generated answer is complete and well focused.
+The framework evaluates retrieval and answer quality separately because they measure different failures. A retrieval result set can miss part of the gold retrieval target while still providing enough evidence for a correct answer. Conversely, structurally valid retrieval and citations don't guarantee that a generated answer is complete and well focused.
 
-Evaluation runs write JSON and Markdown reports to `data/evaluation/`. This directory contains generated local artifacts and is not committed to the repository.
+Evaluation runs write JSON and Markdown reports to `data/evaluation/`. This directory contains generated local artifacts and isn't committed to the repository.
 
 ### Retrieval evaluation
 
@@ -710,7 +747,7 @@ data/evaluation/retrieval_baseline.md
 
 The retrieval evaluator measures primary-source hits, precision, recall, reciprocal rank, expected-empty behavior, and overall case success.
 
-The current production pipeline correctly rejects all expected-empty cases. The remaining known retrieval limitation is `multi-section-001`, a compound query where the top-five result set does not satisfy the benchmark's full primary-section coverage requirement.
+The current production pipeline correctly rejects all expected-empty cases. The remaining known retrieval limitation is `multi-section-001`, a compound query where the top-five result set doesn't satisfy the benchmark's full primary-section coverage requirement.
 
 ### Answer evaluation
 
@@ -741,14 +778,14 @@ The final dataset `1.5` baseline passes all 22 structural cases, with 100% evide
 
 Answerable cases are also reviewed on four qualitative dimensions:
 
-* **Support / faithfulness** — whether meaningful claims match the retrieved evidence
-* **Required-point completeness** — whether the answer covers the important expected points
-* **Unsupported details** — whether the answer adds claims not supported by retrieved evidence
-* **Focus / relevance** — whether the answer stays on the user's actual question
+* **Support / faithfulness**: Whether meaningful claims match the retrieved evidence
+* **Required-point completeness**: Whether the answer covers the important expected points
+* **Unsupported details**:  Whether the answer adds claims not supported by retrieved evidence
+* **Focus / relevance**: Whether the answer stays on the user's actual question
 
-Each dimension is scored from `0` to `2`. A strict qualitative pass requires `2` on all four dimensions.
+Reviewers score each dimension from `0` to `2`. A strict qualitative pass requires `2` on all four dimensions.
 
-The current review is stored in:
+The project stores the current review in:
 
 ```text
 data/evaluation/answer_qualitative_review.json
@@ -760,7 +797,7 @@ Generate the Markdown report with:
 uv run python -m rag_service.commands.report_qualitative_answers
 ```
 
-The report is written to:
+The command writes the report to:
 
 ```text
 data/evaluation/answer_qualitative_review.md
@@ -768,11 +805,11 @@ data/evaluation/answer_qualitative_review.md
 
 The final dataset `1.5` qualitative review passes all 14 answerable cases, with an average score of `2.00 / 2` on all four dimensions.
 
-The evaluation process also produced a prompt improvement. An earlier answer to `context-001` was grounded but wandered into related AI-assistant material that was not needed to answer the question. The grounded-answer prompt now explicitly instructs the model to ignore source material that is related to the topic but unnecessary for the user's question.
+The evaluation process also produced a prompt improvement. An earlier answer to `context-001` used the provided evidence but wandered into related AI-assistant material that wasn't needed to answer the question. The grounded-answer prompt now explicitly instructs the model to ignore source material that's related to the topic but unnecessary for the user's question.
 
 For the detailed investigation that led from semantic-only retrieval to the current hybrid + reranking + support-gate design: 
-- `docs/evaluation/retrieval-failure-analysis.md` — investigation of retrieval failures and the experiments that led to the current pipeline
-- `docs/evaluation/phase-10-evaluation-summary.md` — consolidated Phase 10 (evaluation) results, findings, and known limitations
+- `docs/evaluation/retrieval-failure-analysis.md`: Investigation of retrieval failures and the experiments that led to the current pipeline
+- `docs/evaluation/evaluation-summary.md`: Consolidated evaluation results, findings, and known limitations
 
 
 ## Development checks
@@ -812,7 +849,8 @@ uv run mypy
 │           ├── includes/
 │           └── doc-landscape-rag.php
 ├── docs/
-│   └── design/
+│   ├── design/
+│   │   └── adr/
 │   └── evaluation/
 ├── evaluation/
 │   └── datasets/
@@ -821,11 +859,13 @@ uv run mypy
 │       ├── api/
 │       │   └── routes/
 │       ├── commands/
+│       │   └── documentation/
 │       ├── connectors/
 │       │   └── wordpress/
 │       ├── embeddings/
 │       ├── evaluation/
 │       ├── generation/
+│       │   └── providers/
 │       ├── indexing/
 │       ├── lexical/
 │       ├── models/
@@ -839,6 +879,7 @@ uv run mypy
 │   ├── api/
 │   ├── commands/
 │   ├── connectors/
+│   │   └── wordpress/
 │   ├── embeddings/
 │   ├── evaluation/
 │   ├── generation/
@@ -857,19 +898,14 @@ uv run mypy
 
 ## Documentation
 
-Initial project documentation is stored in `docs/design/`.
+Design records live in `docs/design/`.
 
-Current documents include:
+Architecture decisions live in `docs/design/adr/` (ADR-001 through ADR-010). They cover the canonical document model, connector separation, heading-aware chunking, the two public API endpoints, the automation orchestration layer, Voyage embeddings, Qdrant, hybrid retrieval and reranking, API-key authentication, and WordPress connector profiles.
 
-* Project vision and goals
-* High-level architecture
-* API Design
-* Implementation roadmap
-
-The implemented `/v1/search` and `/v1/answer` contracts are documented in `docs/design/003-api-design.md` and in FastAPI's generated OpenAPI documentation. Additional design documentation will be added as later implementation phases are completed.
+`docs/design/003-api-design.md` and FastAPI's generated OpenAPI documentation describe the implemented `/v1/search` and `/v1/answer` contracts.
 
 Evaluation datasets live in `evaluation/datasets/` and generated evaluation artifacts live in `data/evaluation/`.
 
 ## License
 
-This project is licensed under the MIT License.
+The MIT License covers this project.

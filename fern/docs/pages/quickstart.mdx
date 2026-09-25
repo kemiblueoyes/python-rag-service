@@ -1,5 +1,151 @@
 ---
+id: Qstrt
 title: Quickstart
-subtitle: coming soon
-last_modified: 2026-09-23
+subtitle: Run the service locally and return results from your first search request.
+description: Get the Python RAG service running locally, index content, authenticate, and make your first successful search request.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-installation, topic-configuration, topic-authentication, topic-indexing, topic-retrieval, topic-api]
+components: [component-indexing-pipeline, component-retrieval-service, component-public-api]
+next_steps: [SrchDoc, GenAns]
+related_pages: [Instl, ConfSrv, Auth, IndxWP]
+last_modified: 2026-09-24
+audience: [primary]
 ---
+
+Use this quickstart when you want the shortest path from a fresh repo checkout to a successful `POST /v1/search` response. 
+It covers the minimum install, configuration, WordPress indexing, startup, and authenticated search. Deeper options 
+for each step live on the related pages.
+
+## Prerequisites
+
+- Python 3.12 and [uv](https://docs.astral.sh/uv/)
+- A Voyage AI API key for embeddings and reranking
+- A Qdrant instance the service can reach for vector storage
+- A WordPress site whose REST API exposes the posts and pages you want to index
+
+<Steps>
+  <Step title="Install the project">
+    Clone the repository, then install dependencies from the project directory:
+
+    ```bash
+    git clone https://github.com/kemiblueoyes/python-rag-service.git
+    cd python-rag-service
+    uv sync --dev
+    ```
+
+    See [Install](/#) for the install requirements in more detail.
+  </Step>
+
+  <Step title="Configure the local environment">
+    Copy the example environment file:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Set these values in `.env`. Don't commit `.env` or put real keys in `.env.example`.
+
+    ```dotenv
+    RAG_API_KEY=your-long-random-api-key
+    VOYAGE_API_KEY=your-voyage-api-key
+    QDRANT_URL=http://localhost:6333
+    QDRANT_API_KEY=
+    QDRANT_COLLECTION=rag_chunks
+    WORDPRESS_BASE_URL=https://example.com
+    ```
+
+    - `RAG_API_KEY` is the key clients send in the `X-API-Key` header.
+    - Leave `QDRANT_API_KEY` empty when the Qdrant instance doesn't require one, and change 
+    `QDRANT_URL` when Qdrant isn't running at `http://localhost:6333`. 
+    - `QDRANT_COLLECTION` defaults to `rag_chunks`. Change it if you want the service to 
+    use a different Qdrant collection name.
+    - `WORDPRESS_BASE_URL` is the site the connector reads. 
+    
+    The example file already sets the embedding model and WordPress collections to
+    `posts` and `pages`. 
+
+    See [Configure the service](/#) for the rest of the environment variables, and
+    [Authentication](/#) for how the API checks the key.
+  </Step>
+
+  <Step title="Index WordPress content">
+    Build the index before you search. This command reads the configured WordPress
+    site, writes canonical documents and chunks under `data/`, and stores embeddings
+    in Qdrant:
+
+    ```bash
+    uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
+    ```
+
+    Wait until the command finishes. It prints how many canonical documents and chunks
+    it wrote, and how many documents and chunks it stored in the vector index.
+
+    See [Index WordPress content](/#) for incremental updates and what each artifact is for.
+  </Step>
+
+  <Step title="Start the service">
+    Start the API from the project directory:
+
+    ```bash
+    uv run uvicorn rag_service.api.app:app --reload
+    ```
+
+    Open `http://127.0.0.1:8000/health`. A running service returns:
+
+    ```json
+    {
+      "status": "ok"
+    }
+    ```
+
+    The health check doesn't use the API key. `POST /v1/search` does.
+  </Step>
+
+  <Step title="Send your first search request">
+    Call `POST /v1/search` with the key from `RAG_API_KEY`. Use a query that matches
+    content you just indexed:
+
+    ```bash
+    curl -s -X POST http://127.0.0.1:8000/v1/search \
+      -H "Content-Type: application/json" \
+      -H "X-API-Key: your-long-random-api-key" \
+      -d '{"query": "How does metadata improve retrieval?"}'
+    ```
+
+    A successful search returns `200` and a `results` array. Each result includes the
+    chunk title, heading path, excerpt, source URL, and rerank score. 
+    
+    The service can also return `200` with an empty `results` array when the indexed content doesn't
+    support the query. If that happens, retry with a question your WordPress content
+    actually covers.
+
+    The service is ready for local search when this request returns `200`.
+  </Step>
+</Steps>
+
+## Verification
+
+Confirm both of these:
+
+- `GET http://127.0.0.1:8000/health` returns `{"status": "ok"}`.
+- `POST /v1/search` returns `200` and a `results` array. A non-empty array means the
+  query matched indexed content.
+
+A missing or wrong `X-API-Key` returns `401`. If `RAG_API_KEY` isn't set, or Qdrant
+or Voyage can't be reached, search returns `503`.
+
+## Next steps
+
+- **[Search documentation](/#)**: Add filters, set a result limit, and handle an empty
+  result in a client.
+- **[Generate grounded answers](/#)**: Call `POST /v1/answer` to generate an answer
+  from retrieved evidence.
+
+## Related pages
+
+- **[Install](/#)**: Review the install requirements without the rest of the quickstart.
+- **[Configure the service](/#)**: Set provider, retrieval, and content-source options
+  beyond the minimum used here.
+- **[Authentication](/#)**: See how `X-API-Key` is checked on search and answer requests.
+- **[Index WordPress content](/#)**: Rebuild or update the index after the first successful search.

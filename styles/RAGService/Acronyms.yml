@@ -25,3 +25,7 @@ exceptions:
   - DELETE
   - REST
   - MIT
+  - CSS
+  - CSV
+  - PATH
+  - XML

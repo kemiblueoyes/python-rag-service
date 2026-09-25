@@ -1,8 +1,8 @@
-# Phase 10 Evaluation Summary
+# Evaluation summary
 
 ## Purpose
 
-Phase 10 established an evaluation framework for the Python RAG Service and used it to test retrieval quality, unsupported-query handling, answer structure, citation behavior, and generated-answer quality.
+This report summarizes the evaluation of the Python RAG Service: retrieval quality, unsupported-query handling, answer structure, citation behavior, and generated-answer quality.
 
 The evaluation deliberately separates **retrieval evaluation** from **answer evaluation**. A retrieval failure does not automatically mean the generated answer is poor, and a good answer does not erase a retrieval weakness.
 
@@ -141,9 +141,9 @@ After that change, `context-001` passed all four qualitative dimensions in the f
 
 9. **An LLM support grader is not currently required.** The hybrid + reranking support signal handles all expected-empty cases in the current dataset without adding a second LLM call to every production query.
 
-## Phase 10 outcome
+## Outcome
 
-Phase 10 now provides:
+The evaluation provides:
 
 - a versioned evaluation dataset
 - retrieval relevance judgments
@@ -157,4 +157,4 @@ Phase 10 now provides:
 
 The remaining known retrieval limitation is `multi-section-001`. It is documented rather than treated as an answer-generation failure.
 
-With that limitation recorded, the Phase 10 evaluation framework and current evaluation pass are complete.
+With that limitation recorded, the evaluation framework and the current evaluation pass are complete.
