@@ -52,8 +52,9 @@ Use cardgroups for overview navigation to related areas.
 
 ### Steps: sequential instructions
 
-Use `<Steps>` for sequential instructions in tutorials and how-to pages.
+Use `<Steps toc={true}>` for sequential instructions in tutorials and how-to pages.
 
+Don't use `<Step>` for each step. Use `## Step title` instead. With `toc={true}` and `##` heading level, each step’s position in the table of contents appear at level 2.
 
 ### CodeBlocks vs Tabs
 

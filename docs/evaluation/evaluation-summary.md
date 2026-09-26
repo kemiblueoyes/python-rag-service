@@ -157,4 +157,4 @@ The evaluation provides:
 
 The remaining known retrieval limitation is `multi-section-001`. It is documented rather than treated as an answer-generation failure.
 
-With that limitation recorded, the evaluation framework and the current evaluation pass are complete.
+With that limitation recorded, the evaluation framework and the recorded dataset 1.5 baseline are complete.

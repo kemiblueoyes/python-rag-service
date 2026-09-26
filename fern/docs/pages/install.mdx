@@ -1,5 +1,66 @@
 ---
+id: Instl
 title: Install
-subtile: coming soon.
-last_modified: 2026-09-23
+subtitle: Clone the repository, install dependencies, and create a local environment file.
+description: Set up the Python RAG service locally by cloning the repo, installing dependencies with uv, and creating the local environment configuration file.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-installation]
+next_steps: [ConfSrv]
+related_pages: [Qstrt]
+last_modified: 2026-09-25
+audience: [primary]
 ---
+
+Install the Python RAG service on your computer and create a local environment file. This page stops once `.env` exists. Provider, content-source, and retrieval settings belong on the next page.
+
+## Prerequisites
+
+- Python 3.12
+- [uv](https://docs.astral.sh/uv/)
+
+<Steps toc={true}>
+    ## Clone the repository
+
+    Clone the Python RAG Service repository and open the project directory:
+
+    ```bash
+    git clone https://github.com/kemiblueoyes/python-rag-service.git
+    cd python-rag-service
+    ```
+
+    Run the rest of these commands from that directory.
+
+    ## Install dependencies
+
+    Install the project dependencies, including the development tools:
+
+    ```bash
+    uv sync --dev
+    ```
+
+    `uv` creates the local Python environment and installs the packages the service needs.
+
+    ## Create the environment file
+
+    Copy the example environment file:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    `.env` is the local configuration file. Don't commit it, and don't put real API keys in `.env.example`.
+
+    The Python RAG service is installed when this copy finishes. The example file already
+    sets the embedding model, `QDRANT_URL`, `QDRANT_COLLECTION`, the retrieval settings,
+    and WordPress collections to `posts` and `pages`. `RAG_API_KEY`, `VOYAGE_API_KEY`,
+    and `WORDPRESS_BASE_URL` are still empty.
+</Steps>
+
+## Next steps
+
+**[Configure the service](/#)**: Set the remaining provider, content-source, and retrieval values in `.env`.
+
+## Related pages
+
+**[Quickstart](/#)**: Follow the shorter path that installs the service, indexes WordPress content, and makes a first search request.

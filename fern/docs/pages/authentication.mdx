@@ -1,4 +1,92 @@
 ---
+id: Auth
 title: Authentication
-last_modified: 2026-09-20
+subtitle: Require an API key on search and answer requests.
+description: Configure API-key authentication for /v1/search and /v1/answer, send X-API-Key securely, and understand why /health does not require authentication.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-authentication, topic-api]
+components: [component-public-api]
+prerequisites: [Instl]
+next_steps: [SrchDoc]
+related_pages: [SrchAPI, AnsAPI, IntApp, Errs]
+last_modified: 2026-09-25
+audience: [primary]
 ---
+
+Set the API key that `POST /v1/search` and `POST /v1/answer` require.
+Send that key in the `X-API-Key` header from a server-side client.
+`GET /health` does not check the key.
+
+## Prerequisites
+
+**[Install](/#)**: Create `.env` before you set `RAG_API_KEY`.
+
+<Steps toc={true}>
+    ## Set the API key
+
+    Set `RAG_API_KEY` in `.env` to a long random value:
+
+    ```dotenv
+    RAG_API_KEY=your-long-random-api-key
+    ```
+
+    Don't commit `.env`, and don't put the real key in `.env.example`.
+    Set the key before you start the service.
+    If the service is already running, restart it so it reads the new value.
+
+    When `RAG_API_KEY` is empty, both search and answer return `503` with
+    `authentication_unavailable`. A request can succeed only after the key is set.
+
+    ## Send the key from a server-side client
+
+    Send the same value in the `X-API-Key` header:
+
+    ```bash
+    curl -s -X POST http://127.0.0.1:8000/v1/search \
+      -H "Content-Type: application/json" \
+      -H "X-API-Key: your-long-random-api-key" \
+      -d '{"query": "How does metadata improve retrieval?"}'
+    ```
+
+    Keep the key on a server you control. A browser should call your application,
+    and that application should add `X-API-Key` when it calls the Python RAG service.
+    Don't put the key in browser JavaScript.
+
+    The included WordPress client keeps the API key on the server.
+    The browser calls a WordPress REST proxy, and the proxy adds `X-API-Key`
+    when it calls the Python service. The key in that server configuration has to match `RAG_API_KEY`.
+    See [Integrate the RAG API into an application](/#) to use the same pattern in your own client.
+
+    A missing or wrong key returns `401` with `authentication_failed`.
+    See [Errors](/#) for the error response format.
+
+    ## Check service health without the key
+
+    `GET /health` does not check the API key. Call it without `X-API-Key`:
+
+    ```text
+    http://127.0.0.1:8000/health
+    ```
+
+    A running service returns:
+
+    ```json
+    {
+      "status": "ok"
+    }
+    ```
+
+    Search and answer still require `X-API-Key` after this check succeeds.
+</Steps>
+
+## Next steps
+
+**[Search documentation](/#)**: Call `POST /v1/search` with the API key.
+
+## Related pages
+
+- **[Search API](/#)**: Look up the authenticated `POST /v1/search` request and response.
+- **[Answer API](/#)**: Look up the authenticated `POST /v1/answer` request and response.
+- **[Integrate the RAG API into an application](/#)**: Send the API key from your own server-side client.
+- **[Errors](/#)**: Look up `authentication_failed` and `authentication_unavailable`.

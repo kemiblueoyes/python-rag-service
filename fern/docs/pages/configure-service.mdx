@@ -1,4 +1,119 @@
 ---
-title: Configure the RAG service
-last_modified: 2026-09-20
+id: ConfSrv
+title: Configure the service
+subtitle: Set the Voyage, Qdrant, OpenAI, WordPress, and retrieval values the service reads from .env.
+description: Configure Voyage, Qdrant, OpenAI, WordPress, and retrieval settings required to run the Python RAG service.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-configuration, topic-provider-configuration, topic-content-source-configuration, topic-retrieval-configuration]
+components: [component-wordpress-connector, component-retrieval-service, component-vector-database, component-embedding-provider, component-language-model-provider]
+prerequisites: [Instl]
+next_steps: [IndxWP]
+related_pages: [CnfgRef]
+last_modified: 2026-09-25
+audience: [primary]
 ---
+
+Set the provider, content source, and retrieval values the Python RAG service reads from `.env`.
+The example file already sets the embedding model, reranking model, retrieval defaults, and WordPress collections.
+This page fills the values that are still empty and the ones that depend on your Qdrant instance and WordPress site.
+
+Indexing and search also need `RAG_API_KEY`. See [Authentication](/#) for how to set that key.
+For every setting's type, default, and accepted values, see [Configuration reference](/#).
+
+## Prerequisites
+
+**[Install](/#)**: Create `.env` from the example file before you change these settings.
+
+<Steps toc={true}>
+    ## Set the Voyage API key
+
+    Voyage AI creates embeddings during indexing and reranks search results. Set your key in `.env`:
+
+    ```dotenv
+    VOYAGE_API_KEY=your-voyage-api-key
+    ```
+
+    Leave the example file's embedding and reranking models unless you intend to change them.
+    `EMBEDDING_MODEL` is `voyage-4-lite`, and `EMBEDDING_DIMENSION` is `1024`.
+    That dimension has to match the model's output. `RERANKING_MODEL` is `rerank-2.5`.
+
+    ## Set the Qdrant connection
+
+    Qdrant stores the vectors used for retrieval. The example file points at Qdrant on your computer and uses the `rag_chunks` collection name:
+
+    ```dotenv
+    QDRANT_URL=http://localhost:6333
+    QDRANT_API_KEY=
+    QDRANT_COLLECTION=rag_chunks
+    ```
+
+    Leave `QDRANT_API_KEY` empty when that local server doesn't require a key.
+    Change `QDRANT_COLLECTION` when you want a different collection name.
+    The service creates the collection and its payload indexes when they don't already exist.
+
+    For a remote Qdrant instance, replace the URL and set the API key before you index:
+
+    ```dotenv
+    QDRANT_URL=https://your-cluster.cloud.qdrant.io
+    QDRANT_API_KEY=your-qdrant-api-key
+    ```
+
+    Qdrant Cloud requires an API key. A self-hosted remote instance requires one when
+    API-key authentication is enabled on that server. Qdrant has to be reachable before indexing.
+
+    The [Quickstart](/#) shows how to start Qdrant locally with Docker.
+
+    ## Set the WordPress content source
+
+    Set the site the WordPress connector reads:
+
+    ```dotenv
+    WORDPRESS_BASE_URL=https://example.com
+    WORDPRESS_COLLECTIONS=["posts","pages"]
+    WORDPRESS_PROFILE=default
+    ```
+
+    `WORDPRESS_COLLECTIONS` is a JSON array of REST API collections.
+    The example file retrieves posts and pages. Add a custom post type when the site exposes one,
+    for example `["posts","pages","glossary"]`.
+
+    Leave `WORDPRESS_PROFILE` as `default` for a standard WordPress site.
+    `doc_landscape` is an example profile for one live WordPress site. Don't select it for your own site.
+
+    ## Confirm the retrieval settings
+
+    The example file already sets lexical retrieval, candidate depths, reciprocal rank fusion (RRF),
+    and the support gate. 
+    
+    `LEXICAL_CORPUS_PATH` is `data/wordpress-chunks.json`, which is the chunk
+    file the WordPress indexing command writes. 
+    
+    `RETRIEVAL_SUPPORT_CUTOFF` is `0.70`. After reranking, the retrieval service returns no results 
+    when the highest rerank score is below that cutoff.
+
+    Leave these values unless you have a reason to change them. Re-evaluate the cutoff if the indexed
+    content, embedding model, reranking model, or chunking rules change.
+    See [Configuration reference](/#) for each retrieval setting.
+
+    ## Set the OpenAI API key
+
+    OpenAI generates answers for `POST /v1/answer`. Indexing and search don't use this key. Set it in `.env`:
+
+    ```dotenv
+    OPENAI_API_KEY=your-openai-api-key
+    ```
+
+    The example file already sets `GENERATION_PROVIDER` to `openai`, `GENERATION_MODEL` to `gpt-5.6-terra`,
+    and the context and output token limits. Leave those unless you intend to change the language model.
+
+    `.env` now has the Voyage, Qdrant, WordPress, retrieval, and OpenAI values the service needs. Don't commit `.env`.
+</Steps>
+
+## Next steps
+
+**[Index WordPress content](/#)**: Build the index from the WordPress site you configured.
+
+## Related pages
+
+**[Configuration reference](/#)**: Look up each setting's type, default, and what it controls.

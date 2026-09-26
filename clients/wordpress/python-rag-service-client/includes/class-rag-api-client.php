@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Client for communicating with the Python RAG Service API.
  */
-class DL_RAG_API_Client {
+class RAG_Service_API_Client {
 
     /**
      * API key for authenticating with the Python RAG service.
@@ -114,14 +114,14 @@ class DL_RAG_API_Client {
 
 		if ( ! is_array( $data ) ) {
 			return new WP_Error(
-				'dl_rag_invalid_response',
+				'rag_service_invalid_response',
 				'The RAG service returned an invalid response.'
 			);
 		}
 
 		if ( $status_code < 200 || $status_code >= 300 ) {
 			return new WP_Error(
-				'dl_rag_api_error',
+				'rag_service_api_error',
 				'The RAG service returned an error.',
 				array(
 					'status' => $status_code,

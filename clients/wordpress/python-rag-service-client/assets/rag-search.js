@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-	const clients = document.querySelectorAll('.dl-rag-client');
+	const clients = document.querySelectorAll('.rag-service-client');
 
 	clients.forEach((client) => {
-		const form = client.querySelector('.dl-rag-search-form');
-		const input = client.querySelector('.dl-rag-query');
-		const status = client.querySelector('.dl-rag-status');
-		const results = client.querySelector('.dl-rag-results');
+		const form = client.querySelector('.rag-service-search-form');
+		const input = client.querySelector('.rag-service-query');
+		const status = client.querySelector('.rag-service-status');
+		const results = client.querySelector('.rag-service-results');
 
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const isAnswer = mode === 'answer';
         
             const url = isAnswer
-                ? dlRagConfig.answerUrl
-                : dlRagConfig.searchUrl;
+                ? ragServiceConfig.answerUrl
+                : ragServiceConfig.searchUrl;
         
             status.textContent = isAnswer
                 ? 'Generating answer…'
@@ -132,7 +132,7 @@ function renderResults(results, container, status) {
 
 	results.forEach((result) => {
 		const article = document.createElement('article');
-		article.className = 'dl-rag-result';
+		article.className = 'rag-service-result';
 
 		const title = document.createElement('h3');
 
@@ -147,7 +147,7 @@ function renderResults(results, container, status) {
 
         if (result.heading_path && result.heading_path.length) {
             const heading = document.createElement('p');
-            heading.className = 'dl-rag-result-heading';
+            heading.className = 'rag-service-result-heading';
         
             result.heading_path.forEach((headingText, index) => {
                 if (index > 0) {
@@ -240,7 +240,7 @@ function appendInlineFormatting(
 					document.createElement('a');
 
 				citationLink.className =
-					'dl-rag-citation';
+					'rag-service-citation';
 
 				citationLink.href = source.anchor
 					? `${source.url.replace(/#.*$/, '')}#${source.anchor}`
@@ -351,10 +351,10 @@ function renderAnswer(data, container, status) {
 		: 'The available pages and articles may not contain enough information.';
 
 	const article = document.createElement('article');
-	article.className = 'dl-rag-answer';
+	article.className = 'rag-service-answer';
 
     const answerContent = document.createElement('div');
-    answerContent.className = 'dl-rag-answer-content';
+    answerContent.className = 'rag-service-answer-content';
 
     renderAnswerContent(
         data.answer,
@@ -371,7 +371,7 @@ function renderAnswer(data, container, status) {
 		article.appendChild(sourcesHeading);
 
 		const sourceList = document.createElement('ul');
-		sourceList.className = 'dl-rag-sources';
+		sourceList.className = 'rag-service-sources';
 
 		data.sources.forEach((source) => {
 			const item = document.createElement('li');

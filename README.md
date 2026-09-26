@@ -28,7 +28,11 @@ The service implements `POST /v1/search` and `POST /v1/answer`. Tests cover both
 
 A WordPress reference client is also implemented and proxies browser requests through WordPress to the Python API. It provides user-facing Search and Ask workflows, loading and error states, insufficient-evidence handling, source links, heading-anchor links, and clickable inline citations.
 
-There is a versioned evaluation framework for retrieval and generated answers. The current 22-case dataset includes answerable, expected-empty, synonym, ambiguous, confusable, multi-section, and updated-content cases. The final answer evaluation passes all structural checks and all 14 answerable cases pass the human qualitative review. One known retrieval-coverage limitation remains for a compound multi-section query.
+The project includes a versioned evaluation framework for retrieval and generated answers. The current dataset contains 22 cases covering answerable, expected-empty, synonym, ambiguous, confusable, multi-section, and updated-content behavior.
+
+The latest recorded Phase 10 baseline used dataset version 1.5. In that run, all 22 cases passed the automated answer checks, all 14 answerable cases passed the human qualitative review, and all 8 expected-empty queries were correctly rejected by the retrieval support gate. multi-section-001 remained a known retrieval-coverage limitation for a compound query.
+
+These results describe the recorded evaluation baseline rather than a continuously enforced performance guarantee. Changes to the corpus, models, prompts, chunking strategy, or retrieval configuration can change the results.
 
 See the implementation roadmap in `docs/design/004-implementation-roadmap.md`.
 
@@ -243,13 +247,13 @@ The connector, retrieval pipeline, API layer, answer-generation layer, and clien
 The first reference client is a WordPress plugin located at:
 
 ```text
-clients/wordpress/doc-landscape-rag/
+clients/wordpress/python-rag-service-client/
 ```
 
 The plugin provides a Search and Ask interface through the shortcode:
 
 ```text
-[doc_landscape_rag]
+[python_rag_service]
 ```
 
 The browser sends requests to WordPress REST endpoints rather than directly to the Python service:
@@ -273,19 +277,19 @@ Configure the Python service base URL and the same API key in WordPress, typical
 
 ```php
 define(
-    'DL_RAG_API_BASE_URL',
+    'RAG_SERVICE_API_BASE_URL',
     'https://your-rag-service.example.com'
 );
 
 define(
-    'DL_RAG_API_KEY',
+    'RAG_SERVICE_API_KEY',
     'replace-with-the-same-long-random-value'
 );
 ```
 
-The WordPress proxy sends the key to the Python service in the `X-API-Key` header. Search and Answer requests fail if either constant is missing or if `DL_RAG_API_KEY` doesn't exactly match `RAG_API_KEY`.
+The WordPress proxy sends the key to the Python service in the `X-API-Key` header. Search and Answer requests fail if either constant is missing or if `RAG_SERVICE_API_KEY` doesn't exactly match `RAG_API_KEY`.
 
-After changing the reference client, deploy the complete updated `clients/wordpress/doc-landscape-rag` plugin directory to the WordPress site's `wp-content/plugins` directory. Updating the Python service alone doesn't update the live WordPress proxy or UI.
+After changing the reference client, deploy the complete updated `clients/wordpress/python-rag-service-client` plugin directory to the WordPress site's `wp-content/plugins` directory. Updating the Python service alone doesn't update the live WordPress proxy or UI.
 
 The client currently supports:
 
@@ -300,11 +304,11 @@ The client currently supports:
 * Clickable inline citations and validated source lists
 * Responsive desktop and mobile layouts
 
-The included plugin is a reference implementation for The Doc Landscape rather than a general-purpose configurable WordPress product. The Python API remains platform-agnostic so developers can add other clients independently.
+The included plugin is a reference implementation of a WordPress client rather than a general-purpose configurable WordPress product. The Python API remains platform-agnostic so developers can add other clients independently.
 
 During local development, the Python API must be running and reachable from the hosted WordPress installation. A temporary HTTPS tunnel can provide that connection. Production deployment will replace the local server and development tunnel with an always-available hosted API.
 
-That server-side proxy description matches the client currently committed: its WordPress routes call `DL_RAG_API_BASE_URL`, authenticate with `DL_RAG_API_KEY`, and forward Search and Answer requests to Python.
+That server-side proxy description matches the client currently committed: its WordPress routes call `RAG_SERVICE_API_BASE_URL`, authenticate with `RAG_SERVICE_API_KEY`, and forward Search and Answer requests to Python.
 
 
 ## Requirements
@@ -730,6 +734,8 @@ The framework evaluates retrieval and answer quality separately because they mea
 
 Evaluation runs write JSON and Markdown reports to `data/evaluation/`. This directory contains generated local artifacts and isn't committed to the repository.
 
+Evaluation results in this README and in docs/evaluation/ are recorded baseline results from completed evaluation runs. They are not continuously verified by the test suite or CI. Rerun the evaluation commands after changes that may affect retrieval or generation quality.
+
 ### Retrieval evaluation
 
 Run the production retrieval pipeline against the gold dataset:
@@ -747,7 +753,7 @@ data/evaluation/retrieval_baseline.md
 
 The retrieval evaluator measures primary-source hits, precision, recall, reciprocal rank, expected-empty behavior, and overall case success.
 
-The current production pipeline correctly rejects all expected-empty cases. The remaining known retrieval limitation is `multi-section-001`, a compound query where the top-five result set doesn't satisfy the benchmark's full primary-section coverage requirement.
+In the recorded dataset `1.5` evaluation baseline, the production pipeline rejected all 8 expected-empty cases. The remaining known retrieval limitation was `multi-section-001`, a compound query where the top-five result set did not satisfy the benchmark's full primary-section coverage requirement. The remaining known retrieval limitation is `multi-section-001`, a compound query where the top-five result set doesn't satisfy the benchmark's full primary-section coverage requirement.
 
 ### Answer evaluation
 
@@ -772,7 +778,7 @@ The deterministic evaluator checks:
 * whether expected-empty responses avoid citations
 * whether citations refer only to retrieval sources judged relevant for the case
 
-The final dataset `1.5` baseline passes all 22 structural cases, with 100% evidence-sufficiency accuracy and 100% citation-behavior accuracy.
+In the recorded dataset `1.5` baseline, all 22 cases passed the structural checks, with 100% evidence-sufficiency accuracy and 100% citation-behavior accuracy.
 
 ### Human qualitative answer review
 
@@ -803,7 +809,7 @@ The command writes the report to:
 data/evaluation/answer_qualitative_review.md
 ```
 
-The final dataset `1.5` qualitative review passes all 14 answerable cases, with an average score of `2.00 / 2` on all four dimensions.
+In the recorded dataset `1.5` qualitative review, all 14 answerable cases received a strict pass, with an average score of `2.00 / 2` on all four dimensions.
 
 The evaluation process also produced a prompt improvement. An earlier answer to `context-001` used the provided evidence but wandered into related AI-assistant material that wasn't needed to answer the question. The grounded-answer prompt now explicitly instructs the model to ignore source material that's related to the topic but unnecessary for the user's question.
 
@@ -844,10 +850,10 @@ uv run mypy
 .
 ├── clients/
 │   └── wordpress/
-│       └── doc-landscape-rag/
+│       └── python-rag-service-client/
 │           ├── assets/
 │           ├── includes/
-│           └── doc-landscape-rag.php
+│           └── python-rag-service-client.php
 ├── docs/
 │   ├── design/
 │   │   └── adr/

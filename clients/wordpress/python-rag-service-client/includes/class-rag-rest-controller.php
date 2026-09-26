@@ -7,14 +7,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Exposes the RAG client through the WordPress REST API.
  */
-class DL_RAG_REST_Controller {
+class RAG_Service_REST_Controller {
 
     /**
      * Register WordPress REST routes.
      */
     public function register_routes() {
         register_rest_route(
-            'doc-landscape-rag/v1',
+            'python-rag-service/v1',
             '/search',
             array(
                 'methods'             => 'POST',
@@ -31,7 +31,7 @@ class DL_RAG_REST_Controller {
         );
 
         register_rest_route(
-            'doc-landscape-rag/v1',
+            'python-rag-service/v1',
             '/answer',
             array(
                 'methods'             => 'POST',
@@ -56,9 +56,9 @@ class DL_RAG_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function search( WP_REST_Request $request ) {
-		if ( ! defined( 'DL_RAG_API_BASE_URL' ) || ! defined( 'DL_RAG_API_KEY' ) ) {
+		if ( ! defined( 'RAG_SERVICE_API_BASE_URL' ) || ! defined( 'RAG_SERVICE_API_KEY' ) ) {
 			return new WP_Error(
-				'dl_rag_not_configured',
+				'rag_service_not_configured',
 				'The RAG service URL is not configured.',
 				array( 'status' => 500 )
 			);
@@ -68,21 +68,21 @@ class DL_RAG_REST_Controller {
 
 		if ( '' === $query ) {
 			return new WP_Error(
-				'dl_rag_invalid_query',
+				'rag_service_invalid_query',
 				'A search query is required.',
 				array( 'status' => 400 )
 			);
 		}
 
-		$client = new DL_RAG_API_Client(
-            DL_RAG_API_BASE_URL,
-            DL_RAG_API_KEY
+		$client = new RAG_Service_API_Client(
+            RAG_SERVICE_API_BASE_URL,
+            RAG_SERVICE_API_KEY
         );
         $result = $client->search( $query );
 
         if ( is_wp_error( $result ) ) {
             return new WP_Error(
-                'dl_rag_search_unavailable',
+                'rag_service_search_unavailable',
                 'Search is temporarily unavailable.',
                 array( 'status' => 503 )
             );
@@ -99,9 +99,9 @@ class DL_RAG_REST_Controller {
      * @return WP_REST_Response|WP_Error
      */
     public function answer( WP_REST_Request $request ) {
-        if ( ! defined( 'DL_RAG_API_BASE_URL' ) || ! defined( 'DL_RAG_API_KEY' ) ) {
+        if ( ! defined( 'RAG_SERVICE_API_BASE_URL' ) || ! defined( 'RAG_SERVICE_API_KEY' ) ) {
             return new WP_Error(
-                'dl_rag_not_configured',
+                'rag_service_not_configured',
                 'The RAG service URL is not configured.',
                 array( 'status' => 500 )
             );
@@ -111,21 +111,21 @@ class DL_RAG_REST_Controller {
 
         if ( '' === $query ) {
             return new WP_Error(
-                'dl_rag_invalid_query',
+                'rag_service_invalid_query',
                 'A question is required.',
                 array( 'status' => 400 )
             );
         }
 
-        $client = new DL_RAG_API_Client(
-            DL_RAG_API_BASE_URL,
-            DL_RAG_API_KEY
+        $client = new RAG_Service_API_Client(
+            RAG_SERVICE_API_BASE_URL,
+            RAG_SERVICE_API_KEY
         );
         $result = $client->answer( $query );
 
         if ( is_wp_error( $result ) ) {
             return new WP_Error(
-                'dl_rag_answer_unavailable',
+                'rag_service_answer_unavailable',
                 'Answer generation is temporarily unavailable.',
                 array( 'status' => 503 )
             );

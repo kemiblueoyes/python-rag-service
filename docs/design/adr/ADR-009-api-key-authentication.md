@@ -60,7 +60,7 @@ Browser
   → Python RAG API
 ```
 
-The WordPress server reads the Python service URL and credential from `DL_RAG_API_BASE_URL` and `DL_RAG_API_KEY`, typically configured in `wp-config.php`. The API key is not included in browser JavaScript or browser-to-WordPress requests.
+The WordPress server reads the Python service URL and credential from `RAG_SERVICE_API_BASE_URL` and `RAG_SERVICE_API_KEY`, typically configured in `wp-config.php`. The API key is not included in browser JavaScript or browser-to-WordPress requests.
 
 Other trusted server-side clients may call the Python API directly by supplying the same header. Authentication remains part of the Python API rather than being implemented only in the WordPress client.
 
