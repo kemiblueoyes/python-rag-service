@@ -2,7 +2,7 @@
 id: Auth
 title: Authentication
 subtitle: Require an API key on search and answer requests.
-description: Configure API-key authentication for /v1/search and /v1/answer, send X-API-Key securely, and understand why /health does not require authentication.
+description: Configure API-key authentication for /v1/search and /v1/answer, send X-API-Key securely, and understand why /health doesn't require authentication.
 content_type: how_to
 lifecycle_status: draft
 topics: [topic-authentication, topic-api]
@@ -16,7 +16,7 @@ audience: [primary]
 
 Set the API key that `POST /v1/search` and `POST /v1/answer` require.
 Send that key in the `X-API-Key` header from a server-side client.
-`GET /health` does not check the key.
+`GET /health` doesn't check the key.
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ Send that key in the `X-API-Key` header from a server-side client.
     If the service is already running, restart it so it reads the new value.
 
     When `RAG_API_KEY` is empty, both search and answer return `503` with
-    `authentication_unavailable`. A request can succeed only after the key is set.
+    `authentication_unavailable`. A request can succeed only after you set the key.
 
     ## Send the key from a server-side client
 
@@ -63,7 +63,7 @@ Send that key in the `X-API-Key` header from a server-side client.
 
     ## Check service health without the key
 
-    `GET /health` does not check the API key. Call it without `X-API-Key`:
+    `GET /health` doesn't check the API key. Call it without `X-API-Key`:
 
     ```text
     http://127.0.0.1:8000/health
