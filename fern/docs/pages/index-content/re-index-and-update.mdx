@@ -1,0 +1,90 @@
+---
+id: RIndxUpdt
+title: Re-index and update content
+subtitle: Update an existing WordPress index when source content changes.
+description: Keep a WordPress documentation index current with incremental updates, removals, and guidance on when a full rebuild is required.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-incremental-indexing]
+components: [component-wordpress-connector, component-indexing-pipeline]
+prerequisites: [IndxWP]
+next_steps: [SrchDoc]
+related_pages: [IndxPipe, TutIndx]
+last_modified: 2026-09-29
+audience: [primary]
+---
+
+The incremental command compares the current published WordPress records with the last successful snapshot, then embeds and stores only what changed.
+
+Use a full rebuild for the first index, and again after you change how chunks or vectors are built.
+See [Index WordPress content](/docs/index-content/index-wordpress-content) for that command.
+
+## Prerequisites
+
+**[Index WordPress content](/docs/index-content/index-wordpress-content)**: Create the initial index so `data/wordpress-documents.json` exists for the next comparison.
+
+<Steps toc={true}>
+## Run an incremental update
+
+From the project directory, run:
+
+```bash
+uv run python -m rag_service.commands.index_wordpress
+```
+
+The command fetches the published records in `WORDPRESS_COLLECTIONS` and compares them with `data/wordpress-documents.json`.
+
+- A document that wasn't in the snapshot is new. The command embeds its chunks and stores them in Qdrant.
+- A document whose content differs from the snapshot is updated. The command embeds the current chunks,
+  removes the previous Qdrant points for that document, and then stores the new points.
+- A document that matches the snapshot is unchanged. The command doesn't send it to Voyage or rewrite it in Qdrant.
+- A document that was in the snapshot but isn't in the current published set is removed or unpublished. The command deletes its Qdrant points.
+
+The command writes the new snapshot and `data/wordpress-chunks.json` only after Qdrant synchronization returns.
+If Voyage or Qdrant fails before that, the previous snapshot stays in place and the next run can retry the same changes.
+Embedding finishes before any Qdrant delete, so a Voyage failure doesn't remove chunks that are still searchable.
+
+## Rebuild the index when its structure changes
+
+Run a full rebuild when you change the embedding model, the embedding dimension, the chunking rules, or the stored payload structure.
+An incremental update can't refresh vectors that those changes leave behind, because unchanged documents aren't embedded again.
+
+```bash
+uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
+```
+
+`--rebuild-vector-index` embeds every current document and replaces its Qdrant points.
+See [Index WordPress content](/docs/index-content/index-wordpress-content) for what that rebuild writes.
+
+After a normal content change, the incremental command is enough.
+The Qdrant collection then matches the published WordPress source, and the snapshot matches that run.
+</Steps>
+
+## Verification
+
+The command prints a summary when synchronization finishes:
+
+```text
+Wrote N canonical documents to data/wordpress-documents.json
+Wrote retrieval-ready chunks to data/wordpress-chunks.json
+New: N
+Updated: N
+Unchanged: N
+Removed or unpublished: N
+Vector index synchronized: N documents and M chunks indexed; N documents cleared.
+```
+
+`New`, `Updated`, `Unchanged`, and `Removed or unpublished` count documents.
+`M` is the number of chunks embedded and stored on this run.
+Unchanged documents stay out of that chunk count.
+`documents cleared` counts documents whose previous Qdrant points were deleted: updated documents and removed or unpublished documents.
+On an incremental run, unchanged documents aren't cleared.
+
+## Next steps
+
+**[Search documentation](/docs/search-and-answer/search-documentation)**: Search the index after the update finishes.
+
+## Related pages
+
+- **[Indexing pipeline](/docs/architecture/indexing-pipeline)**: See how WordPress content becomes canonical documents, chunks, and vector records.
+- **[Build and inspect your first documentation index](/docs/index-content/build-your-first-documentation-index)**: Follow the first index from source content through stored chunks.

@@ -1,0 +1,257 @@
+---
+id: TutIndx
+title: "Tutorial: Build and inspect your first documentation index"
+subtitle: Learn how WordPress content becomes retrievable by inspecting each stage of the indexing process.
+description: Build and inspect a WordPress documentation index to learn how source content becomes canonical documents, chunks, embeddings, and retrieval results.
+content_type: tutorial
+lifecycle_status: draft
+topics: [topic-indexing]
+components: [component-wordpress-connector, component-indexing-pipeline]
+prerequisites: [ConfSrv, IndxWP]
+next_steps: [SrchDoc, GenAns]
+related_pages: [IndxWP, RIndxUpdt, IndxPipe]
+last_modified: 2026-09-29
+audience: [primary]
+---
+
+In this tutorial, you'll build an index from a configured WordPress content source and inspect
+what the Python RAG Service creates at each stage. You’ll follow WordPress source content through
+canonical documents, chunks, embeddings, vector records, and retrieval results.
+
+By the end, you'll know how the indexing pipeline turns WordPress source content into the
+smaller units that the retrieval pipeline can find and return.
+
+## Prerequisites
+
+**[Configure the service](/docs/get-started/configure-the-service)**: Configure the WordPress content source, embedding provider, and
+vector database before you build the index. The WordPress site needs at least one published
+post or page for the connector to index.
+
+<Steps toc={true}>
+## Build the WordPress index
+
+From the project directory, run a full rebuild:
+
+```bash
+uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
+```
+
+The WordPress connector fetches the published records in `WORDPRESS_COLLECTIONS` and maps them
+to canonical documents. The indexing pipeline creates chunks from eligible documents. The
+configured embedding provider—Voyage by default—creates an embedding for each indexed chunk.
+The vector database—Qdrant by default—stores the embedding with the chunk data.
+
+The command also writes two local files:
+
+```text
+data/wordpress-documents.json
+data/wordpress-chunks.json
+```
+
+When the command prints `Vector index synchronized`, the vector indexing step completed successfully. That line means Voyage returned the
+embeddings and Qdrant accepted the vector records. For a task-focused explanation of the command
+and its output, see [Index WordPress content](/docs/index-content/index-wordpress-content).
+
+## Inspect a canonical document
+
+Inspect the first canonical document in `data/wordpress-documents.json`:
+
+```bash
+uv run python - <<'PY'
+import json
+from pathlib import Path
+
+documents = json.loads(
+    Path("data/wordpress-documents.json").read_text(encoding="utf-8")
+)
+
+print(f"Canonical documents: {len(documents)}")
+if not documents:
+    raise SystemExit("No canonical documents found.")
+
+document = documents[0]
+for field in (
+    "document_id",
+    "source",
+    "source_id",
+    "title",
+    "url",
+    "content_type",
+    "document_role",
+    "indexable",
+):
+    print(f"{field}: {document[field]}")
+
+print(f"body preview: {document['body'][:500]}")
+PY
+```
+
+The WordPress connector assigns the stable `document_id` and maps the WordPress title, URL,
+body, content type, dates, and source metadata into the platform-neutral canonical document
+model. Later indexing stages can use this model without depending on the WordPress REST response
+shape.
+
+<Note>
+Notice the `document_role` and `indexable` fields. The processing pipeline creates chunks only
+when `document_role` is `content` and `indexable` is `true`. For example, the connector can keep
+a published page with an empty body as a canonical landing document without adding it to the
+retrieval index.
+</Note>
+
+## Trace a chunk to its canonical document
+
+Run this script to inspect the first chunk and find its canonical document:
+
+```bash
+uv run python - <<'PY'
+import json
+from pathlib import Path
+
+documents = json.loads(
+    Path("data/wordpress-documents.json").read_text(encoding="utf-8")
+)
+chunks = json.loads(
+    Path("data/wordpress-chunks.json").read_text(encoding="utf-8")
+)
+
+print(f"Canonical documents: {len(documents)}")
+print(f"Chunks: {len(chunks)}")
+if not chunks:
+    raise SystemExit("No chunks found.")
+
+chunk = chunks[0]
+document = next(
+    item for item in documents
+    if item["document_id"] == chunk["document_id"]
+)
+
+print(f"Source document: {document['title']}")
+print(f"Document ID: {chunk['document_id']}")
+print(f"Chunk ID: {chunk['chunk_id']}")
+print(f"Heading path: {chunk['heading_path']}")
+print(f"Sequence: {chunk['sequence']}")
+print(f"URL: {chunk['url']}")
+print(f"Text:\n{chunk['text']}")
+PY
+```
+
+The shared `document_id` connects the chunk to its canonical document. The `heading_path`,
+`sequence`, and `text` show how the processing pipeline divided the larger document into a
+smaller retrieval unit while preserving its location and reading order. One canonical document
+can produce several chunks.
+
+Compare the chunk text with the document body you inspected. The canonical document keeps the
+source body, while the chunk contains the cleaned text that retrieval uses.
+
+## Inspect an embedding and its Qdrant record
+
+The local JSON files don't contain embeddings. With the default configuration, Voyage creates
+the embedding for each chunk and returns it as a numeric vector. Qdrant stores that vector
+with the chunk payload. Run this script to inspect one stored vector record:
+
+```bash
+uv run python - <<'PY'
+from qdrant_client import QdrantClient
+
+from rag_service.config import settings
+
+client = QdrantClient(
+    url=settings.qdrant_url,
+    api_key=settings.qdrant_api_key,
+)
+records, _ = client.scroll(
+    collection_name=settings.qdrant_collection,
+    limit=1,
+    with_payload=True,
+    with_vectors=True,
+)
+
+if not records:
+    raise SystemExit("No vector records found.")
+
+record = records[0]
+vector = record.vector
+if not isinstance(vector, list):
+    raise SystemExit("The record doesn't contain the expected vector.")
+
+payload = record.payload or {}
+print(f"Collection: {settings.qdrant_collection}")
+print(f"Vector dimensions: {len(vector)}")
+print(f"First five values: {vector[:5]}")
+print(f"Chunk ID: {payload.get('chunk_id')}")
+print(f"Document ID: {payload.get('document_id')}")
+print(f"Title: {payload.get('title')}")
+print(f"Heading path: {payload.get('heading_path')}")
+print(f"Text: {payload.get('text')}")
+PY
+```
+
+The vector dimensions should match `EMBEDDING_DIMENSION`. The payload fields should match a chunk in
+`data/wordpress-chunks.json`.
+
+This record gives vector retrieval both parts it needs: the embedding for similarity comparison
+and the chunk data that the service can return after it selects the record.
+
+## Retrieve chunks from the completed index
+
+Choose a question that one of your indexed WordPress pages answers. Replace the `query` value in
+this script, then run it:
+
+```bash
+uv run python - <<'PY'
+from rag_service.config import settings
+from rag_service.retrieval import RetrievalRequest, create_retrieval_service
+
+query = "Enter a question that your WordPress documentation answers"
+
+service = create_retrieval_service(settings)
+results = service.retrieve(
+    RetrievalRequest(
+        query=query,
+        limit=5,
+        filters={"source": "wordpress"},
+    )
+)
+
+print(f"Results: {len(results)}")
+for rank, result in enumerate(results, start=1):
+    chunk = result.chunk
+    print(f"\n{rank}. {chunk.title}")
+    print(f"Score: {result.score:.6f}")
+    print(f"Heading path: {chunk.heading_path}")
+    print(f"Chunk ID: {chunk.chunk_id}")
+    print(f"URL: {chunk.url}")
+    print(chunk.text)
+PY
+```
+
+The [Retrieval pipeline](/docs/architecture/retrieval-pipeline) combines vector and BM25 candidates, reranks them, and returns results
+when the highest rerank score passes the support gate.
+
+Find one returned chunk in `data/wordpress-chunks.json`. Use its document_id to find the
+corresponding canonical document in `data/wordpress-documents.json`.
+
+If the script prints `Results: 0`, the candidates didn't pass the configured support gate. Try a
+question that uses a specific subject covered by the indexed WordPress content.
+</Steps>
+
+## What you learned
+
+You followed WordPress source content through the complete path that makes it retrievable:
+
+- You built a WordPress documentation index.
+- You inspected a canonical document.
+- You traced a chunk to its canonical document.
+- You inspected a Voyage embedding and its Qdrant vector record.
+- You retrieved chunks from the completed index and traced a result back to its source content.
+
+## Next steps
+
+- **[Search documentation](/docs/search-and-answer/search-documentation)**: Query the completed index through `POST /v1/search`.
+- **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: Use retrieved chunks as evidence for a generated answer.
+
+## Related pages
+
+- **[Index WordPress content](/docs/index-content/index-wordpress-content)**: Follow the shorter procedure for creating and verifying an initial WordPress index.
+- **[Re-index and update content](/docs/index-content/re-index-and-update-content)**: Update the index after WordPress content changes.
+- **[Indexing pipeline](/docs/architecture/indexing-pipeline)**: Learn how canonical mapping, chunking, embeddings, and vector storage work together.

@@ -1,0 +1,139 @@
+---
+id: IndxWP
+title: Index WordPress content
+subtitle: Create the initial documentation index from a configured WordPress source and confirm the stored artifacts.
+description: Create an initial WordPress documentation index and verify canonical documents, chunks, embeddings, and vector records were created successfully.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-indexing]
+components: [component-wordpress-connector, component-indexing-pipeline]
+prerequisites: [ConfSrv]
+next_steps: [Auth]
+related_pages: [IndxPipe, RIndxUpdt, TutIndx]
+last_modified: 2026-09-29
+audience: [primary, secondary]
+---
+
+Use the full indexing command to create the initial documentation index from a configured
+WordPress content source. The command fetches published WordPress records and writes canonical
+documents and chunks. It uses Voyage to create one embedding per indexed chunk and stores each
+embedding with its chunk data as a vector record in Qdrant.
+
+Run it for the first build. After WordPress content changes, use
+[Re-index and update content](/docs/index-content/re-index-and-update-content) to update the index without another full rebuild.
+
+## Prerequisites
+
+**[Configure the service](/docs/get-started/configure-the-service)**: Set `WORDPRESS_BASE_URL`, the Voyage API key, and the Qdrant connection this command calls.
+
+<Steps toc={true}>
+## Run the full indexing command
+
+From the project directory, run:
+
+```bash
+uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
+```
+
+`--rebuild-vector-index` fetches the published records in `WORDPRESS_COLLECTIONS`, processes
+every eligible document, creates embeddings, and replaces the matching points (vector records)
+in the Qdrant collection named by `QDRANT_COLLECTION`.
+
+The command writes canonical documents to `data/wordpress-documents.json` and retrieval-ready
+chunks to `data/wordpress-chunks.json`. Leave these output paths at their defaults. BM25
+retrieval reads the chunk file at `LEXICAL_CORPUS_PATH`, which is `data/wordpress-chunks.json`
+unless you changed it.
+
+If `WORDPRESS_BASE_URL` is empty, the command stops and doesn't write either file. Let the
+run finish. The command writes the document and chunk files only after vector synchronization
+returns. If WordPress, Voyage, or Qdrant fails before that, those files still show the last
+successful run, or they don't exist yet.
+
+<Note>
+Use this rebuild for the first index, and again after you change the embedding model,
+embedding dimension, chunking rules, or stored payload structure.
+</Note>
+</Steps>
+
+A finished run writes the canonical document snapshot, the chunk file, and the Qdrant
+vector records for the current WordPress source. Confirm each artifact before you search the index.
+
+## Verification
+
+The command prints a summary after vector synchronization finishes. When
+`data/wordpress-documents.json` doesn't already exist, a successful run looks like this:
+
+```text
+Wrote N canonical documents to data/wordpress-documents.json
+Wrote retrieval-ready chunks to data/wordpress-chunks.json
+New: N
+Updated: 0
+Unchanged: 0
+Removed or unpublished: 0
+Vector index synchronized: N documents and M chunks indexed; N documents cleared.
+```
+
+`N` is the number of canonical documents the WordPress connector fetched. `M` is the number of
+chunks the command embedded and stored. Updated, unchanged, and removed or unpublished are 0
+because there's no previous snapshot to compare.
+
+The `N documents cleared` result means the command removed any existing Qdrant points associated
+with each current document before storing the new vector records. During a full rebuild, the
+command reports every current document as cleared even when no matching points existed.
+
+### Canonical documents
+
+`data/wordpress-documents.json` is a JSON array of canonical documents. Its length matches the
+"Wrote N canonical documents" line. Each object includes `document_id` (for example
+`wordpress:page:15`), `source` set to `wordpress`, `source_id`, `title`, `url`, `body`,
+`content_type`, `document_role`, and `indexable`.
+
+A count of 0 means the WordPress connector retrieved no published records from the configured
+collections. Check `WORDPRESS_BASE_URL` and `WORDPRESS_COLLECTIONS` on
+[Configure the service](/docs/get-started/configure-the-service).
+
+### Chunks
+
+`data/wordpress-chunks.json` is a JSON array of retrieval-ready chunks. Each chunk includes
+`chunk_id`, `document_id`, `text`, `heading_path`, and `url`.
+
+The indexing pipeline creates chunks only for documents where `indexable` is true and
+`document_role` is `content`. A published record with an empty body is saved as a canonical
+document and produces no chunks.
+
+A page with an empty body is stored with `document_role` set to `landing`. One document
+can also produce several chunks, so `M` doesn't have to equal `N`.
+
+An empty chunk array while `N` is greater than 0 means none of the fetched documents had body
+text to chunk.
+
+### Embeddings
+
+The document and chunk files don't contain vectors. Voyage creates one embedding per chunk
+selected for the vector index. The command prints `Vector index synchronized` only after Voyage
+returns one vector for each of those chunks and Qdrant accepts the records. `M` is that count.
+
+If Voyage returns a different number of vectors than chunks, the command stops and doesn't write
+the document or chunk files.
+
+### Vector records
+
+Qdrant stores each embedding with its chunk payload in the collection named by `QDRANT_COLLECTION`.
+The indexing command prints the summary only after it upserts those vector records. On this rebuild,
+`N documents` counts every current canonical document, including documents that produced no chunks.
+`M chunks indexed` counts the chunks that were stored.
+
+The service creates the collection and its payload indexes when they don't already exist.
+
+If the command stops before the vector index line, vector synchronization didn't finish. The
+document and chunk files weren't updated for this run.
+
+## Next steps
+
+**[Authentication](/docs/get-started/authentication)**: Set the API key that `POST /v1/search` and `POST /v1/answer` require before you query this index.
+
+## Related pages
+
+- **[Indexing pipeline](/docs/architecture/indexing-pipeline)**: See how source content becomes canonical documents, chunks, embeddings, and vector records.
+- **[Re-index and update content](/docs/index-content/re-index-and-update-content)**: Update an existing index after WordPress content changes without another full rebuild.
+- **[Build and inspect your first documentation index](/docs/index-content/build-your-first-documentation-index)**: Follow one indexing run stage by stage and inspect each artifact.

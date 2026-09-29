@@ -32,6 +32,22 @@ Over:
 
 Do not simplify language so much that technical meaning becomes less precise.
 
+### Active voice
+
+Use active voice. Make the person, command, or component that performs the action the subject of the sentence.
+
+Passive voice hides that actor, so the reader has to infer who prints a message, writes a file, or updates a record. Name the actor in the main action and in any condition that has one.
+
+Prefer:
+
+* The command prints the same summary line only after it upserts those vector records.  
+* The command writes the document and chunk files only after vector synchronization returns.
+
+Avoid:
+
+* The same summary line is printed only after those vector records are upserted.  
+* The document and chunk files are written only after vector synchronization returns.
+
 ### Contractions
 
 Use common contractions, such as it’s, you’re, that's, and don’t, to create a friendly, informal tone.

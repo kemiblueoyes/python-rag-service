@@ -26,7 +26,7 @@ Fern specifically does **not** support file-relative paths for inter-page links.
 
 Use the published site path:
 
-\[Authentication\](/get-started/authentication)
+\[Authentication\](/docs/get-started/authentication)
 
 For generated API endpoints, Fern has an even better mechanism:
 
@@ -67,7 +67,7 @@ Choose between `<CodeBlocks>` and `<Tabs>` based on what varies between the grou
 ```python Python
     ...
 ```
-```typescript cURL
+```typescript Typescript
     ...
 ```
 </CodeBlocks>
@@ -95,8 +95,8 @@ Choose between `<CodeBlocks>` and `<Tabs>` based on what varies between the grou
         Some other content such as a table
         
     </Tab>
-    <Tab title="cURL">
-        ```cURL
+    <Tab title="curl">
+        ```curl
             ...
         ```
         Some other content such as a table

@@ -2,7 +2,7 @@ instances:
   - url: https://python-rag-service.docs.buildwithfern.com
 title: Python RAG Service | Documentation
 
-default-language: python
+default-language: curl
 
 metadata:
   og:site_name: "Python RAG Service Documentation"
@@ -50,20 +50,82 @@ navigation:
       - section: Get started
         contents:
           - page: Quickstart
-            path: docs/pages/quickstart.mdx
+            path: docs/pages/get-started/quickstart.mdx
           - page: Install
-            path: docs/pages/install.mdx
+            path: docs/pages/get-started/install.mdx
           - page: Configure the service
-            path: docs/pages/configure-service.mdx
+            path: docs/pages/get-started/configure-service.mdx
           - page: Authentication
-            path: docs/pages/authentication.mdx
+            path: docs/pages/get-started/authentication.mdx
+      - section: Index content
+        contents:
+          - page: Index WordPress content
+            path: docs/pages/index-content/index-wordpress.mdx
+            slug: index-wordpress-content
+          - page: Re-index and update content
+            path: docs/pages/index-content/re-index-and-update.mdx
+          - page: Build your first documentation index
+            path: docs/pages/index-content/build-inspect-your-first-documentation-index.mdx
+      - section: Search and answer
+        contents:
+          - page: Overview
+            path: docs/pages/search-answer/overview.mdx
+          - page: Search documentation
+            path: docs/pages/search-answer/search-documentation.mdx
+          - page: Generate grounded answers
+            path: docs/pages/search-answer/generate-grounded-answers.mdx
+          - page: Build a search experience with the RAG API
+            path: docs/pages/search-answer/build-search-experience-with-rag-api.mdx
+            slug: build-search-experience-with-rag-api
+      - section: Integrate
+        contents:
+          - page: Integrate the RAG API into an application
+            path: docs/pages/integrate/integrate-rag-api-into-application.mdx
+            slug: integrate-rag-api-into-application
+          - page: Integrate with WordPress
+            path: docs/pages/integrate/integrate-with-wordpress.mdx
+            slug: integrate-with-wordpress
+      - section: Evaluate
+        contents:
+          - page: How evaluation works
+            path: docs/pages/evaluate/how-evaluation-works.mdx
+          - page: Run the evaluation
+            path: docs/pages/evaluate/run-the-evaluation.mdx
+          - page: Retrieval evaluation
+            path: docs/pages/evaluate/retrieval-evaluation.mdx
+          - page: Answer evaluation
+            path: docs/pages/evaluate/answer-evaluation.mdx
+          - page: Current evaluation results
+            path: docs/pages/evaluate/current-evaluation-results.mdx
+          - page: Known limitations
+            path: docs/pages/evaluate/known-limitations.mdx
+      - section: Architecture
+        contents:
+          - page: System architecture
+            path: docs/pages/architecture/system-architecture.mdx
+          - page: Indexing pipeline
+            path: docs/pages/architecture/indexing-pipeline.mdx
+          - page: Retrieval pipeline
+            path: docs/pages/architecture/retrieval-pipeline.mdx
+          - page: Answer generation and citations
+            path: docs/pages/architecture/answer-generation-and-citations.mdx
+          - page: Evaluation architecture
+            path: docs/pages/architecture/evaluation-architecture.mdx
       - section: Reference
         contents:
+          - page: Configuration reference
+            path: docs/pages/reference/configuration-reference.mdx
           - page: Glossary
             path: docs/pages/reference/glossary.mdx
   - tab: api
     layout:
-      - api: API Reference
+      - section: API reference
+        contents:
+          - page: Overview
+            path: docs/pages/api/overview.mdx
+          - page: Errors
+            path: docs/pages/api/errors.mdx
+      - api: Search and answer
         paginated: true
         skip-slug: true
         layout:

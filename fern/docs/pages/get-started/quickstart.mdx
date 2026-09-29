@@ -9,7 +9,7 @@ topics: [topic-installation, topic-configuration, topic-authentication, topic-in
 components: [component-indexing-pipeline, component-retrieval-service, component-public-api]
 next_steps: [SrchDoc, GenAns]
 related_pages: [Instl, ConfSrv, Auth, IndxWP]
-last_modified: 2026-09-25
+last_modified: 2026-09-29
 audience: [primary]
 ---
 
@@ -35,7 +35,7 @@ for each step live on the related pages.
     uv sync --dev
     ```
 
-    See [Install](/#) for the install requirements in more detail.
+    See [Install](/docs/get-started/install) for the install requirements in more detail.
 
     ## Configure the local environment
 
@@ -66,8 +66,8 @@ for each step live on the related pages.
     The example file already sets the embedding model and WordPress collections to
     `posts` and `pages`.
 
-    See [Configure the service](/#) for the rest of the environment variables, and
-    [Authentication](/#) for how the API checks the key.
+    See [Configure the service](/docs/get-started/configure-the-service) for the rest of the environment variables, and
+    [Authentication](/docs/get-started/authentication) for how the API checks the key.
 
     ## Make Qdrant reachable
 
@@ -125,7 +125,7 @@ for each step live on the related pages.
     When the command finishes, it prints how many canonical documents and chunks
     it wrote, and how many documents and chunks it stored in the vector index.
 
-    See [Index WordPress content](/#) for incremental updates and what each artifact is for.
+    See [Index WordPress content](/docs/index-content/index-wordpress-content) for incremental updates and what each artifact is for.
 
     ## Start the service
     
@@ -173,15 +173,15 @@ for each step live on the related pages.
 
 ## Next steps
 
-- **[Search documentation](/#)**: Add filters, set a result limit, and handle an empty
+- **[Search documentation](/docs/search-and-answer/search-documentation)**: Add filters, set a result limit, and handle an empty
   result in a client.
-- **[Generate grounded answers](/#)**: Call `POST /v1/answer` to generate an answer
+- **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: Call `POST /v1/answer` to generate an answer
   from retrieved evidence.
 
 ## Related pages
 
-- **[Install](/#)**: Review the install requirements without the rest of the quickstart.
-- **[Configure the service](/#)**: Set provider, retrieval, and content-source options
+- **[Install](/docs/get-started/install)**: Review the install requirements without the rest of the quickstart.
+- **[Configure the service](/docs/get-started/configure-the-service)**: Set provider, retrieval, and content-source options
   beyond the minimum used here.
-- **[Authentication](/#)**: See how `X-API-Key` is checked on search and answer requests.
-- **[Index WordPress content](/#)**: Rebuild or update the index after the first successful search.
+- **[Authentication](/docs/get-started/authentication)**: See how `X-API-Key` is checked on search and answer requests.
+- **[Index WordPress content](/docs/index-content/index-wordpress-content)**: Rebuild or update the index after the first successful search.

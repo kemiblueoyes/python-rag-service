@@ -1,0 +1,197 @@
+---
+id: SrchDoc
+title: Search documentation
+subtitle: Retrieve relevant documentation with POST /v1/search.
+description: Use POST /v1/search to retrieve relevant documentation with authentication, filters, result limits, empty-result handling, and example requests.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-retrieval, topic-api]
+components: [component-retrieval-service, component-public-api]
+prerequisites: [IndxWP, Auth]
+next_steps: [GenAns, IntApp]
+related_pages: [SrchAPI, RtrvPipe, TutSrch]
+last_modified: 2026-09-29
+audience: [primary]
+---
+
+Use `POST /v1/search` to retrieve ranked documentation for a natural-language query.
+The endpoint runs hybrid retrieval and returns the selected chunks as search results.
+
+The examples call a service at `http://127.0.0.1:8000`.
+See [Quickstart](/docs/get-started/quickstart) if that service isn't running yet.
+
+## Prerequisites
+
+- **[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index that `POST /v1/search` retrieves.
+- **[Authentication](/docs/get-started/authentication)**: Set `RAG_API_KEY` and send that value in the `X-API-Key` header.
+
+<Steps toc={true}>
+## Send a search request
+
+Send `POST /v1/search` with `Content-Type: application/json` and your API key.
+The body needs a `query` string. The service trims leading and trailing whitespace, and it rejects an empty query.
+
+<CodeBlocks>
+```bash curl
+curl -s -X POST http://127.0.0.1:8000/v1/search \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-long-random-api-key" \
+  -d '{"query": "How does metadata improve retrieval?"}'
+```
+
+```python Python
+import json
+from urllib.request import Request, urlopen
+
+body = json.dumps({
+    "query": "How does metadata improve retrieval?",
+}).encode()
+
+request = Request(
+    "http://127.0.0.1:8000/v1/search",
+    data=body,
+    headers={
+        "Content-Type": "application/json",
+        "X-API-Key": "your-long-random-api-key",
+    },
+    method="POST",
+)
+
+with urlopen(request) as response:
+    print(response.read().decode())
+
+```
+
+</CodeBlocks>
+
+A successful search returns `200`. The body echoes `query` and includes a `results` list.
+The Python example prints that body only when the status is `200`. For any other status,
+the example stops with an error and doesn't print the body.
+
+## Narrow results with filters and a limit
+
+Add `filters` when you want retrieval to consider only chunks with matching metadata.
+Add `limit` to set the maximum number of search results. The default is `5`, and the value has to be at least `1`.
+
+Supported filters are `document_id`, `source`, `source_id`, and `content_type`.
+Each value is one non-empty string, or a list of non-empty strings.
+A list matches a chunk when the chunk's value is one of those strings.
+When you set more than one filter, a chunk has to match every filter.
+
+For a WordPress index, `source` is `wordpress` and `source_id` is the WordPress record ID.
+`content_type` is `page` for a WordPress page and `post` for a WordPress post.
+`document_id` uses the form `wordpress:{type}:{id}`, such as `wordpress:page:1`.
+
+<CodeBlocks>
+```bash curl
+curl -s -X POST http://127.0.0.1:8000/v1/search \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-long-random-api-key" \
+  -d '{
+    "query": "How does metadata improve retrieval?",
+    "filters": {
+      "source": "wordpress",
+      "content_type": "page"
+    },
+    "limit": 5
+  }'
+```
+
+```python Python
+import json
+from urllib.request import Request, urlopen
+
+body = json.dumps({
+    "query": "How does metadata improve retrieval?",
+    "filters": {
+        "source": "wordpress",
+        "content_type": "page",
+    },
+    "limit": 5,
+}).encode()
+
+request = Request(
+    "http://127.0.0.1:8000/v1/search",
+    data=body,
+    headers={
+        "Content-Type": "application/json",
+        "X-API-Key": "your-long-random-api-key",
+    },
+    method="POST",
+)
+
+with urlopen(request) as response:
+    print(response.read().decode())
+
+```
+
+</CodeBlocks>
+
+To match either pages or posts, set `content_type` to `["page", "post"]`.
+An unknown filter name, an empty filter value, a `limit` below `1`, or an unexpected field returns `422` with `validation_error`.
+See [Search API](api:POST/reference/search) for the request schema.
+
+## Use the search results
+
+A `200` response lists search results in reranked order. Each result is one retrieved chunk.
+Titles, excerpts, URLs, and scores come from your index. This sample shows the response shape:
+
+```json
+{
+  "query": "How does metadata improve retrieval?",
+  "results": [
+    {
+      "chunk_id": "wordpress:page:1:chunk:v1:<sha256>",
+      "document_id": "wordpress:page:1",
+      "title": "Metadata Strategy",
+      "heading_path": ["Metadata filtering"],
+      "anchor": "metadata-filtering",
+      "excerpt": "Metadata can narrow the documents considered during retrieval.",
+      "url": "https://example.test/metadata",
+      "score": 0.91
+    }
+  ]
+}
+```
+
+A real `chunk_id` is `{document_id}:chunk:v1:` followed by a content hash. `<sha256>` stands in for that hash.
+
+Use `title`, `heading_path`, and `excerpt` when you display the passage.
+`url` is the source document's URL. `anchor` is the heading anchor, and it's `null` when the chunk has no anchor.
+`chunk_id` identifies the chunk, and `document_id` identifies its document.
+`score` is the rerank score for that result.
+
+See [Search API](api:POST/reference/search) for the response schema.
+
+## Handle no relevant results
+
+When the highest rerank score is below the support cutoff, `POST /v1/search` returns `200` and `results` is empty.
+Treat that body as no relevant results. A query the index can't support returns this shape:
+
+```json
+{
+  "query": "What is the capital of Mars?",
+  "results": []
+}
+```
+
+A missing or wrong `X-API-Key` returns `401` with `authentication_failed`.
+If `RAG_API_KEY` isn't set, search returns `503` with `authentication_unavailable`.
+If the embedding provider or the vector database is unavailable, search returns `503` with `retrieval_unavailable`.
+See [Authentication](/docs/get-started/authentication) for the API key checks.
+
+The support gate uses `RETRIEVAL_SUPPORT_CUTOFF`, which defaults to `0.70`.
+See [Configuration reference](/docs/reference/configuration-reference) to change that cutoff.
+Your client can show the ranked chunks, or an empty state when `results` is empty.
+</Steps>
+
+## Next steps
+
+- **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: Call `POST /v1/answer` with the same kind of query to generate a grounded answer.
+- **[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application)**: Send `POST /v1/search` from your own server-side client.
+
+## Related pages
+
+- **[Search API](api:POST/reference/search)**: Review the request fields, filters, response schema, and status codes.
+- **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: See how hybrid retrieval ranks chunks and applies the support gate before search returns results.
+- **[Build a search experience with the RAG API](/docs/search-and-answer/build-search-experience-with-rag-api)**: Use these search results in an end-to-end application.

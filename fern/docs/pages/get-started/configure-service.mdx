@@ -10,20 +10,20 @@ components: [component-wordpress-connector, component-retrieval-service, compone
 prerequisites: [Instl]
 next_steps: [IndxWP]
 related_pages: [CnfgRef]
-last_modified: 2026-09-25
+last_modified: 2026-09-29
 audience: [primary]
 ---
 
-Set the provider, content source, and retrieval values the Python RAG service reads from `.env`.
+Set the provider, content source, and retrieval values the Python RAG Service reads from `.env`.
 The example file already sets the embedding model, reranking model, retrieval defaults, and WordPress collections.
 This page fills the values that are still empty and the ones that depend on your Qdrant instance and WordPress site.
 
-Indexing and search also need `RAG_API_KEY`. See [Authentication](/#) for how to set that key.
-For every setting's type, default, and accepted values, see [Configuration reference](/#).
+Indexing and search also need `RAG_API_KEY`. See [Authentication](/docs/get-started/authentication) for how to set that key.
+For every setting's type, default, and accepted values, see [Configuration reference](/docs/reference/configuration-reference).
 
 ## Prerequisites
 
-**[Install](/#)**: Create `.env` from the example file before you change these settings.
+**[Install](/docs/get-started/install)**: Create `.env` from the example file before you change these settings.
 
 <Steps toc={true}>
     ## Set the Voyage API key
@@ -62,7 +62,7 @@ For every setting's type, default, and accepted values, see [Configuration refer
     Qdrant Cloud requires an API key. A self-hosted remote instance requires one when
     API-key authentication is enabled on that server. Qdrant has to be reachable before indexing.
 
-    The [Quickstart](/#) shows how to start Qdrant locally with Docker.
+    The [Quickstart](/docs/get-started/quickstart) shows how to start Qdrant locally with Docker.
 
     ## Set the WordPress content source
 
@@ -94,7 +94,7 @@ For every setting's type, default, and accepted values, see [Configuration refer
 
     Leave these values unless you have a reason to change them. Re-evaluate the cutoff if the indexed
     content, embedding model, reranking model, or chunking rules change.
-    See [Configuration reference](/#) for each retrieval setting.
+    See [Configuration reference](/docs/reference/configuration-reference) for each retrieval setting.
 
     ## Set the OpenAI API key
 
@@ -112,8 +112,8 @@ For every setting's type, default, and accepted values, see [Configuration refer
 
 ## Next steps
 
-**[Index WordPress content](/#)**: Build the index from the WordPress site you configured.
+**[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index from the WordPress site you configured.
 
 ## Related pages
 
-**[Configuration reference](/#)**: Look up each setting's type, default, and what it controls.
+**[Configuration reference](/docs/reference/configuration-reference)**: Look up each setting's type, default, and what it controls.

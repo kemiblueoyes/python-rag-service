@@ -1,0 +1,82 @@
+---
+id: SrchAnsOvrvw
+title: Search and answer
+subtitle: Retrieve indexed documentation, or generate a grounded answer from the same retrieval pipeline.
+description: Understand how search and grounded answer generation differ, how each request flows through retrieval, and when to use /v1/search or /v1/answer.
+content_type: overview
+lifecycle_status: draft
+topics: [topic-retrieval, topic-answer-generation, topic-api]
+components: [component-retrieval-service, component-answer-generation-service, component-public-api]
+next_steps: [SrchDoc, GenAns]
+related_pages: [SrchAPI, AnsAPI, RtrvPipe, AnsGenCit]
+last_modified: 2026-09-29
+audience: [primary, secondary]
+---
+
+The Python RAG Service exposes search and grounded answer generation as two public endpoints.
+`POST /v1/search` returns search results from the hybrid retrieval pipeline.
+`POST /v1/answer` uses that same pipeline, then generates an answer from the retrieved evidence.
+
+Hybrid retrieval combines lexical retrieval and vector retrieval, then ranks the chunks both endpoints use.
+A request starts with a query, and the retrieval pipeline selects chunks for that query.
+
+Search returns those chunks as search results. The answer endpoint assembles the chunks into context, and the model generates an answer from that context.
+The application validates the proposed citations before the endpoint returns the answer and its sources.
+
+```text
+Search: Query → retrieval → search results
+Answer: Query → retrieval → context → answer generation → answer and sources
+```
+
+## Key capabilities
+
+### Search
+
+`POST /v1/search` returns the query and a ranked list of search results. You can set `limit` on the request. The default is 5.
+Each result includes the chunk text, the document title, the heading path, the source document's URL, and a rerank score.
+You can pass optional metadata filters to narrow which chunks retrieval considers. `POST /v1/answer` accepts the same filters.
+
+The support gate can return no relevant results when the retrieved content doesn't adequately support the query.
+`POST /v1/search` then returns an empty `results` list.
+
+See [Search documentation](/docs/search-and-answer/search-documentation) for a closer look at how `POST /v1/search` works.
+
+### Answer generation
+
+`POST /v1/answer` retrieves a fixed set of 5 chunks, then generates an answer from that context.
+The grounded-answer prompt instructs the model to answer only from the supplied context.
+The response includes the answer, the sources cited in it, and `sufficient_evidence`.
+
+Each cited source includes a citation ID and the supporting chunk's text, title, heading path, and URL.
+The application validates the model's proposed citations against the retrieved chunks before it returns them.
+When `sufficient_evidence` is false, `sources` is empty.
+
+See [Generate grounded answers](/docs/search-and-answer/generate-grounded-answers) for a closer look at how `POST /v1/answer` works.
+
+## Common use cases
+
+Use `POST /v1/search` when your application needs the retrieved documentation.
+That includes a search results page, a list of source passages, or any workflow that consumes chunks directly.
+
+Use `POST /v1/answer` when your application needs a written response grounded in that documentation.
+The included WordPress client follows this split. Search calls `POST /v1/search`, and Ask calls `POST /v1/answer`.
+
+| You want to | Call |
+| --- | --- |
+| Show ranked documentation for a query | `POST /v1/search` |
+| Choose how many search results to return | `POST /v1/search` |
+| Pass retrieved chunks into your own application logic | `POST /v1/search` |
+| Return a written answer with sources a reader can open | `POST /v1/answer` |
+| See whether the retrieved evidence was sufficient | `POST /v1/answer` |
+
+## Next steps
+
+- **[Search documentation](/docs/search-and-answer/search-documentation)**: Call `POST /v1/search` and work with the search results it returns.
+- **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: Call `POST /v1/answer` and return an answer with validated sources.
+
+## Related pages
+
+- **[Search API](api:POST/reference/search)**: Review the request and response schema for `POST /v1/search`.
+- **[Answer API](api:POST/reference/answer)**: Review the request and response schema for `POST /v1/answer`.
+- **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: See how hybrid retrieval selects chunks for search results and for answer generation.
+- **[Answer generation and citations](/docs/architecture/answer-generation-and-citations)**: See how retrieved evidence becomes a grounded answer with validated citations.

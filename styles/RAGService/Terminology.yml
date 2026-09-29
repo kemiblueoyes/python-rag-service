@@ -6,3 +6,4 @@ ignorecase: false
 swap:
   re-ranking: reranking
   Re-ranking: Reranking
+  cURL: curl

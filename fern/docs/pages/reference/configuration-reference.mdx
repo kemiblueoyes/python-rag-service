@@ -1,5 +1,116 @@
 ---
 id: CnfgRef
-last_modified: 2026-09-25
+title: Configuration reference
+subtitle: Look up every configuration setting for the Python RAG service and the WordPress client.
+description: Look up Python RAG service configuration, including environment variables, types, defaults, accepted values, required status, and what each setting controls.
+content_type: general_reference
+lifecycle_status: draft
+topics: [topic-configuration]
+components: [component-wordpress-connector, component-retrieval-service, component-vector-database, component-embedding-provider, component-language-model-provider]
+next_steps: [IndxWP]
+related_pages: [ConfSrv, Auth, RtrvPipe]
+last_modified: 2026-09-29
 audience: [primary, secondary]
 ---
+
+Look up supported configuration settings for the Python RAG Service.
+Each entry lists the setting, its type, whether you must set it, the default, accepted values, and what it controls.
+
+**`Required`** indicates no default value and you must provide a value for the stated capability to work.
+If a usable default exists, you don't need to set the value unless you want to change the default.
+
+For the setup procedure, see [Configure the service](/docs/get-started/configure-the-service).
+
+## API and authentication
+
+| Setting | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `RAG_API_KEY` | string | Yes, for `POST /v1/search` and `POST /v1/answer` | none | A non-empty string | Clients send this value in the `X-API-Key` header. An empty value makes those endpoints return `503` with `authentication_unavailable`. `GET /health` doesn't check the key. |
+
+## Embedding
+
+| Setting | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `EMBEDDING_PROVIDER` | string | No | `voyage` | `voyage` | Selects the embedding provider. `voyage` is the only supported value. |
+| `EMBEDDING_MODEL` | string | No | `voyage-4-lite` | A Voyage model name | Selects the Voyage model used to create document and query embeddings. |
+| `EMBEDDING_DIMENSION` | integer | No | `1024` | An integer that matches the model output | Sets the vector size expected by Qdrant. This value must match the output dimension of the configured embedding model. The default `voyage-4-lite` configuration uses 1,024 dimensions.|
+| `EMBEDDING_BATCH_SIZE` | integer | No | `128` | An integer of at least 1 | Sets how many texts the indexing command sends to Voyage in one embedding request. |
+| `VOYAGE_API_KEY` | string | Yes, for indexing, search, and answer generation | none | A Voyage API key | Authenticates requests to the Voyage embedding and reranking. |
+
+## Vector database
+
+| Setting | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `VECTOR_DATABASE` | string | No | `qdrant` | `qdrant` | Selects the vector database. `qdrant` is the only supported value. |
+| `QDRANT_URL` | string | No | `http://localhost:6333` | A Qdrant URL | Sets the URL of the Qdrant instance. Change the default when Qdrant runs somewhere other than `http://localhost:6333`. |
+| `QDRANT_API_KEY` | string | No, unless the Qdrant instance requires an API key | none | A Qdrant API key, or empty | Authenticates requests to Qdrant. Leave unset for an unauthenticated local instance. Set it when you enable API-key authentication locally or connect to a remote instance that requires a key.|
+| `QDRANT_COLLECTION` | string | No | `rag_chunks` | A collection name | Names the Qdrant collection that stores indexed chunks and their vectors. The service creates the collection. |
+
+## Content source
+
+| Setting | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `WORDPRESS_BASE_URL` | string | Yes, for indexing | none | A WordPress site URL | Sets the site the WordPress connector reads. Indexing stops when this value is empty. |
+| `WORDPRESS_API_PATH` | string | No | `/wp-json/wp/v2` | A REST API path | Sets the REST API base path the connector appends to `WORDPRESS_BASE_URL`. The default targets WordPress core wp/v2 endpoints. See [WordPress REST API routes and endpoints](https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/).  |
+| `WORDPRESS_REQUEST_TIMEOUT` | number | No | `10` | A number of seconds | Sets how long the WordPress connector waits for each WordPress REST API response during indexing. |
+| `WORDPRESS_PAGE_SIZE` | integer | No | `100` | An integer from 1 through 100. | Sets how many items the connector requests on each WordPress REST page. |
+| `WORDPRESS_COLLECTIONS` | array of strings | No | `["posts","pages"]` | A JSON array of post type REST bases | Lists the post types the connector retrieves. Each REST base must exist under the configured `WORDPRESS_API_PATH`, such as `posts`, `pages`, or a custom post type exposed in the REST API. |
+| `WORDPRESS_PROFILE` | string | No | `default` | `default`, `doc_landscape` | Selects the connector profile. `default` fits a standard WordPress site. `doc_landscape` is an example profile for one live WordPress site. |
+
+## Retrieval
+
+| Setting | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `LEXICAL_CORPUS_PATH` | path | No | `data/wordpress-chunks.json` | A path to a retrieval-ready chunk JSON file | Sets the path to the retrieval-ready chunk file used to build the BM25 index. The default matches the WordPress indexing command's default chunk output. |
+| `RETRIEVAL_VECTOR_CANDIDATE_DEPTH` | integer | No | `20` | An integer of at least 1 | Sets the maximum number of vector retrieval candidates sent to reciprocal rank fusion. |
+| `RETRIEVAL_LEXICAL_CANDIDATE_DEPTH` | integer | No | `20` | An integer of at least 1 | Sets the maximum number of BM25 lexical retrieval candidates sent to reciprocal rank fusion. |
+| `RETRIEVAL_FUSED_CANDIDATE_DEPTH` | integer | No | `20` | An integer of at least 1 | Sets how many fused candidates the pipeline sends to the reranker. |
+| `RETRIEVAL_RRF_K` | integer | No | `60` | An integer of at least 1 | Sets the ranking constant used by reciprocal rank fusion (RRF) when combining vector and lexical results. |
+| `RETRIEVAL_SUPPORT_CUTOFF` | number | No | `0.70` | A number from 0 through 1 | Sets the support gate. After reranking, the retrieval service returns no results when the highest rerank score is below this cutoff. |
+
+## Reranking
+
+| Setting | Type | Required | Default | Accepted values | Suggested description |
+| --- | --- | --- | --- | --- | --- |
+| `RERANKING_PROVIDER` | string | No | `voyage` | `voyage` | Selects the reranking provider. `voyage` is the only supported value. |
+| `RERANKING_MODEL` | string | No | `rerank-2.5` | A Voyage reranking model name | Selects the Voyage model used to rerank fused retrieval candidates. |
+
+## Answer generation
+
+| Setting | Type | Required | Default | Accepted values | Suggested description |
+| --- | --- | --- | --- | --- | --- |
+| `GENERATION_PROVIDER` | string | No | `openai` | `openai` | Selects the language model provider used for answer generation. `openai` is the only supported value. |
+| `GENERATION_MODEL` | string | No | `gpt-5.6-terra` | A supported OpenAI model name | Selects the OpenAI model used to generate grounded answers. |
+| `GENERATION_REASONING_EFFORT` | string | No | `low` | `none`, `low`, `medium`, `high`, `xhigh`, `max` | Sets the reasoning effort requested from the OpenAI model. |
+| `GENERATION_CONTEXT_BUDGET_TOKENS` | integer | No | `8000` | An integer of at least 1 | Sets the maximum number of retrieved-evidence tokens the service can include in the model context. The service keeps whole chunks in ranked order and doesn't split a chunk to fit the budget. |
+| `GENERATION_MAX_OUTPUT_TOKENS` | integer | No | `1000` | An integer of at least 1 | Sets the maximum number of tokens allowed for the generated answer. |
+| `OPENAI_API_KEY` | string | Yes, for answer generation | none | An OpenAI API key | Authenticates requests to OpenAI for answer generation. |
+
+## WordPress client
+
+| Setting | Type | Required | Default | Accepted values | Suggested description |
+| --- | --- | --- | --- | --- | --- |
+| `RAG_SERVICE_API_BASE_URL` | PHP string constant | Yes, when using the WordPress client | none | The Python RAG Service base URL | Sets the base URL the WordPress client uses to call the Python RAG Service API. Define it in `wp-config.php`. |
+| `RAG_SERVICE_API_KEY` | PHP string constant | Yes, when using the WordPress client | none | The same value configured for `RAG_API_KEY` | Sets the API key the WordPress client sends in the `X-API-Key` header. It must match the Python service's `RAG_API_KEY`. |
+
+## Constraints and notes
+
+`EMBEDDING_DIMENSION` must match the configured embedding model's output. Qdrant stores vectors at
+that size. After changing the embedding model, embedding dimension, chunking rules, or chunk payload
+structure, run a full index rebuild. See [Index WordPress content](/docs/index-content/index-wordpress-content).
+
+`RETRIEVAL_SUPPORT_CUTOFF` applies to the highest rerank score for the query, not to each result.
+Re-evaluate it when the indexed content, embedding model, reranking model, or chunking rules change.
+
+`RAG_SERVICE_API_KEY` and `RAG_API_KEY` are the same secret in two places.
+The WordPress client doesn't copy one value to the other.
+
+## Next steps
+
+**[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index after the required settings are in place.
+
+## Related pages
+
+- **[Configure the service](/docs/get-started/configure-the-service)**: Set Voyage, Qdrant, OpenAI, WordPress, and retrieval values in `.env`.
+- **[Authentication](/docs/get-started/authentication)**: Set `RAG_API_KEY` and send it in the `X-API-Key` header.
+- **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: See how candidate depth, RRF, reranking, and the support gate work together.

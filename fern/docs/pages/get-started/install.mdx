@@ -8,11 +8,11 @@ lifecycle_status: draft
 topics: [topic-installation]
 next_steps: [ConfSrv]
 related_pages: [Qstrt]
-last_modified: 2026-09-25
+last_modified: 2026-09-29
 audience: [primary]
 ---
 
-Install the Python RAG service on your computer and create a local environment file. This page stops once `.env` exists. Provider, content-source, and retrieval settings belong on the next page.
+Install the Python RAG Service on your computer and create a local environment file. This page stops once `.env` exists. Provider, content-source, and retrieval settings belong on the next page.
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ Install the Python RAG service on your computer and create a local environment f
 <Steps toc={true}>
     ## Clone the repository
 
-    Clone the Python RAG Service repository and open the project directory:
+    Clone the RAG Service repository and open the project directory:
 
     ```bash
     git clone https://github.com/kemiblueoyes/python-rag-service.git
@@ -51,7 +51,7 @@ Install the Python RAG service on your computer and create a local environment f
 
     `.env` is the local configuration file. Don't commit it, and don't put real API keys in `.env.example`.
 
-    The Python RAG service is installed when this copy finishes. The example file already
+    The RAG Service is installed when this copy finishes. The example file already
     sets the embedding model, `QDRANT_URL`, `QDRANT_COLLECTION`, the retrieval settings,
     and WordPress collections to `posts` and `pages`. `RAG_API_KEY`, `VOYAGE_API_KEY`,
     and `WORDPRESS_BASE_URL` are still empty.
@@ -59,8 +59,8 @@ Install the Python RAG service on your computer and create a local environment f
 
 ## Next steps
 
-**[Configure the service](/#)**: Set the remaining provider, content-source, and retrieval values in `.env`.
+**[Configure the service](/docs/get-started/configure-the-service)**: Set the remaining provider, content-source, and retrieval values in `.env`.
 
 ## Related pages
 
-**[Quickstart](/#)**: Follow the shorter path that installs the service, indexes WordPress content, and makes a first search request.
+**[Quickstart](/docs/get-started/quickstart)**: Follow the shorter path that installs the service, indexes WordPress content, and makes a first search request.

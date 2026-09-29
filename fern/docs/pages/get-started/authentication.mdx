@@ -10,7 +10,7 @@ components: [component-public-api]
 prerequisites: [Instl]
 next_steps: [SrchDoc]
 related_pages: [SrchAPI, AnsAPI, IntApp, Errs]
-last_modified: 2026-09-25
+last_modified: 2026-09-29
 audience: [primary]
 ---
 
@@ -20,7 +20,7 @@ Send that key in the `X-API-Key` header from a server-side client.
 
 ## Prerequisites
 
-**[Install](/#)**: Create `.env` before you set `RAG_API_KEY`.
+**[Install](/docs/get-started/install)**: Create `.env` before you set `RAG_API_KEY`.
 
 <Steps toc={true}>
     ## Set the API key
@@ -50,16 +50,16 @@ Send that key in the `X-API-Key` header from a server-side client.
     ```
 
     Keep the key on a server you control. A browser should call your application,
-    and that application should add `X-API-Key` when it calls the Python RAG service.
+    and that application should add `X-API-Key` when it calls the Python RAG Service.
     Don't put the key in browser JavaScript.
 
     The included WordPress client keeps the API key on the server.
     The browser calls a WordPress REST proxy, and the proxy adds `X-API-Key`
     when it calls the Python service. The key in that server configuration has to match `RAG_API_KEY`.
-    See [Integrate the RAG API into an application](/#) to use the same pattern in your own client.
+    See [Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application) to use the same pattern in your own client.
 
     A missing or wrong key returns `401` with `authentication_failed`.
-    See [Errors](/#) for the error response format.
+    See [Errors](/reference/api-reference/errors) for the error response format.
 
     ## Check service health without the key
 
@@ -82,11 +82,11 @@ Send that key in the `X-API-Key` header from a server-side client.
 
 ## Next steps
 
-**[Search documentation](/#)**: Call `POST /v1/search` with the API key.
+**[Search documentation](/docs/search-and-answer/search-documentation)**: Call `POST /v1/search` with the API key.
 
 ## Related pages
 
-- **[Search API](/#)**: Look up the authenticated `POST /v1/search` request and response.
-- **[Answer API](/#)**: Look up the authenticated `POST /v1/answer` request and response.
-- **[Integrate the RAG API into an application](/#)**: Send the API key from your own server-side client.
-- **[Errors](/#)**: Look up `authentication_failed` and `authentication_unavailable`.
+- **[Search API](api:POST/reference/search)**: Look up the authenticated `POST /v1/search` request and response.
+- **[Answer API](api:POST/reference/answer)**: Look up the authenticated `POST /v1/answer` request and response.
+- **[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application)**: Send the API key from your own server-side client.
+- **[Errors](/reference/api-reference/errors)**: Look up `authentication_failed` and `authentication_unavailable`.
