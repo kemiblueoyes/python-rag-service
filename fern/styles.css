@@ -12,3 +12,7 @@ nav[aria-label="Up next"] {
 .fern-layout-guide .fern-mdx-link{ 
     color: #a9a901;
 }
+
+.fern-prose img{
+    border: 4px solid #083f9d;
+}
