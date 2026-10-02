@@ -348,6 +348,13 @@ Run the application:
 uv run uvicorn rag_service.api.app:app --reload
 ```
 
+For handled `503` failures, check the terminal running the API. The
+`rag_service.api.errors` logger records the failed operation and a controlled
+reason, such as `operation=generation reason=missing_provider_api_key`.
+These diagnostics exclude exception text, stack traces, credentials, and request
+content. The public error response stays generic. After correcting a missing
+key in `.env`, restart the API and retry the request.
+
 Open the health-check endpoint:
 
 ```text

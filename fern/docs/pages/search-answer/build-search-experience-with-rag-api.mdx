@@ -119,6 +119,7 @@ A wrong key returns status `401` and `authentication_failed`.
 
 If the service's own key isn't set, the status is `503` and the code is `authentication_unavailable`.
 See [Authentication](/docs/get-started/authentication).
+For an unexpected `503`, such as `retrieval_unavailable`, see [Troubleshooting](/docs/search-and-answer/search-documentation#503-retrieval_unavailable).
 
 The `results` list may be empty when retrieval finds no qualifying results. The next step treats that as part of a normal search response.
 

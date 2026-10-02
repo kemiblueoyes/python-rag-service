@@ -1,3 +1,4 @@
+import os
 from typing import Literal
 
 import tiktoken
@@ -8,6 +9,7 @@ from rag_service.generation.errors import (
     LanguageModelProviderError,
     LanguageModelRefusalError,
     LanguageModelResponseError,
+    MissingLanguageModelAPIKeyError,
 )
 from rag_service.generation.models import (
     GenerationPrompt,
@@ -98,6 +100,14 @@ class OpenAILanguageModel:
         """Create the OpenAI client on first use."""
 
         if self._client is None:
+            # Preserve the SDK's environment fallback and injected-client support.
+            api_key = self._api_key
+            if api_key is None:
+                api_key = os.environ.get("OPENAI_API_KEY")
+            if not api_key:
+                raise MissingLanguageModelAPIKeyError(
+                    "OPENAI_API_KEY must be configured."
+                )
             self._client = OpenAI(api_key=self._api_key)
 
         return self._client

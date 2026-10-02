@@ -15,12 +15,18 @@ class ContextBudgetError(ValueError):
             f"required {required_tokens}, "
             f"available {budget_tokens}"
         )
+
+
 class LanguageModelError(RuntimeError):
     """Base error raised by language-model integrations."""
 
 
 class LanguageModelProviderError(LanguageModelError):
     """Raised when the language-model provider request fails."""
+
+
+class MissingLanguageModelAPIKeyError(LanguageModelProviderError):
+    """Raised when the configured provider has no API key."""
 
 
 class LanguageModelResponseError(LanguageModelError):

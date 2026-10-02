@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 from typing import cast
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from openai import OpenAI, OpenAIError
@@ -10,6 +10,7 @@ from rag_service.generation.errors import (
     LanguageModelProviderError,
     LanguageModelRefusalError,
     LanguageModelResponseError,
+    MissingLanguageModelAPIKeyError,
 )
 from rag_service.generation.language_model import LanguageModel
 from rag_service.generation.models import (
@@ -174,6 +175,29 @@ def test_openai_language_model_wraps_provider_error() -> None:
         match="OpenAI answer-generation request failed",
     ):
         model.generate(make_prompt())
+
+
+def test_missing_key_has_distinct_error_without_calling_sdk(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    model = OpenAILanguageModel(model="gpt-5.6-terra")
+    with patch("rag_service.generation.providers.openai.OpenAI") as sdk:
+        with pytest.raises(MissingLanguageModelAPIKeyError):
+            model.generate(make_prompt())
+        sdk.assert_not_called()
+
+
+@pytest.mark.parametrize("explicit_key", [None, "explicit-key"])
+def test_client_creation_preserves_sdk_environment_fallback(
+    explicit_key: str | None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "environment-key")
+    model = OpenAILanguageModel(model="gpt-5.6-terra", api_key=explicit_key)
+    with patch("rag_service.generation.providers.openai.OpenAI") as sdk:
+        model._require_client()
+        sdk.assert_called_once_with(api_key=explicit_key)
 
 
 def test_openai_language_model_wraps_validation_error() -> None:
