@@ -10,7 +10,7 @@ components: [component-retrieval-service, component-public-api]
 prerequisites: [IndxWP, Auth]
 next_steps: [GenAns, IntApp]
 related_pages: [SrchAPI, RtrvPipe, TutSrch]
-last_modified: 2026-09-29
+last_modified: 2026-10-01
 audience: [primary]
 ---
 
@@ -79,7 +79,7 @@ A list matches a chunk when the chunk's value is one of those strings.
 When you set more than one filter, a chunk has to match every filter.
 
 For a WordPress index, `source` is `wordpress` and `source_id` is the WordPress record ID.
-`content_type` is `page` for a WordPress page and `post` for a WordPress post.
+`content_type` uses the WordPress post type such as `page` or `post`; custom post types keep their WordPress type value.
 `document_id` uses the form `wordpress:{type}:{id}`, such as `wordpress:page:1`.
 
 <CodeBlocks>
@@ -134,7 +134,7 @@ See [Search API](api:POST/reference/search) for the request schema.
 ## Use the search results
 
 A `200` response lists search results in reranked order. Each result is one retrieved chunk.
-Titles, excerpts, URLs, and scores come from your index. This sample shows the response shape:
+Titles, excerpts, and URLs come from your index. This sample shows the response shape:
 
 ```json
 {
@@ -159,7 +159,7 @@ A real `chunk_id` is `{document_id}:chunk:v1:` followed by a content hash. `<sha
 Use `title`, `heading_path`, and `excerpt` when you display the passage.
 `url` is the source document's URL. `anchor` is the heading anchor, and it's `null` when the chunk has no anchor.
 `chunk_id` identifies the chunk, and `document_id` identifies its document.
-`score` is the rerank score for that result.
+`score` is the rerank score for this query. The retrieval service reranks the fused candidates when it handles the request and returns that score.
 
 See [Search API](api:POST/reference/search) for the response schema.
 
@@ -177,7 +177,7 @@ Treat that body as no relevant results. A query the index can't support returns 
 
 A missing or wrong `X-API-Key` returns `401` with `authentication_failed`.
 If `RAG_API_KEY` isn't set, search returns `503` with `authentication_unavailable`.
-If the embedding provider or the vector database is unavailable, search returns `503` with `retrieval_unavailable`.
+If a retrieval dependency is unavailable and the pipeline can't complete, search returns `503` with `retrieval_unavailable`.
 See [Authentication](/docs/get-started/authentication) for the API key checks.
 
 The support gate uses `RETRIEVAL_SUPPORT_CUTOFF`, which defaults to `0.70`.

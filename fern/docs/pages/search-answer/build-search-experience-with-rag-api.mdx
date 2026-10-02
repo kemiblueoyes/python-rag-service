@@ -1,5 +1,207 @@
 ---
 id: TutSrch
 title: "Tutorial: Build a search experience with the RAG API"
-last_modified: 2026-09-29
+subtitle: Learn how an application submits a query, authenticates, handles search results, and presents source links.
+description: Build an end-to-end search experience with the RAG API, including query submission, authentication, result handling, and source links.
+content_type: tutorial
+lifecycle_status: draft
+topics: [topic-retrieval, topic-api, topic-integration]
+components: [component-retrieval-service, component-public-api]
+prerequisites: [IndxWP, Auth]
+next_steps: [IntApp]
+related_pages: [SrchDoc, SrchAPI, RtrvPipe]
+last_modified: 2026-10-01
+audience: [primary]
 ---
+
+In this tutorial, you'll build a small Python client that searches an indexed documentation corpus.
+The client submits a query to `POST /v1/search`, sends the API key, and prints each search result with a link back to the source passage.
+
+By the end, you'll have a script that shows the path from a user's query to the documentation a reader can open.
+The examples call a service at `http://127.0.0.1:8000`. See [Quickstart](/docs/get-started/quickstart) if that service isn't running yet.
+
+## Prerequisites
+
+- **[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index the script searches.
+- **[Authentication](/docs/get-started/authentication)**: Set `RAG_API_KEY` for the service. The script receives that same value in its own environment.
+
+<Steps toc={true}>
+
+## Submit a search query
+
+Create `search_experience.py` in the project directory.
+The script sends a natural-language query to `POST /v1/search`. Change `query` to a subject your indexed WordPress content covers.
+
+```python
+import json
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+query = "How does metadata improve retrieval?"
+
+request = Request(
+    "http://127.0.0.1:8000/v1/search",
+    data=json.dumps({"query": query}).encode(),
+    headers={"Content-Type": "application/json"},
+    method="POST",
+)
+
+try:
+    with urlopen(request) as response:
+        print(f"Status {response.status}")
+        print(response.read().decode())
+except HTTPError as error:
+    print(f"Status {error.code}")
+    print(error.read().decode())
+except URLError:
+    print("The script couldn't reach http://127.0.0.1:8000.")
+```
+
+From the project directory, run:
+
+```bash
+uv run python search_experience.py
+```
+
+The request has a query and no API key. When the service is running and `RAG_API_KEY` is configured in the service environment,
+the script prints status `401` and `authentication_failed`. That status means the service rejected the call before retrieval started.
+The next step adds the key.
+
+## Authenticate the request
+
+The service reads `RAG_API_KEY` from its own `.env`. This script is a client, so it shouldn't import the service's configuration to get that key.
+The client receives the key through its own environment, then sends that value in the `X-API-Key` header.
+Replace `search_experience.py` with this version:
+
+```python
+import json
+import os
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+query = "How does metadata improve retrieval?"
+
+api_key = os.environ["RAG_API_KEY"]
+
+request = Request(
+    "http://127.0.0.1:8000/v1/search",
+    data=json.dumps({"query": query}).encode(),
+    headers={
+        "Content-Type": "application/json",
+        "X-API-Key": api_key,
+    },
+    method="POST",
+)
+
+try:
+    with urlopen(request) as response:
+        print(f"Status {response.status}")
+        print(response.read().decode())
+except HTTPError as error:
+    print(f"Status {error.code}")
+    print(error.read().decode())
+except URLError:
+    print("The script couldn't reach http://127.0.0.1:8000.")
+```
+
+In the same terminal, set the client environment variable to the same secret the service uses, then run the script:
+
+```bash
+export RAG_API_KEY=your-long-random-api-key
+uv run python search_experience.py
+```
+
+If `RAG_API_KEY` isn't set in that terminal, the script stops before it sends the request.
+A successful search prints status `200`. The body echoes `query` and includes a `results` list.
+A wrong key returns status `401` and `authentication_failed`.
+
+If the service's own key isn't set, the status is `503` and the code is `authentication_unavailable`.
+See [Authentication](/docs/get-started/authentication).
+
+The `results` list may be empty when retrieval finds no qualifying results. The next step treats that as part of a normal search response.
+
+## Handle the returned results
+
+A `200` response is a completed search. `results` holds the retrieved chunks in reranked order, or it's
+empty when the support gate rejects the reranked candidates. Replace the `try` block so the script prints
+each result instead of the raw JSON. Keep the rest of the file:
+
+```python
+try:
+    with urlopen(request) as response:
+        payload = json.loads(response.read().decode())
+except HTTPError as error:
+    print(f"Status {error.code}")
+    print(error.read().decode())
+except URLError:
+    print("The script couldn't reach http://127.0.0.1:8000.")
+else:
+    results = payload["results"]
+    if not results:
+        print("No relevant results.")
+    else:
+        print(f"{len(results)} result(s) for: {payload['query']}")
+        for result in results:
+            print(result["title"])
+            if result["heading_path"]:
+                print(" > ".join(result["heading_path"]))
+            print(result["excerpt"])
+            print()
+```
+
+Run the script again in that same terminal, so `RAG_API_KEY` is still set.
+
+When the index can support the query, you see a count, then each result's document title, heading path, and excerpt.
+Those three fields come from the indexed chunk. The list order is the reranked order for this query.
+
+When you see `No relevant results.`, the status was still `200` and `results` was empty.
+Try a question that uses a specific subject from the indexed WordPress content.
+See [Search documentation](/docs/search-and-answer/search-documentation) for filters, the default result limit of 5, and the support gate.
+
+## Present source links
+
+Each result can point the reader back to the passage it came from.
+`url` is the source document's URL. `anchor` is the heading anchor, and it's `null` when the chunk has no anchor.
+Add this function above the request, then print its return value after each excerpt:
+
+```python
+def source_link(result):
+    url = result["url"].split("#", 1)[0]
+    anchor = result.get("anchor")
+    if anchor:
+        return f"{url}#{anchor}"
+    return url
+```
+
+Inside the loop, after `print(result["excerpt"])`, add:
+
+```python
+            print(source_link(result))
+```
+
+Run the script again. Each result now ends with a link.
+When `anchor` is present, the link opens the document at that heading. When `anchor` is `null`, the link opens the document URL.
+
+This script is a small search experience.
+An application submits the query, authenticates with the service, and presents the retrieved passages with links to their sources.
+The retrieval service selects the chunks. The script displays them.
+</Steps>
+
+## What you learned
+
+You built a client that turns a query into search results a reader can follow back to the documentation:
+
+- You submitted a search query to `POST /v1/search`.
+- You authenticated the request with an API key from the client's own environment.
+- You handled the returned search results, including an empty results list.
+- You presented a source link for each result from its document URL and heading anchor.
+
+## Next steps
+
+**[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application)**: Use this request pattern in your own server-side client.
+
+## Related pages
+
+- **[Search documentation](/docs/search-and-answer/search-documentation)**: Look up filters, result limits, response fields, and empty-result behavior for `POST /v1/search`.
+- **[Search API](api:POST/reference/search)**: Review the request and response schema.
+- **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: See how hybrid retrieval selects the chunks this script prints.

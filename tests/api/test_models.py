@@ -114,3 +114,14 @@ def test_answer_request_rejects_retrieval_limit() -> None:
                 "limit": 5,
             }
         )
+
+def test_search_request_rejects_empty_filter_list() -> None:
+    with pytest.raises(ValidationError):
+        SearchRequest.model_validate(
+            {
+                "query": "What is RAG?",
+                "filters": {
+                    "content_type": [],
+                },
+            }
+        )

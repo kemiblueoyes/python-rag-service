@@ -1,5 +1,191 @@
 ---
 id: GenAns
 title: Generate grounded answers
-last_modified: 2026-09-29
+subtitle: Generate a grounded answer with POST /v1/answer.
+description: Use POST /v1/answer to generate grounded answers with authentication, filters, evidence handling, citations, sources, and example requests.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-answer-generation, topic-grounding, topic-evidence-sufficiency, topic-citations, topic-api]
+components: [component-answer-generation-service, component-public-api]
+prerequisites: [IndxWP, Auth]
+next_steps: [IntApp]
+related_pages: [AnsAPI, AnsGenCit, SrchDoc]
+last_modified: 2026-10-01
+audience: [primary]
 ---
+
+`POST /v1/answer` retrieves up to 5 chunks and uses the selected context to generate an answer. The response includes
+the answer, its cited sources, and whether the evidence was sufficient.
+
+The examples call a service at `http://127.0.0.1:8000`.
+See [Quickstart](/docs/get-started/quickstart) if that service isn't running yet.
+
+## Prerequisites
+
+- **[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index that answer generation retrieves.
+- **[Authentication](/docs/get-started/authentication)**: Set `RAG_API_KEY` and send that value in the `X-API-Key` header.
+
+<Steps toc={true}>
+## Send an answer request
+
+Send `POST /v1/answer` with `Content-Type: application/json` and your API key.
+The body needs a `query` string. The service trims leading and trailing whitespace, and it rejects an empty query.
+The request doesn't include `limit`. Sending `limit` returns `422` with `validation_error`.
+
+<CodeBlocks>
+
+```bash curl
+curl -s -X POST http://127.0.0.1:8000/v1/answer \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-long-random-api-key" \
+  -d '{"query": "Why does inconsistent terminology cause retrieval failures?"}'
+```
+
+```python Python
+import json
+from urllib.request import Request, urlopen
+
+body = json.dumps({
+    "query": "Why does inconsistent terminology cause retrieval failures?",
+}).encode()
+
+request = Request(
+    "http://127.0.0.1:8000/v1/answer",
+    data=body,
+    headers={
+        "Content-Type": "application/json",
+        "X-API-Key": "your-long-random-api-key",
+    },
+    method="POST",
+)
+
+with urlopen(request) as response:
+    print(response.read().decode())
+```
+
+</CodeBlocks>
+
+A successful request returns `200`. The body echoes `query` and includes `answer`, `sources`, and `sufficient_evidence`.
+The Python example prints that body only when the status is `200`. For any other status, the example stops with an error and doesn't print the body.
+
+## Narrow retrieval with filters
+
+Add `filters` when you want retrieval to consider only chunks with matching metadata.
+Supported filters are `document_id`, `source`, `source_id`, and `content_type`.
+They follow the same rules as `POST /v1/search`. See [Search documentation](/docs/search-and-answer/search-documentation) for how a single value and a list match.
+
+<CodeBlocks>
+```bash curl
+curl -s -X POST http://127.0.0.1:8000/v1/answer \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-long-random-api-key" \
+  -d '{
+    "query": "Why does inconsistent terminology cause retrieval failures?",
+    "filters": {
+      "source": "wordpress"
+    }
+  }'
+```
+
+```python Python
+import json
+from urllib.request import Request, urlopen
+
+body = json.dumps({
+    "query": "Why does inconsistent terminology cause retrieval failures?",
+    "filters": {
+        "source": "wordpress",
+    },
+}).encode()
+
+request = Request(
+    "http://127.0.0.1:8000/v1/answer",
+    data=body,
+    headers={
+        "Content-Type": "application/json",
+        "X-API-Key": "your-long-random-api-key",
+    },
+    method="POST",
+)
+
+with urlopen(request) as response:
+    print(response.read().decode())
+```
+
+</CodeBlocks>
+
+An unknown filter name, an empty filter value, or an unexpected field returns `422` with `validation_error`.
+
+## Use a grounded answer
+
+When `sufficient_evidence` is `true`, show `answer` and connect each citation in that text to `sources`.
+A citation is a marker such as `[S1]`. It matches the `citation_id` on one source.
+The grounded-answer prompt instructs the model to answer only from the retrieved context and to place each citation after the claim it supports.
+
+The application checks those citations against the retrieved chunks before it returns the response.
+`title`, `heading_path`, `excerpt`, `url`, and `anchor` come from the cited chunk.
+`sources` lists the chunks the answer cites, in the order those citations first appear. It doesn't list every retrieved chunk.
+
+This sample shows the response shape. Titles, excerpts, and URLs come from your index:
+
+```json
+{
+  "query": "Why does inconsistent terminology cause retrieval failures?",
+  "answer": "Inconsistent terminology can cause retrieval failures because the query and documentation may use different language for the same concept. [S1]",
+  "sources": [
+    {
+      "citation_id": "S1",
+      "chunk_id": "wordpress:page:1:chunk:v1:<sha256>",
+      "document_id": "wordpress:page:1",
+      "title": "Retrieval Failures",
+      "heading_path": ["Vocabulary mismatch"],
+      "anchor": "vocabulary-mismatch",
+      "excerpt": "Inconsistent terminology can make relevant content harder to retrieve.",
+      "url": "https://example.test/retrieval-failures"
+    }
+  ],
+  "sufficient_evidence": true
+}
+```
+
+A real `chunk_id` is `{document_id}:chunk:v1:` followed by a content hash. `<sha256>` stands in for that hash.
+`anchor` is the heading anchor, and it's `null` when the chunk has no anchor.
+Use `url` with `anchor` when you link a reader to the cited passage.
+
+See [Answer generation and citations](/docs/architecture/answer-generation-and-citations) for how context, generation, and citation checks fit together.
+See [Answer API](api:POST/reference/answer) for the response schema.
+
+## Handle insufficient evidence
+
+When the context doesn't contain enough information to answer the query, the generated response
+sets `sufficient_evidence` to `false` and `sources` is empty. The prompt instructs the model to say that the
+available sources are insufficient. The wording of `answer` can vary. A query the index can't support
+can return this shape:
+
+```json
+{
+  "query": "What is the capital of Mars?",
+  "answer": "The available documentation does not provide enough information to answer this question.",
+  "sources": [],
+  "sufficient_evidence": false
+}
+```
+
+Show that answer on its own. `sources` is empty, so there are no citations to display.
+A missing or wrong `X-API-Key` returns `401` with `authentication_failed`.
+If `RAG_API_KEY` isn't set, answer generation returns `503` with `authentication_unavailable`.
+If retrieval, the language model, context assembly, or citation checking can't finish, the endpoint returns `503` with `answer_unavailable`.
+See [Authentication](/docs/get-started/authentication) for the API key checks.
+
+Your client can show the answer with its sources when `sufficient_evidence` is `true`, or show the answer alone when it's `false`.
+</Steps>
+
+## Next steps
+
+**[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application)**: Send `POST /v1/answer` from your own server-side client.
+
+## Related pages
+
+- **[Answer API](api:POST/reference/answer)**: Review the request fields, response schema, and status codes.
+- **[Answer generation and citations](/docs/architecture/answer-generation-and-citations)**: See how retrieved evidence becomes a grounded answer with validated citations.
+- **[Search documentation](/docs/search-and-answer/search-documentation)**: Retrieve the chunks themselves with `POST /v1/search` when you need search results instead of an answer.

@@ -405,6 +405,7 @@ components:
               type: string
               minLength: 1
             type: array
+            minItems: 1
           - type: 'null'
           title: Document Id
           description: Limit results to one or more canonical document IDs.
@@ -416,6 +417,7 @@ components:
               type: string
               minLength: 1
             type: array
+            minItems: 1
           - type: 'null'
           title: Source
           description: Limit results to one or more content sources.
@@ -427,6 +429,7 @@ components:
               type: string
               minLength: 1
             type: array
+            minItems: 1
           - type: 'null'
           title: Source Id
           description: Limit results to one or more source-system document IDs.
@@ -438,6 +441,7 @@ components:
               type: string
               minLength: 1
             type: array
+            minItems: 1
           - type: 'null'
           title: Content Type
           description: Limit results to one or more content types.

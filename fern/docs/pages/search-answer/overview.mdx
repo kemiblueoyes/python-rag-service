@@ -9,7 +9,7 @@ topics: [topic-retrieval, topic-answer-generation, topic-api]
 components: [component-retrieval-service, component-answer-generation-service, component-public-api]
 next_steps: [SrchDoc, GenAns]
 related_pages: [SrchAPI, AnsAPI, RtrvPipe, AnsGenCit]
-last_modified: 2026-09-29
+last_modified: 2026-10-01
 audience: [primary, secondary]
 ---
 
@@ -17,23 +17,28 @@ The Python RAG Service exposes search and grounded answer generation as two publ
 `POST /v1/search` returns search results from the hybrid retrieval pipeline.
 `POST /v1/answer` uses that same pipeline, then generates an answer from the retrieved evidence.
 
-Hybrid retrieval combines lexical retrieval and vector retrieval, then ranks the chunks both endpoints use.
-A request starts with a query, and the retrieval pipeline selects chunks for that query.
+Both endpoints use the same hybrid retrieval pipeline, which combines vector and lexical retrieval,
+reranks the candidates, and applies the support gate. A request starts with a query, and the retrieval
+pipeline selects chunks for that query.
 
-Search returns those chunks as search results. The answer endpoint assembles the chunks into context, and the model generates an answer from that context.
-The application validates the proposed citations before the endpoint returns the answer and its sources.
+Search returns those chunks as search results. The answer endpoint assembles the chunks into context, and the
+model generates an answer from that context. The application validates the proposed citations before the endpoint
+returns the answer and its sources.
 
 ```text
 Search: Query → retrieval → search results
-Answer: Query → retrieval → context → answer generation → answer and sources
+Answer: Query → retrieval → context → answer generation → citation validation → answer and sources
 ```
+
+Search returns an empty results list when retrieval finds no qualifying results. Answer generation instead reports whether
+the available evidence was sufficient through `sufficient_evidence`; when it's `false`, `sources` is empty.
 
 ## Key capabilities
 
 ### Search
 
 `POST /v1/search` returns the query and a ranked list of search results. You can set `limit` on the request. The default is 5.
-Each result includes the chunk text, the document title, the heading path, the source document's URL, and a rerank score.
+Each result includes an `excerpt` containing the retrieved chunk text, along with the document title, heading path, source URL, and rerank score.
 You can pass optional metadata filters to narrow which chunks retrieval considers. `POST /v1/answer` accepts the same filters.
 
 The support gate can return no relevant results when the retrieved content doesn't adequately support the query.
@@ -43,7 +48,7 @@ See [Search documentation](/docs/search-and-answer/search-documentation) for a c
 
 ### Answer generation
 
-`POST /v1/answer` retrieves a fixed set of 5 chunks, then generates an answer from that context.
+`POST /v1/answer` retrieves up to 5 chunks, then generates an answer from that context.
 The grounded-answer prompt instructs the model to answer only from the supplied context.
 The response includes the answer, the sources cited in it, and `sufficient_evidence`.
 
@@ -53,7 +58,7 @@ When `sufficient_evidence` is false, `sources` is empty.
 
 See [Generate grounded answers](/docs/search-and-answer/generate-grounded-answers) for a closer look at how `POST /v1/answer` works.
 
-## Common use cases
+## Choose an endpoint
 
 Use `POST /v1/search` when your application needs the retrieved documentation.
 That includes a search results page, a list of source passages, or any workflow that consumes chunks directly.

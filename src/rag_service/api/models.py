@@ -7,7 +7,12 @@ NonEmptyString = Annotated[
     StringConstraints(strip_whitespace=True, min_length=1),
 ]
 
-FilterValue = NonEmptyString | list[NonEmptyString]
+NonEmptyStringList = Annotated[
+    list[NonEmptyString],
+    Field(min_length=1),
+]
+
+FilterValue = NonEmptyString | NonEmptyStringList
 
 
 class SearchFilters(BaseModel):
