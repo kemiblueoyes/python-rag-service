@@ -245,3 +245,18 @@ Add a glossary term when readers are likely to need a definition to understand t
 Do not add every technical word to the terminology reference or glossary. Common industry terms do not need project-specific rules unless this project uses them in a particular way.
 
 When a new preferred term is needed, define the terminology decision first, then update the glossary and Vale rules where appropriate.
+
+## Code-sample rule
+
+Format JSON for readability when displaying a response in the terminal. Match the formatting to the library used:
+
+| Sample type | Format |
+|---|---|
+| cURL, when Python is a prerequisite | Append `\| python -m json.tool` |
+| Python using `requests` or `httpx` | `print(json.dumps(response.json(), indent=2))` |
+| Python using `urllib` | `payload = json.loads(response.read().decode())`, followed by `print(json.dumps(payload, indent=2))` |
+
+- Include `import json` in Python samples that use it.
+- Apply formatting when printing, while keeping parsed data available for further processing.
+- Skip JSON formatting when the sample already prints selected fields in a readable layout.
+- Don’t apply this pattern to streaming responses or responses without a JSON body.

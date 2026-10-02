@@ -49,7 +49,8 @@ request = Request(
 try:
     with urlopen(request) as response:
         print(f"Status {response.status}")
-        print(response.read().decode())
+        payload = json.loads(response.read().decode())
+        print(json.dumps(payload, indent=2))
 except HTTPError as error:
     print(f"Status {error.code}")
     print(error.read().decode())
@@ -96,7 +97,8 @@ request = Request(
 try:
     with urlopen(request) as response:
         print(f"Status {response.status}")
-        print(response.read().decode())
+        payload = json.loads(response.read().decode())
+        print(json.dumps(payload, indent=2))
 except HTTPError as error:
     print(f"Status {error.code}")
     print(error.read().decode())

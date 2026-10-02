@@ -22,7 +22,7 @@ reranks the candidates, and applies the support gate. A request starts with a qu
 pipeline selects chunks for that query.
 
 Search returns those chunks as search results. The answer endpoint assembles the chunks into context, and the
-model generates an answer from that context. The application validates the proposed citations before the endpoint
+LLM generates an answer from that context. The application validates the proposed citations before the endpoint
 returns the answer and its sources.
 
 ```text
@@ -49,11 +49,11 @@ See [Search documentation](/docs/search-and-answer/search-documentation) for a c
 ### Answer generation
 
 `POST /v1/answer` retrieves up to 5 chunks, then generates an answer from that context.
-The grounded-answer prompt instructs the model to answer only from the supplied context.
+The grounded-answer prompt instructs the LLM to answer only from the supplied context.
 The response includes the answer, the sources cited in it, and `sufficient_evidence`.
 
 Each cited source includes a citation ID and the supporting chunk's text, title, heading path, and URL.
-The application validates the model's proposed citations against the retrieved chunks before it returns them.
+The application validates the LLM's proposed citations against the retrieved chunks before it returns them.
 When `sufficient_evidence` is false, `sources` is empty.
 
 See [Generate grounded answers](/docs/search-and-answer/generate-grounded-answers) for a closer look at how `POST /v1/answer` works.

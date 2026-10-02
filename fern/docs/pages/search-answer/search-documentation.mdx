@@ -36,7 +36,8 @@ The body needs a `query` string. The service trims leading and trailing whitespa
 curl -s -X POST http://127.0.0.1:8000/v1/search \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-long-random-api-key" \
-  -d '{"query": "How does metadata improve retrieval?"}'
+  -d '{"query": "How does metadata improve retrieval?"}' \
+  | python -m json.tool
 ```
 
 ```python Python
@@ -58,7 +59,8 @@ request = Request(
 )
 
 with urlopen(request) as response:
-    print(response.read().decode())
+    payload = json.loads(response.read().decode())
+    print(json.dumps(payload, indent=2))
 
 ```
 
@@ -94,7 +96,8 @@ curl -s -X POST http://127.0.0.1:8000/v1/search \
       "content_type": "page"
     },
     "limit": 5
-  }'
+  }' \
+  | python -m json.tool
 ```
 
 ```python Python
@@ -121,7 +124,8 @@ request = Request(
 )
 
 with urlopen(request) as response:
-    print(response.read().decode())
+    payload = json.loads(response.read().decode())
+    print(json.dumps(payload, indent=2))
 
 ```
 
@@ -175,15 +179,34 @@ Treat that body as no relevant results. A query the index can't support returns 
 }
 ```
 
-A missing or wrong `X-API-Key` returns `401` with `authentication_failed`.
-If `RAG_API_KEY` isn't set, search returns `503` with `authentication_unavailable`.
-If a retrieval dependency is unavailable and the pipeline can't complete, search returns `503` with `retrieval_unavailable`.
-See [Authentication](/docs/get-started/authentication) for the API key checks.
-
 The support gate uses `RETRIEVAL_SUPPORT_CUTOFF`, which defaults to `0.70`.
 See [Configuration reference](/docs/reference/configuration-reference) to change that cutoff.
 Your client can show the ranked chunks, or an empty state when `results` is empty.
 </Steps>
+
+## Troubleshooting
+
+### 401 `authentication_failed`
+
+Send an `X-API-Key` that matches the service's `RAG_API_KEY`.
+A missing or wrong key makes `POST /v1/search` return `401` with `authentication_failed`.
+See [Authentication](/docs/get-started/authentication) for the API key checks.
+
+### 422 `validation_error`
+
+Check the query, the supported filters, and `limit`.
+`POST /v1/search` returns `422` with `validation_error` when the request doesn't match the schema.
+
+### 503 `authentication_unavailable`
+
+Set `RAG_API_KEY` in the service's `.env`, then restart the API.
+`POST /v1/search` returns `503` with `authentication_unavailable` when that key isn't set.
+
+### 503 `retrieval_unavailable`
+
+Check the configuration, credentials, and availability of the retrieval dependencies.
+`POST /v1/search` returns `503` with `retrieval_unavailable` when one of those dependencies can't complete the search.
+See [Configuration reference](/docs/reference/configuration-reference) for those settings.
 
 ## Next steps
 
