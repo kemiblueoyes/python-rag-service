@@ -186,6 +186,8 @@ Your client can show the ranked chunks, or an empty state when `results` is empt
 
 ## Troubleshooting
 
+Check the terminal where you started the API with uvicorn. The service logs the failed operation and a diagnostic reason there.
+
 ### 401 `authentication_failed`
 
 Send an `X-API-Key` that matches the service's `RAG_API_KEY`.

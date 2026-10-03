@@ -1,6 +1,136 @@
 ---
 id: AnsGenCit
 title: Answer generation and citations
-last_modified: 2026-09-30
+subtitle: How retrieved chunks become a grounded answer with validated citations and trusted source metadata.
+description: Learn how retrieved evidence becomes a grounded answer through context assembly, prompt construction, evidence sufficiency, citation validation, and trusted source metadata.
+content_type: explanation
+lifecycle_status: draft
+topics: [topic-architecture, topic-answer-generation, topic-grounding, topic-evidence-sufficiency, topic-citations]
+components: [component-answer-generation-service]
+next_steps: [EvArch]
+related_pages: [GenAns, AnsAPI, AnsEv, RtrvPipe]
+last_modified: 2026-10-02
+audience: [secondary]
 ---
-![Python RAG Service answer generation and citations diagram](../../assets/images/answer-generation-citations-diagram.png)
+
+Answer generation turns retrieved chunks into the response `POST /v1/answer` returns. The answer route asks the
+[retrieval pipeline](/docs/architecture/retrieval-pipeline) for up to 5 chunks, then runs this workflow on that list. The
+model proposes the answer. The application checks citations and attaches source metadata from the retrieved chunks.
+
+[System architecture](/docs/architecture/system-architecture) shows where answer generation sits. This page follows
+one question through context assembly, the grounded prompt, generation, evidence-sufficiency checks, citation
+validation, citation normalization, and the source fields the API returns.
+
+The answer generation diagram shows that path. The dashed arrow is the call to OpenAI. Citation validation stays inside the service.
+
+<Frame caption="Python RAG Service answer generation and citations">
+  <img
+    src="../../assets/images/answer-generation-citations-diagram.png"
+    alt="Python RAG Service answer generation and citations diagram"
+  />
+</Frame>
+
+## Context assembly
+
+Context assembly selects which retrieved chunks the model will see. It walks the chunks in retrieval order and
+assigns each selected chunk a citation identifier for this request, starting at `S1`. Those identifiers belong to
+this request. They're separate from the stable chunk ID.
+
+The assembler counts tokens on the fully rendered source blocks, not on the raw chunk text alone. The default
+budget is 8,000 tokens. It adds a whole chunk when the rendered context still fits. It doesn't split a chunk to fill
+the remaining budget. When the next chunk would exceed the budget, it stops and keeps the chunks already selected.
+If the first chunk alone exceeds the budget, assembly fails and the API returns `answer_unavailable`.
+
+The selected chunks are the context. Evidence is the information in that context that ends up supporting the
+answer. Context can contain chunks the answer never cites.
+
+An empty retrieval list still enters assembly. The context then contains no sources.
+
+## Prompt construction and answer generation
+
+The prompt builder writes two messages. The system message tells the model to answer from the supplied sources, to
+treat that content as evidence, and to say when the sources don't contain enough information to answer. It also
+tells the model to cite a source inline, as `[S1]`, immediately after the claim that source supports, and to cite
+only sources that were supplied. The user message contains the question and the formatted sources. Each source block
+includes its citation identifier, title, chunk text, and the heading path when one is available.
+
+Those instructions describe the requested behavior. They don't guarantee that the model will follow them.
+
+The OpenAI language model returns a structured proposed answer: the answer text, a list of citation identifiers,
+and a `sufficient_evidence` flag. That proposal is a generated answer. If it reports sufficient evidence, the application
+can return it as a grounded answer only after the checks below succeed. If it reports insufficient evidence, those checks
+instead produce an insufficient-evidence response with no sources.
+
+## Evidence sufficiency
+
+`sufficient_evidence` is a field on the model's proposed answer. The application checks that the flag agrees with
+the citation list before it accepts the proposal:
+
+- A sufficient answer includes at least one citation identifier.
+- An insufficient answer includes none.
+
+An answer that breaks either rule is rejected as an invalid model response. The application doesn't replace the
+flag with its own judgment.
+
+### Insufficient evidence vs. no relevant results
+
+`Insufficient evidence` means the proposal says the sources don't contain enough
+information to answer, and it cites nothing. `No relevant results` is the search
+response when retrieval returns no chunks. An answer can report insufficient
+evidence even when relevant chunks were retrieved, if those chunks still don't
+contain enough information to answer the question.
+
+When retrieval returns no chunks, generation still runs on the empty context. A successful response can then report
+insufficient evidence and include no sources. [Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)
+shows that response shape.
+
+## Citation validation
+
+Citation validation is an application check on the proposed answer. The model doesn't validate its own citations.
+
+Validation compares the proposal with the context that was sent:
+
+- Every inline marker such as `[S1]` uses a well-formed citation identifier.
+- Every identifier in the citation list and every inline marker was supplied in that context.
+- The inline markers and the citation list name the same set of identifiers.
+
+A citation that fails these checks raises a citation validation error. The API returns `answer_unavailable` and
+doesn't return the proposed answer. Validation confirms that the identifiers point at supplied chunks. It doesn't
+judge whether the answer's claims are fully supported by those chunks.
+
+## Citation normalization
+
+After validation, the generator renumbers the cited sources by first appearance in the answer text. The first
+distinct identifier becomes `S1`, and each later distinct identifier takes the next number. The answer text is rewritten to
+match. Sources that the answer doesn't cite are dropped.
+
+The identifiers the model cites can include gaps because it may use some context sources and not others. For example,
+it might cite S1 and S3 but not S2. The response renumbers the cited sources into a compact sequence with no gaps.
+
+## Trusted source metadata
+
+The model proposes the answer text, the citation identifiers, and `sufficient_evidence`. It doesn't propose the
+URL, title, heading, or chunk ID that the client displays.
+
+The API copies those fields from the retrieved chunk for each cited source: `chunk_id`, `document_id`, `title`,
+`heading_path`, `anchor`, `url`, and `excerpt`. The excerpt is the chunk text. A client can combine `url` and
+`anchor` to link to the cited passage. Because those values come from the chunk record, they stay the metadata
+stored at indexing time.
+
+The API returns the normalized answer text, the validated cited sources, and the `sufficient_evidence` flag
+from the validated proposal.
+
+## Next steps
+
+**[Evaluation architecture](/docs/architecture/evaluation-architecture)**: See how retrieval and answer generation
+are evaluated as separate stages.
+
+## Related pages
+
+- **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: Call `POST /v1/answer` and handle
+  a grounded answer or an insufficient-evidence response.
+- **[Answer API](api:POST/reference/answer)**: Review the request fields, response schema, and status codes.
+- **[Answer evaluation](/docs/evaluate/answer-evaluation)**: See how generated answers are checked for evidence
+  support, citations, and insufficient-evidence behavior.
+- **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: See how the up to five chunks passed into answer
+  generation are selected.

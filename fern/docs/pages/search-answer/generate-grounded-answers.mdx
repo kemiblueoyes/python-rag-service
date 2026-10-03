@@ -184,6 +184,8 @@ Your client can show the answer with its sources when `sufficient_evidence` is `
 
 ## Troubleshooting
 
+Check the terminal where you started the API with uvicorn. The service logs the failed operation and a diagnostic reason there.
+
 A missing or wrong `X-API-Key` returns `401` with `authentication_failed`.
 If `RAG_API_KEY` isn't set, `POST /v1/answer` returns `503` with `authentication_unavailable`.
 See [Authentication](/docs/get-started/authentication) for the API key checks.

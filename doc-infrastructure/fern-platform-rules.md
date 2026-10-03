@@ -131,6 +131,27 @@ Use `<Schema>` for API data models in a guide.
  
 Use `<Files>` for repository/directory examples.
 
+### Frames: images with captions
+
+Use `<Frame>` when an image needs a visible caption. Put the caption on `caption`. Put the accessible description on `alt`.
+
+```html
+<Frame caption="Python RAG Service system architecture">
+  <img
+    src="../../assets/images/system-architecture-diagram.png"
+    alt="Python RAG Service system architecture diagram"
+  />
+</Frame>
+```
+
+A Markdown image title, written after the path as `"title"`, is a hover tooltip. It does not render as a caption under the image. Keep the image path unquoted. The caption belongs on `caption`, not inside `src`.
+
+Use a plain Markdown image when the image does not need a caption:
+
+```markdown
+![Python RAG Service indexing pipeline diagram](../../assets/images/indexing-pipeline-diagram.png)
+```
+
 ## Reusable snippets
 
 Fern has native single-sourcing. ([Build With Fern](https://buildwithfern.com/learn/docs/writing-content/reusable-snippets?utm_source=chatgpt.com))
