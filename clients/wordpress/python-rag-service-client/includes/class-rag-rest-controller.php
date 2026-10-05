@@ -59,7 +59,7 @@ class RAG_Service_REST_Controller {
 		if ( ! defined( 'RAG_SERVICE_API_BASE_URL' ) || ! defined( 'RAG_SERVICE_API_KEY' ) ) {
 			return new WP_Error(
 				'rag_service_not_configured',
-				'The RAG service URL is not configured.',
+				"The RAG service URL isn't configured.",
 				array( 'status' => 500 )
 			);
 		}
@@ -102,7 +102,7 @@ class RAG_Service_REST_Controller {
         if ( ! defined( 'RAG_SERVICE_API_BASE_URL' ) || ! defined( 'RAG_SERVICE_API_KEY' ) ) {
             return new WP_Error(
                 'rag_service_not_configured',
-                'The RAG service URL is not configured.',
+                "The RAG service URL isn't configured.",
                 array( 'status' => 500 )
             );
         }

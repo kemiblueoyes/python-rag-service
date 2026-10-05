@@ -10,7 +10,7 @@ components: [component-public-api]
 prerequisites: [Instl]
 next_steps: [SrchDoc]
 related_pages: [SrchAPI, AnsAPI, IntApp, Errs]
-last_modified: 2026-09-29
+last_modified: 2026-10-05
 audience: [primary]
 ---
 
@@ -59,7 +59,7 @@ Send that key in the `X-API-Key` header from a server-side client.
     See [Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application) to use the same pattern in your own client.
 
     A missing or wrong key returns `401` with `authentication_failed`.
-    See [Errors](/reference/api-reference/errors) for the error response format.
+    See [Errors](/reference/errors) for the error response format.
 
     ## Check service health without the key
 
@@ -89,4 +89,4 @@ Send that key in the `X-API-Key` header from a server-side client.
 - **[Search API](api:POST/reference/search)**: Look up the authenticated `POST /v1/search` request and response.
 - **[Answer API](api:POST/reference/answer)**: Look up the authenticated `POST /v1/answer` request and response.
 - **[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application)**: Send the API key from your own server-side client.
-- **[Errors](/reference/api-reference/errors)**: Look up `authentication_failed` and `authentication_unavailable`.
+- **[Errors](/reference/errors)**: Look up `authentication_failed` and `authentication_unavailable`.

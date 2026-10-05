@@ -52,7 +52,7 @@ In wp-admin, activate **Python RAG Service Client**. Activation registers the
 
 ## Set the service URL and API key
 
-Define the Python service origin and API key in `wp-config.php`:
+Define the Python service origin and API key in `wp-config.php` before the `/* That's all, stop editing! Happy publishing. */` comment:
 
 ```php
 define(
@@ -85,6 +85,30 @@ If either constant is undefined, Search and Ask return HTTP 500 with the message
 `The RAG service URL isn't configured.` The plugin returns that same message when only
 `RAG_SERVICE_API_KEY` is undefined.
 
+## Add the shortcode
+
+Add the shortcode to the page or post where visitors should search:
+
+```text
+[python_rag_service]
+```
+
+The client displays a query field with Search and Ask buttons. Both buttons are disabled while a request runs.
+
+Search displays matching passages with document titles, heading paths, and short excerpts. Titles link to the source documents.
+When a heading anchor is available, the deepest heading links directly to that passage. If no results are returned, the client displays
+`No relevant results found.`
+
+Ask displays the answer with basic formatting for paragraphs, bulleted lists, and bold text. Citations link to supporting sources,
+and a `Sources` list appears when the response includes sources.
+
+When `sufficient_evidence` is false, the client also displays `The available pages and articles may not contain enough information.`
+
+</Steps>
+
+Visitors can then run Search and Ask on the published page. Their browsers call the WordPress
+routes. The plugin adds the API key when it calls the Python RAG service.
+
 ## Route Search and Ask through WordPress
 
 The shortcode posts the visitor's query to WordPress. The browser request doesn't include the API
@@ -112,7 +136,7 @@ When the call to the Python RAG service fails, the visitor sees HTTP 503 and a f
 Python status code and error body stay on the server. Search uses
 `Search is temporarily unavailable.` Ask uses `Answer generation is temporarily unavailable.` A
 wrong API key, an unreachable URL, a non-JSON body, and a timeout all produce that unavailable
-response. See [Errors](/reference/api-reference/errors) for the status codes and error bodies
+response. See [Errors](/reference/errors) for the status codes and error bodies
 the Python RAG service returns.
 
 <Note>
@@ -124,36 +148,6 @@ the proxy. The API key stays in `wp-config.php`.
 The form doesn't submit an empty query. The REST routes also reject an empty query before they
 call the Python RAG service. Search returns HTTP 400 with `A search query is required.` Ask
 returns HTTP 400 with `A question is required.`
-
-## Add the shortcode
-
-Add the shortcode to the page or post where visitors should search:
-
-```text
-[python_rag_service]
-```
-
-The client shows the label `Search or ask the documentation`, a query field, and Search and Ask
-buttons. Help text on the form says that Search finds relevant passages and that Ask generates an
-answer from the retrieved pages and articles.
-
-While a request runs, both buttons stay disabled. Search shows `Searching…`. Ask shows
-`Generating answer…`.
-
-When Search finishes with results, the status line reports the count, as in `1 result found.` or
-`2 results found.`
-Each result title links to the source document. When a result includes a heading path and an
-anchor, the deepest heading links to that heading on the source page. The client collapses
-whitespace in the excerpt, shortens text longer than 420 characters on a word boundary, and adds
-an ellipsis. When `results` is empty, the status line says `No relevant results found.`
-
-When Ask finishes, the client shows the answer. It turns blank lines into paragraphs, lines that
-start with `-` or `*` into a bulleted list, and `**bold**` markers into bold text. A citation
-such as `[S1]` links to the matching source when `citation_id` matches. Unmatched citation text
-stays as text. When the response includes sources, the client lists each citation ID, title, and
-heading path under `Sources`. When `sufficient_evidence` is true, the client clears the status
-line. When `sufficient_evidence` is false, the status line says
-`The available pages and articles may not contain enough information.`
 
 ## Deploy plugin updates
 
@@ -170,24 +164,16 @@ This plugin is a reference client for `POST /v1/search` and `POST /v1/answer`. C
 and deploy that directory when you need different proxy or interface behavior. Other applications
 can call the same public API. See
 [Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application).
-</Steps>
-
-Visitors can then run Search and Ask on the published page. Their browsers call the WordPress
-routes. The plugin adds the API key when it calls the Python RAG service.
 
 ## Verification
 
-Open the page that contains `[python_rag_service]`. The page should show the query field and the
-Search and Ask buttons.
+Open the published page that contains `[python_rag_service]` and check both actions:
 
-Run Search with a query the index should match. The status line should show a result count, and
-each title should link to a source document. When the response `results` array is empty, the
-status line says `No relevant results found.`
-
-Run Ask. A completed request shows the answer. When `sufficient_evidence` is true, the status line
-is empty. When `sufficient_evidence` is false, the status line says
-`The available pages and articles may not contain enough information.` When the response includes
-sources, the page also shows a `Sources` list.
+1. Confirm that the query field and Search and Ask buttons appear.
+2. Run Search with a query your indexed content supports. Confirm that results appear and their source links
+open the expected documents or passages.
+3. Run Ask with a question your indexed content supports. Confirm that the answer appears and any citation and
+source links open the expected supporting content.
 
 You can also call the WordPress proxy without an API key. The plugin adds `X-API-Key` on the
 server. On a site that uses the default REST prefix:
@@ -207,7 +193,7 @@ URL that WordPress can't reach, returns HTTP 503 and `Search is temporarily unav
 
 - **[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application)**:
   Call `POST /v1/search` and `POST /v1/answer` from a client other than this plugin.
-- **[Errors](/reference/api-reference/errors)**: Look up the Python error codes the WordPress
+- **[Errors](/reference/errors)**: Look up the Python error codes the WordPress
   proxy replaces with a generic unavailable message.
 - **[Search documentation](/docs/search-and-answer/search-documentation)**: See the `POST /v1/search` response that the Search button renders.
 - **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: See

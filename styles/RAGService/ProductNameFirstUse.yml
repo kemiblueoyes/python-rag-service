@@ -1,9 +1,14 @@
 extends: conditional
-message: "Use 'Python RAG Service' before the shortened form '%s'."
+message: "Use 'Python RAG Service' before the shortened form 'RAG service'."
 level: warning
 scope: text & ~frontmatter & ~alt
 ignorecase: false
 vocab: false
 
-first: '\b(RAG service)\b'
-second: '\bPython RAG Service\b'
+# `second` needs a capture group so Vale treats this as "defined earlier in the
+# file," not "both forms in this paragraph." The captured token has to equal
+# the full `first` match, and the two forms differ only in the case of
+# "service," so both patterns capture "RAG". "Python RAG service" is a
+# different term, and the lookbehind keeps it from counting as the short form.
+first: '(?<!Python )\b(RAG)(?= service\b)'
+second: '\bPython (RAG) Service\b'

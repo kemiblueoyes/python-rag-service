@@ -116,7 +116,7 @@ VALIDATION_ERROR_RESPONSE = {
         "details": [
             {
                 "field": "limit",
-                "message": "Extra inputs are not permitted",
+                "message": "Extra inputs aren't permitted",
             }
         ],
     }

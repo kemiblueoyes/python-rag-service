@@ -1,5 +1,223 @@
 ---
 id: IntApp
 title: Integrate the RAG API into an application
-last_modified: 2026-09-29
+subtitle: Call search and answer from your application server and render the responses.
+description: Connect an application back end to the RAG API with secure authentication, query forwarding, response handling, errors, and source links.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-integration, topic-api, topic-authentication]
+components: [component-public-api]
+prerequisites: [Auth, IndxWP]
+related_pages: [Errs, IntWP, SrchDoc, GenAns]
+last_modified: 2026-10-05
+audience: [primary]
 ---
+
+Call `POST /v1/search` and `POST /v1/answer` from your application back end. The visitor's browser sends a query to your application.
+Your back end adds the API key, calls the Python RAG Service, and returns the response data to the browser. The browser displays the
+results or answer.
+
+Search and answer both retrieve the current index. An answer request also uses the service's language-model configuration. See
+[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers).
+
+## Prerequisites
+
+- **Running service:** The Python RAG service must be running at an address your application server can reach.
+  See [Quickstart](/docs/get-started/quickstart).
+- **[Authentication](/docs/get-started/authentication):** Configure `RAG_API_KEY` on the service and set the same value
+  in your application server's environment.
+- **[Index WordPress content](/docs/index-content/index-wordpress-content):** Build the index that search and answer requests retrieve.
+- **Answer generation:** Configure the language-model provider if your application uses `POST /v1/answer`.
+  See [Generate grounded answers](/docs/search-and-answer/generate-grounded-answers).
+
+<Steps toc={true}>
+## Keep the API key on the application server
+
+Read the API key from the application server's environment. The value has to match the Python RAG
+service's `RAG_API_KEY`. Your application sends it in the `X-API-Key` header on each search or
+answer request.
+
+The visitor's browser calls your application. Your application adds the header when it calls the
+Python RAG service. Keep the key on the server. Don't put it in browser JavaScript or in a
+response you return to the visitor.
+
+See [Authentication](/docs/get-started/authentication) for how the Python RAG service checks the
+header.
+
+The WordPress client is a reference implementation of this split. The browser calls WordPress, and
+WordPress adds the key. See
+[Integrate with WordPress](/docs/integrate/integrate-with-wordpress).
+
+## Forward the user's query
+
+Create a back-end route that accepts the visitor's query. In that route, call `call_rag` with `/v1/search` for Search or
+`/v1/answer` for Ask. Return the status and response body through your framework's response API so the browser can display them.
+
+The example uses `http://127.0.0.1:8000`. Replace that origin with an address your application server can reach. Keep
+`/v1/search` and `/v1/answer` on the individual requests.
+
+`POST /v1/search` and `POST /v1/answer` both require a JSON body with `query`. The service trims
+leading and trailing whitespace and rejects an empty query. See
+[Search documentation](/docs/search-and-answer/search-documentation) for search filters and
+`limit`. The default search limit is 5. `POST /v1/answer` rejects a body that includes `limit`.
+
+Set a timeout for the outbound request. Answer requests also wait for the language model, so choose a value that accommodates
+the response times you observe. This example uses 60 seconds for blocking network operations. Coordinate it with any timeout on
+your application server or hosting platform.
+
+```python
+import json
+import os
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
+
+SERVICE_ORIGIN = "http://127.0.0.1:8000"
+
+def call_rag(path, query, timeout=60):
+    request = Request(
+        f"{SERVICE_ORIGIN}{path}",
+        data=json.dumps({"query": query}).encode(),
+        headers={
+            "Content-Type": "application/json",
+            "X-API-Key": os.environ["RAG_API_KEY"],
+        },
+        method="POST",
+    )
+
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            payload = json.loads(response.read().decode())
+            return response.status, payload
+    except HTTPError as error:
+        payload = json.loads(error.read().decode())
+        return error.code, payload
+```
+
+`call_rag("/v1/search", query)` sends a search request. `call_rag("/v1/answer", query)` sends an
+answer request. `os.environ["RAG_API_KEY"]` raises `KeyError` when that variable is missing, so
+the request isn't sent.
+
+The helper parses successful responses and documented API error responses as JSON. Handle `URLError` and `TimeoutError` in
+your application route when the service can't be reached or the request times out. Handle `json.JSONDecodeError` if the
+response isn't valid JSON. In those cases, return a short unavailable message to the browser instead of expecting an API error body.
+
+Check `status` before reading response fields. For HTTP 200, use the search or answer fields. For a documented API error, use `payload["error"]`.
+
+## Show search results
+
+After checking that `status` is `200`, use `call_rag("/v1/search", query)`. `POST /v1/search` returns HTTP 200 when retrieval finishes.
+`payload["results"]` lists the retrieved chunks in reranked order. Show `title`, `heading_path`,
+and `excerpt` for each result. `heading_path` is the heading hierarchy as a list of strings, and
+the list can be empty.
+
+Treat an empty `results` list as no relevant results. The status is still HTTP 200. Show an empty
+state for that body. See
+[Search documentation](/docs/search-and-answer/search-documentation) for the support gate, filters,
+and the other result fields.
+
+Build a passage link from `url` and `anchor`. `url` is the source document. `anchor` is the
+heading anchor, and it's `null` when the chunk has no anchor.
+
+```python
+def source_link(result):
+    url = result["url"]
+    anchor = result.get("anchor")
+    if anchor:
+        return f"{url.split('#', 1)[0]}#{anchor}"
+    return url
+```
+
+Use `source_link` for each search result. When `anchor` is present, the link opens the document at
+that heading. When `anchor` is `null`, the link opens the document URL.
+
+## Show the answer
+
+After checking that `status` is `200`, use `call_rag("/v1/answer", query)`. `POST /v1/answer` returns HTTP 200 when answer generation
+finishes. The body includes `answer`, `sources`, and `sufficient_evidence`. The service validates
+citations against the retrieved chunks before it returns that response. A failed citation check
+returns `answer_unavailable`. See
+[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers) for the response
+fields and for citation validation.
+
+When `sufficient_evidence` is true, show `answer` and `sources`. A marker such as `[S1]` in
+`answer` matches the `citation_id` on one source. Link that marker with `source_link` from **Show
+search results**. `sources` lists the cited chunks in the order those markers first appear in
+`answer`. `citation_id` applies to this response. Use `chunk_id` and `document_id` when you need
+an identifier you can store.
+
+When `sufficient_evidence` is false, `sources` is empty. Show `answer` on its own. The wording of
+`answer` can vary. There is no source list to render.
+
+## Present API errors
+
+When `call_rag` returns a status other than 200, `payload` is the public error body. A missing or
+wrong API key looks like this:
+
+```json
+{
+  "error": {
+    "code": "authentication_failed",
+    "message": "A valid API key is required.",
+    "details": []
+  }
+}
+```
+
+For documented API errors, read `payload["error"]["code"]` to choose how your application responds.
+Treat authentication failures as an application configuration problem. Use validation details to identify
+invalid request fields. Show an unavailable state when the service returns HTTP 503.
+
+For handled HTTP 503 failures, the Python RAG service logs the failed operation and a diagnostic reason on
+the API server. During local development, check the terminal where you started uvicorn. The response doesn't
+include that diagnostic reason.
+
+See [Errors](/reference/errors) for status codes, error codes, messages, and validation details.
+
+</Steps>
+
+A visitor can search or request an answer without receiving the API key. Your application shows
+search results or an empty-result state. It shows the answer with source links, or the answer
+alone when `sufficient_evidence` is false.
+
+## Verification
+
+From the application server, call `call_rag` and print the status and body. `call_rag` is the
+function in **Forward the user's query**.
+
+```python
+import json
+
+status, payload = call_rag(
+    "/v1/search",
+    "How does metadata improve retrieval?",
+)
+print(status)
+print(json.dumps(payload, indent=2))
+```
+
+A completed search prints `200`. The JSON includes `query` and `results`. When `results` is
+empty, the status is still `200`.
+
+Call `call_rag("/v1/answer", query)` the same way. A completed answer prints `200` and includes
+`answer`, `sources`, and `sufficient_evidence`. When `sufficient_evidence` is false, `sources` is
+an empty list.
+
+In the browser's network panel, confirm that queries go to your application back end and that the API key is absent
+from browser requests and responses.
+
+Send a test request with an incorrect client API key. Confirm that the service returns `401` and `authentication_failed`,
+and that your application displays an error state.
+
+Test an empty search result and an insufficient-evidence answer. Confirm that your application handles both as successful
+responses with HTTP 200.
+
+## Related pages
+
+- **[Errors](/reference/errors)**: Look up the public error body a non-200 response
+  returns.
+- **[Integrate with WordPress](/docs/integrate/integrate-with-wordpress)**: See this server-side
+  proxy pattern in the WordPress reference client.
+- **[Search documentation](/docs/search-and-answer/search-documentation)**: See filters, `limit`,
+  result fields, and empty-result behavior for `POST /v1/search`.
+- **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: See
+  citations, `sources`, and insufficient-evidence responses for `POST /v1/answer`.

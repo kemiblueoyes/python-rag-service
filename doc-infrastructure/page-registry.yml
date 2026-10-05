@@ -91,7 +91,7 @@ pages:
     content_type: api_reference
 
   - id: Errs
-    content_type: api_reference
+    content_type: general_reference
 
   - id: CnfgRef
     content_type: general_reference

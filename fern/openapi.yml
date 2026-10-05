@@ -199,7 +199,7 @@ paths:
                       message: Request validation failed.
                       details:
                       - field: limit
-                        message: Extra inputs are not permitted
+                        message: Extra inputs aren't permitted
         '503':
           description: Answer generation is temporarily unavailable.
           content:

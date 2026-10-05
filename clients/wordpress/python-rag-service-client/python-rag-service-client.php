@@ -25,14 +25,9 @@ add_action( 'rest_api_init', 'rag_service_register_rest_routes' );
  */
 function rag_service_render_client() {
     wp_enqueue_style(
-        'font-awesome-5',
-        plugins_url( 'otter-blocks/assets/fontawesome/css/all.min.css' ),
-        array()
-    );
-    wp_enqueue_style(
         'rag-service-search',
         plugin_dir_url( __FILE__ ) . 'assets/rag-search.css',
-        array( 'font-awesome-5' ),
+        array(),
         filemtime( plugin_dir_path( __FILE__ ) . 'assets/rag-search.css' )
     );
     wp_enqueue_script(
@@ -75,14 +70,14 @@ function rag_service_render_client() {
 					type="submit"
 					data-mode="search"
 				>
-                <i class="fas fa-search"></i> Search
+                Search
 				</button>
 
 				<button
 					type="submit"
 					data-mode="answer"
 				>
-                <i class="far fa-question-circle"></i> Ask
+                Ask
 				</button>
 			</div>
 		</form>

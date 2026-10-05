@@ -1,5 +1,92 @@
 ---
 id: APIOvrvw
 title: API reference
-last_modified: 2026-09-29
+subtitle: The public HTTP API for search, grounded answers, and service health.
+description: Get an overview of the RAG API surface, shared conventions, and endpoint references for search, grounded answers, and service health.
+content_type: overview
+lifecycle_status: draft
+topics: [topic-api]
+components: [component-public-api]
+next_steps: [SrchAPI, AnsAPI, HlthAPI]
+related_pages: [SrchAnsOvrvw, Auth, Errs, IntApp]
+last_modified: 2026-10-05
+audience: [primary, secondary]
 ---
+
+The API reference documents the public HTTP API of the Python RAG Service. Clients call `POST /v1/search`,
+`POST /v1/answer`, and `GET /health`. Indexing runs through the `index_wordpress` command. See
+[Index WordPress content](/docs/index-content/index-wordpress-content).
+
+The route pages in this reference are generated from the service OpenAPI description. A running
+service also serves that description at `/openapi.json` on the service origin.
+
+For how search and answer differ, and for which of those two routes to call, see
+[Search and answer](/docs/search-and-answer/overview).
+
+## Key capabilities
+
+The reference covers three routes.
+
+| Endpoint | Purpose |
+| --- | --- |
+| [Search indexed docs](api:POST/reference/search): `POST /v1/search` | Retrieve ranked documentation passages with source links. |
+| [Generate grounded answer](api:POST/reference/answer): `POST /v1/answer` | Generate an answer from retrieved evidence and return supporting sources. |
+| [Health check](api:GET/reference/health): `GET /health` | Check whether the service process responds to requests. |
+
+Each endpoint reference describes its request, response, and documented status codes.
+
+`POST /v1/search` retrieves documentation chunks. `POST /v1/answer` generates a grounded answer.
+`GET /health` reports whether the service process is responding. Each link opens that route's
+request, response, and status codes.
+
+## Authentication
+
+Search and answer requests require an `X-API-Key` header whose value matches the service's `RAG_API_KEY`.
+Send this key from your application back-end. `GET /health` doesn't require authentication.
+
+See [Authentication](/docs/get-started/authentication) for setup and request examples.
+
+## Versioning
+
+Search and answer are served under the `/v1` prefix. `GET /health` is served at `/health`. In the
+OpenAPI description, `info.version` is `0.1.0`.
+
+## Request and response conventions
+
+`POST /v1/search` and `POST /v1/answer` accept a JSON body and return JSON. Send
+`Content-Type: application/json`. A completed call returns HTTP 200.
+
+HTTP 200 can also contain an empty search result or an answer with `sufficient_evidence` set to false.
+These are completed requests, not API errors.
+
+Both request schemas require `query`. The service trims leading and trailing whitespace and
+rejects an empty query. Both schemas reject fields they don't define.
+
+`GET /health` takes no request body and returns `{"status": "ok"}` when the service process responds.
+It doesn't check retrieval, answer generation, or connections to Qdrant, Voyage, or OpenAI.
+
+## Error responses
+
+Documented authentication, validation, and availability errors use a shared JSON structure containing an `error`
+object with `code`, `message`, and `details`.
+
+Use `code` to identify the error. Validation errors also include details about invalid request fields. See
+[Errors](/reference/errors) for the response format, status codes, and error codes.
+
+## Next steps
+
+- **[Search indexed docs](api:POST/reference/search)**: Look up the `POST /v1/search` request,
+  response, and status codes.
+- **[Generate grounded answer](api:POST/reference/answer)**: Look up the `POST /v1/answer` request,
+  response, and status codes.
+- **[Health check](api:GET/reference/health)**: Look up the `GET /health` response.
+
+## Related pages
+
+- **[Search and answer](/docs/search-and-answer/overview)**: See how search and answer differ, and
+  which route to call.
+- **[Authentication](/docs/get-started/authentication)**: Set `RAG_API_KEY` and send it in
+  `X-API-Key` from a server-side client.
+- **[Errors](/reference/errors)**: Look up the shared error body and error codes.
+- **[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application)**:
+  Call `POST /v1/search` and `POST /v1/answer` from your application server.

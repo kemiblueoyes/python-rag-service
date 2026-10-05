@@ -1,0 +1,16 @@
+extends: existence
+message: "'%s' should have one space."
+link: https://learn.microsoft.com/en-us/style-guide/punctuation/periods
+level: error
+nonword: true
+# Replaces Microsoft.Spacing, which is disabled in .vale.ini.
+# Skip code so names such as json.JSONDecodeError are not treated as
+# a missing space after a period.
+scope: ~code
+# The period case requires a lowercase-initial word so that dotted identifiers
+# ('My.Project', 'System.Text.Json') aren't flagged; '?' and '!' don't occur in
+# identifiers, so they stay permissive. See Microsoft issue #68.
+tokens:
+  - '[a-z][.?!] {2,}[A-Z]'
+  - '\b[a-z]\w*\.[A-Z]'
+  - '\w[?!][A-Z]'

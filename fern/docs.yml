@@ -122,6 +122,7 @@ navigation:
   - tab: api
     layout:
       - section: API reference
+        skip-slug: true
         contents:
           - page: Overview
             path: docs/pages/api/overview.mdx
