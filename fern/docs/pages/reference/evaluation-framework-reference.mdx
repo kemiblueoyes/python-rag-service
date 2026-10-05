@@ -1,0 +1,351 @@
+---
+id: EvalRef
+title: Evaluation framework reference
+subtitle: Look up dataset fields, source judgments, result fields, and the metadata that identifies a human review's answer run.
+description: Look up evaluation dataset fields, case categories, source judgments, result fields, and report and human-review metadata.
+content_type: general_reference
+lifecycle_status: draft
+topics: [topic-evaluation]
+components: [component-evaluation-framework]
+related_pages: [EvArch, HowEv, RtrvlEv, AnsEv]
+last_modified: 2026-10-05
+audience: [secondary]
+---
+
+Use this reference to look up the fields and labels used in evaluation datasets, generated reports, and human reviews.
+It defines case categories, source judgments, and the metadata used to match a human review to a saved answer run.
+
+Retrieval and answer evaluation read test cases from `evaluation/datasets/baseline.json`. The sections on this page distinguish the
+expectations stored in that dataset from the results recorded in reports.
+
+## Dataset and case fields
+
+### Evaluation dataset fields
+
+The evaluation dataset is one JSON object. These fields identify the dataset and contain its test cases.
+
+| Field | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `dataset_id` | string | Yes | none | Any string | Identifies the evaluation dataset. Reports and human reviews copy this value. |
+| `version` | string | Yes | none | Any string | Identifies the dataset version. Reports store it as `dataset_version`. A comparison uses the same version. |
+| `description` | string or null | No | `null` | Any string, or `null` | Describes the dataset. The commands don't copy this field into reports. |
+| `cases` | array of objects | Yes | none | An array of test-case objects, including an empty array | Holds the test cases. See [Evaluation test-case fields](#evaluation-test-case-fields) table for those fields. |
+
+### Evaluation test-case fields
+
+Each object in the dataset's `cases` array defines one test case. Case IDs must be unique within the dataset.
+
+| Field | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `id` | string | Yes | none | Any string, unique in `cases` | Identifies the test case. Reports store it as `case_id`. |
+| `category` | string | Yes | none | `exact_answer`, `multi_section`, `synonym`, `ambiguous`, `unanswerable`, `confusable`, `updated_content` | Labels the behavior the case watches. The Case categories section defines each value. |
+| `query` | string | Yes | none | Any string | The question retrieval and answer evaluation send to the service. |
+| `filters` | object | No | `{}` | Keys are strings. Each value is a string or an array of strings. | Metadata filters passed with the query. Retrieval accepts `document_id`, `source`, `source_id`, and `content_type`. Each value must be a non-empty string or an array of non-empty strings. The dataset model doesn't check those names. |
+| `retrieval` | object | Yes | none | A retrieval expectation | Expected retrieval behavior for the case. |
+| `answer` | object or null | No | `null` | An answer expectation, or `null` | Expected answer behavior. Retrieval evaluation doesn't read it. The answer evaluation command stops if it's `null`. |
+| `notes` | string or null | No | `null` | Any string, or `null` | Optional note. Reports copy it to the case entry. |
+
+## Retrieval expectations and reported results
+
+### Retrieval expectation fields
+
+A retrieval expectation lists relevant chunks, nonrelevant chunks, and the `expect_empty` flag.
+
+| Field | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `relevant_sources` | array of objects | No | `[]` | Relevant source objects | Chunks judged useful for the query. Must be empty when `expect_empty` is `true`. Must contain at least one primary source when `expect_empty` is `false`. |
+| `nonrelevant_sources` | array of objects | No | `[]` | Nonrelevant source objects | Chunks judged not useful for the query. Allowed on expected-empty and answerable cases. |
+| `expect_empty` | boolean | No | `false` | `true`, `false` | `true` means the expected retrieval result is no chunks. `false` means the case expects relevant chunks. |
+
+### Relevant and nonrelevant source fields
+
+A relevant source and a nonrelevant source use the same identity fields. Only a relevant source has `role`.
+
+| Field | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `document_id` | string | Yes | none | Any string | Document ID of the judged chunk. |
+| `title` | string | Yes | none | Any string | Document title. Matching and duplicate checks don't use this field. |
+| `heading_path` | array of strings | No | `[]` | Any strings | Heading path of the judged chunk. Used for matching only when `chunk_id` is `null`. |
+| `chunk_id` | string or null | No | `null` | Any string, or `null` | Chunk ID of the judged chunk. When set, retrieval matching uses this ID alone. |
+| `role` | string | No | `primary` | `primary`, `supporting` | Relevant sources only. `primary` is answer-bearing content. `supporting` is relevant and isn't required to carry the answer. Omitting `role` means `primary`. |
+
+The dataset rejects two sources on the same list when their document ID, heading path, and chunk ID are all equal.
+It also rejects a source that appears on both lists. Title and role aren't part of that key.
+
+### Retrieved chunk judgments
+
+Retrieval evaluation judges each returned chunk against the case's relevant and nonrelevant source lists.
+
+| Judgment | How the chunk qualifies |
+| --- | --- |
+| Relevant | The chunk matches a relevant source. |
+| Nonrelevant | The chunk matches a nonrelevant source and doesn't match a relevant source. |
+| Unjudged | The chunk matches neither list. Unjudged isn't a source you store on the case. |
+| Primary | The matched relevant source has `role` `primary`. |
+| Supporting | The matched relevant source has `role` `supporting`. |
+
+A source with `chunk_id` set matches a retrieved chunk when the chunk IDs are equal. A source with `chunk_id`
+`null` matches when `document_id` and `heading_path` are both equal.
+
+### Retrieval evaluation result fields
+
+The retrieval report records those judgments as counts on each case. It doesn't rewrite the dataset.
+[Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines the metrics calculated from the counts.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `case_id` | string | The test case’s `id`. |
+| `query` | string | The test case’s query. |
+| `expected_empty` | boolean | The case’s `retrieval.expect_empty` value. |
+| `retrieved_count` | integer | How many chunks the command included for the case. The retrieval and answer commands request 5. |
+| `relevant_retrieved_count` | integer | How many evaluated chunks matched a relevant source. Expected-empty cases report `0`. |
+| `nonrelevant_retrieved_count` | integer | How many evaluated chunks matched a nonrelevant source. |
+| `unjudged_retrieved_count` | integer | How many evaluated chunks matched neither list. |
+| `primary_retrieved_count` | integer | How many primary sources appeared in the evaluated chunks. Expected-empty cases report `0`. |
+| `hit_at_k` | boolean | Whether a primary source appears in the evaluated chunks. Expected-empty cases report `false`. |
+| `precision_at_k` | number or null | Precision for the case, or `null` when an answerable case has an unjudged chunk. Expected-empty cases report `null`. |
+| `recall_at_k` | number | Recall for the case. Expected-empty cases report `0`. |
+| `reciprocal_rank` | number | Reciprocal rank of the first primary source. Expected-empty cases report `0`. |
+| `empty_result_correct` | boolean or null | `true` when an expected-empty case returns no chunks. `false` when it returns any chunk. `null` when `expect_empty` is `false`. |
+
+## Answer expectations and reported results
+
+### Answer expectation fields
+
+An answer expectation says whether the case should have sufficient evidence, and which points a qualitative review
+looks for.
+
+| Field | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `expected_sufficient_evidence` | boolean | Yes, when `answer` is present | none | `true`, `false` | The evidence-sufficiency result the case expects. |
+| `required_points` | array of strings | No | `[]` | Any strings | Points a human review looks for in the generated answer. The structural pass doesn't score them. |
+
+### Evidence sufficiency and baseline expectations
+
+`expect_empty`, `expected_sufficient_evidence`, and `sufficient_evidence` are three different fields.
+
+`expect_empty` is the retrieval expectation. It says whether retrieval should return no chunks.
+
+`expected_sufficient_evidence` is the answer expectation. The answer report compares it with the sufficiency result
+the service produced.
+
+`sufficient_evidence` is the model-reported judgment about whether the supplied sources can answer the question.
+The answer report stores it as `actual_sufficient_evidence`. `sufficiency_correct` is true when that value matches
+expected_sufficient_evidence.
+
+The dataset model doesn't require `expect_empty` and `expected_sufficient_evidence` to agree.
+
+| Baseline case | `expect_empty` | `expected_sufficient_evidence` |
+|---|---|---|
+| Answerable | `false` | `true` |
+| Expected-empty | `true` | `false` |
+
+Human review selects cases whose `expected_sufficient_evidence` is `true`. The selection doesn't use
+`expect_empty` or `category`.
+
+### Answer evaluation result fields
+
+The answer report's `evaluation` object records the structural comparison.
+[Answer evaluation](/docs/evaluate/answer-evaluation) defines the citation rules and the qualitative dimensions.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `case_id` | string | The test case’s `id`. |
+| `query` | string | The test case’s query. |
+| `expected_sufficient_evidence` | boolean | Copied from the answer expectation. |
+| `actual_sufficient_evidence` | boolean | The model-reported `sufficient_evidence` value copied from the generated answer. |
+| `sufficiency_correct` | boolean | Whether `actual_sufficient_evidence` equals `expected_sufficient_evidence`. |
+| `cited_chunk_ids` | array of strings | Chunk IDs of the sources on the generated answer. |
+| `unacceptable_citation_chunk_ids` | array of strings | Cited chunk IDs that aren't a relevant source with a `chunk_id`. |
+| `primary_citation_present` | boolean | Whether a cited chunk ID is a primary source with a `chunk_id`. |
+| `citation_behavior_correct` | boolean | Whether citation behavior matched the case. [Answer evaluation](/docs/evaluate/answer-evaluation) defines this check. |
+| `required_points` | array of strings | Copied from the answer expectation for qualitative review. |
+| `passed` | boolean | Whether the sufficiency check and the citation check both passed. |
+
+Citation comparison uses `chunk_id` only. A relevant source with `chunk_id` `null` can't satisfy a citation check.
+
+## Case categories
+
+`category` accepts these values. The label doesn't set `expect_empty`. Only `multi_section` changes a success rule:
+retrieval success for that category requires every primary source. [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines the rule.
+
+| Value | What the label means |
+| --- | --- |
+| `exact_answer` | The query targets a specific documented point. |
+| `synonym` | The query is a meaning-based match, and its wording can differ from the source. |
+| `ambiguous` | The query has more than one plausible reading. |
+| `confusable` | A nearby subject is easy to mix up with the right source. |
+| `multi_section` | The query depends on more than one primary source. |
+| `updated_content` | The expected sources come from revised content in the current index. |
+| `unanswerable` | An expected-empty case. The indexed documentation doesn't contain an answer. |
+
+## Report and review metadata
+
+Retrieval evaluation writes `data/evaluation/retrieval_baseline.json` and
+`data/evaluation/retrieval_baseline.md`. Answer evaluation writes `data/evaluation/answer_baseline.json` and
+`data/evaluation/answer_baseline.md`. The human-review check reads the answer JSON file.
+
+Rate fields in JSON are ratios from 0 through 1. The Markdown reports print those rates as percentages. Reciprocal
+rank stays a decimal in both files.
+
+### Retrieval report
+
+#### Retrieval report fields
+
+The retrieval report identifies the evaluation run and contains a summary and individual case results.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `dataset_id` | string | `dataset_id` from the dataset. |
+| `dataset_version` | string | `version` from the dataset. |
+| `generated_at` | string | Coordinated Universal Time (UTC) timestamp the command wrote for this run. |
+| `collection` | string | Qdrant collection searched for the run. |
+| `embedding_model` | string | Embedding model recorded for the run. |
+| `support_cutoff` | number | Retrieval support cutoff recorded for the run. |
+| `k` | integer | How many chunks the command requested per query. The command sets this to 5. |
+| `summary` | object | Aggregate retrieval metrics. The next table lists those fields. |
+| `cases` | array of objects | One object per test case. |
+
+#### Retrieval summary fields
+
+The retrieval report's `summary` object contains aggregate metrics and case counts.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `total_cases` | integer | Number of cases in the report. |
+| `answerable_cases` | integer | Cases with `expect_empty` `false`. |
+| `unanswerable_cases` | integer | Cases with `expect_empty` `true`. |
+| `hit_rate_at_k` | number | Share of answerable cases with `hit_at_k` `true`. `0` when the report has no answerable cases. |
+| `mean_precision_at_k` | number or null | Mean of answerable `precision_at_k` values that aren't `null`. `null` when none of those cases have a precision value. |
+| `mean_recall_at_k` | number | Mean recall across answerable cases. `0` when the report has no answerable cases. |
+| `mean_reciprocal_rank` | number | Mean reciprocal rank across answerable cases. `0` when the report has no answerable cases. |
+| `unanswerable_accuracy` | number | Share of expected-empty cases with `empty_result_correct` `true`. `0` when the report has no expected-empty cases. |
+| `precision_evaluable_cases` | integer | How many answerable cases have a non-null `precision_at_k`. |
+| `overall_success_rate` | number | Share of cases whose `passed` value is `true`. |
+
+#### Retrieval case fields
+
+Each object in the retrieval report's `cases` array records the
+expectations, results, and retrieved chunks for one test case.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `case_id` | string | The test case `id`. |
+| `category` | string | The test case `category`. |
+| `query` | string | The test case `query`. |
+| `expected_empty` | boolean | The case's `expect_empty` value. |
+| `expected_sources` | array of objects | The case's relevant sources, with `role` filled in. Nonrelevant sources aren't included. |
+| `evaluation` | object | The retrieval result fields from Retrieval expectations. |
+| `passed` | boolean | Whether the case met the retrieval success rule. [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines that rule. |
+| `retrieved_results` | array of objects | Chunks returned for the case, in rank order. |
+| `notes` | string or null | The test case `notes` value. |
+
+Each retrieved result has `rank`, `score`, `chunk_id`, `document_id`, `title`, `heading_path`, `url`, and `text`.
+
+### Answer report
+
+The answer report uses the same `dataset_id`, `dataset_version`, `generated_at`, `collection`, `embedding_model`,
+and `support_cutoff` fields. It adds `generation_model`, the language model that wrote the answers. It records the
+requested chunk count as `retrieval_limit` instead of `k`. The command sets `retrieval_limit` to 5.
+
+#### Answer summary fields
+
+The answer report's `summary` object contains aggregate structural check results and case counts.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `total_cases` | integer | Number of cases in the report. |
+| `passed_cases` | integer | Cases whose structural `passed` value is `true`. |
+| `failed_cases` | integer | Cases whose structural `passed` value is `false`. |
+| `overall_pass_rate` | number or null | Share of cases that passed. `null` when the report has no cases. |
+| `sufficiency_accuracy` | number or null | Share of cases with `sufficiency_correct` `true`. `null` when the report has no cases. |
+| `citation_behavior_accuracy` | number or null | Share of cases with `citation_behavior_correct` `true`. `null` when the report has no cases. |
+| `answerable_cases` | integer | Cases with `expected_sufficient_evidence` `true`. |
+| `answerable_pass_rate` | number or null | Share of those cases that passed. `null` when none exist. |
+| `unanswerable_cases` | integer | Cases with `expected_sufficient_evidence` `false`. |
+| `unanswerable_pass_rate` | number or null | Share of those cases that passed. `null` when none exist. |
+
+#### Answer case fields
+
+Each object in the answer report's `cases` array records the expectations, structural check results, generated answer, and
+sources for one test case.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `case_id` | string | The test case `id`. |
+| `category` | string | The test case `category`. |
+| `query` | string | The test case `query`. |
+| `expected_answer` | object | The answer expectation: `expected_sufficient_evidence` and `required_points`. |
+| `evaluation` | object | The answer result fields from Answer expectations and reported results. |
+| `passed` | boolean | The evaluation object's `passed` value. |
+| `generated_answer` | string | The answer text. |
+| `retrieved_results` | array of objects | Chunks retrieved for the case. Same fields as a retrieval-report result. |
+| `cited_sources` | array of objects | Sources on the generated answer. Sources cited in the generated answer. Each contains `citation_id`, `score`, `chunk_id`, `document_id`, `title`, `heading_path`, `url`, and `text`. |
+| `notes` | string or null | The test case `notes` value. |
+
+### Human review
+
+The project stores a human review at `data/evaluation/answer_qualitative_review.json`. The report command reads
+that file, checks it against `data/evaluation/answer_baseline.json`, and writes `data/evaluation/answer_qualitative_review.md`.
+
+#### Human review run matching
+
+These fields identify the saved answer run. The report command rejects the review when any comparison fails. The timestamps must
+refer to the same moment; their string formatting can differ.
+
+| Review field | Must equal this answer-report field |
+| --- | --- |
+| `dataset_id` | `dataset_id` |
+| `dataset_version` | `dataset_version` |
+| `answer_baseline_generated_at` | `generated_at` |
+| `generation_model` | `generation_model` |
+
+#### Human review fields
+
+The human-review file identifies the answer run, records the review time, and contains the individual case reviews. `reviewed_at` records
+the review time and isn't used to match the answer run.
+
+| Field | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `dataset_id` | string | Yes | none | Any string | Dataset ID of the answer run under review. |
+| `dataset_version` | string | Yes | none | Any string | Dataset version of that answer run. |
+| `answer_baseline_generated_at` | string | Yes | none | The answer report's `generated_at` value | The same timestamp of the answer run under review. |
+| `generation_model` | string | Yes | none | Any string | `generation_model` from the answer report. |
+| `reviewed_at` | string | Yes | none | A date-time value; use an ISO 8601 string with a timezone offset. UTC is recommended. | When the reviewer recorded the review. |
+| `reviews` | array of objects | Yes | none | One object per reviewed case | The case scores. Case IDs in this array must be unique. |
+
+#### Human review case fields
+
+Each object in the `reviews` array records scores for one answerable case. The reviewed case IDs must be exactly the answer-report cases
+whose `expected_answer.expected_sufficient_evidence` is `true`. Missing and extra case IDs both fail the check.
+
+| Field | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `case_id` | string | Yes | none | A case ID from the answer run | The answerable case this review scores. |
+| `support_faithfulness_score` | integer | Yes | none | `0`, `1`, or `2` | Whether meaningful claims match the retrieved evidence. |
+| `required_point_completeness_score` | integer | Yes | none | `0`, `1`, or `2` | Whether the answer covers the case's `required_points`. |
+| `unsupported_details_score` | integer | Yes | none | `0`, `1`, or `2` | Whether the answer adds claims the retrieved evidence doesn't support. A score of `2` means it doesn't. |
+| `focus_relevance_score` | integer | Yes | none | `0`, `1`, or `2` | Whether the answer stays on the query. |
+| `notes` | string or null | No | `null` | Any string, or `null` | Optional review note. This isn't the test case `notes` field. |
+
+A review passes when every score is `2`. [Answer evaluation](/docs/evaluate/answer-evaluation) defines how to
+apply the four dimensions.
+
+## Constraints and notes
+
+- **Allowed fields:** Dataset and human-review files can contain only the fields documented on this page. Loading either file
+  fails if it contains an unknown field.
+- **Empty datasets:** A dataset can load with an empty `cases` array, but retrieval evaluation requires at least one case.
+- **Query text:** Queries must contain non-whitespace text to run retrieval.
+- **Source identity:** The check for duplicate sources compares document ID, heading path, and chunk ID together. Retrieval
+  matching uses `chunk_id` alone when that field has a value. Two relevant sources can share a chunk ID and
+  still load when their heading paths differ. Evaluation can then match a retrieved chunk to only one of them.
+- **Expected-empty cases:** The `unanswerable` label doesn't change `expect_empty`. For an expected-empty case, set `expect_empty`
+  to `true` and leave `relevant_sources` empty.
+
+## Related pages
+
+- **[Evaluation architecture](/docs/architecture/evaluation-architecture)**: See how the dataset, commands, and result artifacts connect.
+- **[How evaluation works](/docs/evaluate/how-evaluation-works)**: See why retrieval, answer, and human review stay separate.
+- **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation)**: Look up retrieval metric definitions and the case success rule.
+- **[Answer evaluation](/docs/evaluate/answer-evaluation)**: Look up citation rules and the qualitative review dimensions.

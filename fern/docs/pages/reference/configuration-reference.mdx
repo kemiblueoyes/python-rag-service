@@ -9,7 +9,7 @@ topics: [topic-configuration]
 components: [component-wordpress-connector, component-retrieval-service, component-vector-database, component-embedding-provider, component-language-model-provider]
 next_steps: [IndxWP]
 related_pages: [ConfSrv, Auth, RtrvPipe]
-last_modified: 2026-09-29
+last_modified: 2026-10-05
 audience: [primary, secondary]
 ---
 
@@ -23,11 +23,16 @@ For the setup procedure, see [Configure the service](/docs/get-started/configure
 
 ## API and authentication
 
+The service uses one shared API key. Clients send it on search and answer requests.
+
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
 | `RAG_API_KEY` | string | Yes, for `POST /v1/search` and `POST /v1/answer` | none | A non-empty string | Clients send this value in the `X-API-Key` header. An empty value makes those endpoints return `503` with `authentication_unavailable`. `GET /health` doesn't check the key. |
 
 ## Embedding
+
+Indexing and search turn text into vectors with Voyage. These settings choose the model, the vector size,
+the request batch size, and the API key.
 
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -39,6 +44,9 @@ For the setup procedure, see [Configure the service](/docs/get-started/configure
 
 ## Vector database
 
+Indexed chunks and their vectors are stored in Qdrant. These settings choose the instance, the collection name,
+and the API key when the instance requires one.
+
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
 | `VECTOR_DATABASE` | string | No | `qdrant` | `qdrant` | Selects the vector database. `qdrant` is the only supported value. |
@@ -47,6 +55,9 @@ For the setup procedure, see [Configure the service](/docs/get-started/configure
 | `QDRANT_COLLECTION` | string | No | `rag_chunks` | A collection name | Names the Qdrant collection that stores indexed chunks and their vectors. The service creates the collection. |
 
 ## Content source
+
+Indexing reads content from a WordPress site. These settings choose the site, the REST path, request limits, the
+post types to retrieve, and the connector profile.
 
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -59,6 +70,9 @@ For the setup procedure, see [Configure the service](/docs/get-started/configure
 
 ## Retrieval
 
+Search combines vector results and BM25 results, then reranks them. These settings control the candidate counts,
+the fusion constant, the chunk file used for BM25, and the score cutoff.
+
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
 | `LEXICAL_CORPUS_PATH` | path | No | `data/wordpress-chunks.json` | A path to a retrieval-ready chunk JSON file | Sets the path to the retrieval-ready chunk file used to build the BM25 index. The default matches the WordPress indexing command's default chunk output. |
@@ -70,12 +84,17 @@ For the setup procedure, see [Configure the service](/docs/get-started/configure
 
 ## Reranking
 
+After fusion, a reranker reorders the candidates. These settings choose that provider and model.
+
 | Setting | Type | Required | Default | Accepted values | Suggested description |
 | --- | --- | --- | --- | --- | --- |
 | `RERANKING_PROVIDER` | string | No | `voyage` | `voyage` | Selects the reranking provider. `voyage` is the only supported value. |
 | `RERANKING_MODEL` | string | No | `rerank-2.5` | A Voyage reranking model name | Selects the Voyage model used to rerank fused retrieval candidates. |
 
 ## Answer generation
+
+Answer requests send retrieved chunks to a language model. These settings choose the model, the reasoning
+effort, the context and output limits, and the API key.
 
 | Setting | Type | Required | Default | Accepted values | Suggested description |
 | --- | --- | --- | --- | --- | --- |
@@ -88,6 +107,8 @@ For the setup procedure, see [Configure the service](/docs/get-started/configure
 
 ## WordPress client
 
+The WordPress client calls the Python service from PHP. Define these constants in `wp-config.php`.
+
 | Setting | Type | Required | Default | Accepted values | Suggested description |
 | --- | --- | --- | --- | --- | --- |
 | `RAG_SERVICE_API_BASE_URL` | PHP string constant | Yes, when using the WordPress client | none | The Python RAG Service base URL | Sets the base URL the WordPress client uses to call the Python RAG Service API. Define it in `wp-config.php`. |
@@ -95,14 +116,12 @@ For the setup procedure, see [Configure the service](/docs/get-started/configure
 
 ## Constraints and notes
 
-`EMBEDDING_DIMENSION` must match the configured embedding model's output. Qdrant stores vectors at
+- `EMBEDDING_DIMENSION` must match the configured embedding model's output. Qdrant stores vectors at
 that size. After changing the embedding model, embedding dimension, chunking rules, or chunk payload
 structure, run a full index rebuild. See [Index WordPress content](/docs/index-content/index-wordpress-content).
-
-`RETRIEVAL_SUPPORT_CUTOFF` applies to the highest rerank score for the query, not to each result.
+- `RETRIEVAL_SUPPORT_CUTOFF` applies to the highest rerank score for the query, not to each result.
 Re-evaluate it when the indexed content, embedding model, reranking model, or chunking rules change.
-
-`RAG_SERVICE_API_KEY` and `RAG_API_KEY` are the same secret in two places.
+- `RAG_SERVICE_API_KEY` and `RAG_API_KEY` are the same secret in two places.
 The WordPress client doesn't copy one value to the other.
 
 ## Next steps

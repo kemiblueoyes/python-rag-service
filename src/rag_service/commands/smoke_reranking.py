@@ -1,3 +1,13 @@
+"""Smoke test Voyage reranking on one known retrieval failure.
+
+This command takes a single question that vector search has struggled
+with, embeds it, and pulls the top 20 chunks from the vector store. It
+sends those chunks to Voyage's rerank model, then writes a Markdown
+report that shows the new order beside each chunk's original vector
+rank and score. The report is written to
+``data/evaluation/reranking_smoke.md``.
+"""
+
 from pathlib import Path
 from typing import Protocol, cast
 

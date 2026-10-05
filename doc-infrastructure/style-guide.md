@@ -216,11 +216,29 @@ Avoid:
 * See here for more information.  
 * Click this link.
 
-Avoid location-dependent references such as **above**, **below**, or **in the previous section** when a direct reference to the page, section, or concept would be clearer and more durable.
-
 When the same concept must appear in more than one place, keep one location authoritative and make the repeated version clearly secondary.
 
 Do not duplicate API behavior, configuration details, or other factual system information across multiple pages when one page already serves as the source of truth.
+
+### Positional cross-references
+
+Do not use **above**, **below**, **following**, **next**, or **previous** to point to another place on the same page.
+
+A phrase such as "in the section above," "the checks below," or "the following table" only works while the page stays in that order. Name the heading, setting, or concept instead.
+
+Prefer:
+
+* Evidence sufficiency and citation validation must both succeed before the API returns a grounded answer.
+* See **Citation validation** for the checks the application runs on the proposed answer.
+
+Avoid:
+
+* The checks below must succeed.
+* See the section above.
+* The following table lists each setting.
+* The next section explains citation validation.
+
+**Next steps** stays the standard heading for that section. This rule applies when **next** points somewhere else on the page, such as "the next section."
 
 ## Terminology governance
 

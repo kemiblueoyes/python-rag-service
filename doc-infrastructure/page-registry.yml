@@ -96,6 +96,9 @@ pages:
   - id: CnfgRef
     content_type: general_reference
 
+  - id: EvalRef
+    content_type: general_reference
+
   - id: Gloss
     content_type: general_reference
 

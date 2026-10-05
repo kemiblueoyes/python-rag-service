@@ -115,6 +115,8 @@ navigation:
         contents:
           - page: Configuration reference
             path: docs/pages/reference/configuration-reference.mdx
+          - page: Evaluation framework reference
+            path: docs/pages/reference/evaluation-framework-reference.mdx
           - page: Glossary
             path: docs/pages/reference/glossary.mdx
   - tab: api

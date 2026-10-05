@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-answer-generation, topic-grounding, topic-evi
 components: [component-answer-generation-service]
 next_steps: [EvArch]
 related_pages: [GenAns, AnsAPI, AnsEv, RtrvPipe]
-last_modified: 2026-10-02
+last_modified: 2026-10-05
 audience: [secondary]
 ---
 
@@ -58,8 +58,8 @@ Those instructions describe the requested behavior. They don't guarantee that th
 
 The OpenAI language model returns a structured proposed answer: the answer text, a list of citation identifiers,
 and a `sufficient_evidence` flag. That proposal is a generated answer. If it reports sufficient evidence, the application
-can return it as a grounded answer only after the checks below succeed. If it reports insufficient evidence, those checks
-instead produce an insufficient-evidence response with no sources.
+can return it as a grounded answer only after the [Evidence sufficiency](#evidence-sufficiency) and [Citation validation](#citation-validation)
+checks succeed. If it reports insufficient evidence, those checks instead produce an insufficient-evidence response with no sources.
 
 ## Evidence sufficiency
 

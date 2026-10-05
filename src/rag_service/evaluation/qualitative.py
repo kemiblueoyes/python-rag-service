@@ -1,4 +1,20 @@
-"""Models for human qualitative answer evaluation."""
+"""Models, checks, and summaries for human qualitative answer evaluation.
+
+A person scores each generated answer the automated checks already treated
+as structurally valid. Each review covers one answerable case and rates
+four things from 0 to 2: whether claims match the retrieved evidence,
+whether the answer covers the case's required points, whether it adds
+details the evidence does not support, and whether it stays on the
+question. The answer passes only when every score is 2.
+
+A review set ties those scores to one answer run: the dataset, its
+version, when the answers were generated, and which model wrote them.
+Loading a review file checks that shape. Comparing the review with the
+answer baseline checks that it belongs to that run, and that the scored
+cases are exactly the cases that expected sufficient evidence. Summarizing
+a review set reports how many answers passed and the average score on
+each of the four ratings.
+"""
 
 import json
 from datetime import datetime
