@@ -1,5 +1,147 @@
 ---
 id: RtrvlEv
 title: Retrieval evaluation
-last_modified: 2026-09-29
+subtitle: How retrieval evaluation judges chunks, scores the top 5 results, and decides that a case passed.
+description: Review the retrieval evaluation methodology, including relevance judgments, metrics, support-gate evaluation, and expected-empty cases.
+content_type: general_reference
+lifecycle_status: draft
+topics: [topic-retrieval-evaluation, topic-support-detection]
+components: [component-evaluation-framework, component-retrieval-service]
+next_steps: [RecEvRes]
+related_pages: [RtrvPipe, EvArch, KnLmt, HowEv, EvalRef]
+last_modified: 2026-10-05
+audience: [secondary]
 ---
+
+Retrieval evaluation scores the chunks the current retrieval pipeline returns for each test case. This page
+defines the relevance judgments, the metrics for the top 5 chunks, how expected-empty cases test the support gate,
+and the rule that marks a case passed.
+
+To generate a retrieval report, see [Run the evaluation](/docs/evaluate/run-the-evaluation).
+
+## Relevance judgments
+
+Retrieval evaluation compares each returned chunk with the case's relevant sources and nonrelevant sources.
+[Evaluation framework reference](/docs/reference/evaluation-framework-reference) defines those source fields.
+Primary and supporting are roles of relevant sources.
+
+| Judgment | How the chunk qualifies |
+| --- | --- |
+| Relevant | The chunk matches a relevant source that no earlier chunk has matched. |
+| Nonrelevant | The chunk matches no remaining relevant source but matches a nonrelevant source. |
+| Unjudged | The chunk matches no remaining relevant source and no nonrelevant source. |
+| Primary | The matched relevant source has role `primary`. Omitting `role` means `primary`. |
+| Supporting | The matched relevant source has role `supporting`. |
+
+A source with `chunk_id` set matches a returned chunk when the chunk IDs are equal. A source with `chunk_id`
+`null` matches when the document ID and heading path are both equal. Returned chunks are evaluated in rank order.
+Each relevant source counts once. After it has been matched, later chunks must match another relevant source to
+count as relevant. A supporting match counts as relevant. It doesn't count as a primary hit.
+
+## Answerable and expected-empty cases
+
+An answerable case has `expect_empty` set to `false`. It lists relevant sources, including at least one primary
+source. Retrieval evaluation scores that case with a primary hit, precision, recall, and reciprocal rank.
+
+An expected-empty case has `expect_empty` set to `true` and lists no relevant sources. The correct result is no
+returned chunks. A nonrelevant chunk in the result still fails the case. The case can list nonrelevant sources so
+the report can count them, but those counts don't make the case pass.
+
+For an expected-empty case, the report sets `hit_at_k` to `false`, `precision_at_k` to `null`, `recall_at_k` to
+`0`, and `reciprocal_rank` to `0`. Those values aren't the success rule. `empty_result_correct` is.
+
+## Evaluation depth
+
+The retrieval command requests 5 chunks and evaluates the returned list, which can contain fewer than 5 chunks or be empty.
+The report stores the evaluation depth as `k`. The Markdown report labels the metrics `@5`, as in `Precision@5`.
+
+This depth isn't the reciprocal rank fusion constant. Fusion uses its own constant when it combines candidate
+lists. Retrieval evaluation only sees the chunks the pipeline returns after fusion, reranking, and the support
+gate.
+
+## Per-case metrics
+
+These metrics describe one answerable case, using up to 5 returned chunks. Ranks start at 1.
+
+| Metric | Definition |
+| --- | --- |
+| `hit_at_k` | `true` when at least one primary source appears in the top 5. |
+| `primary_retrieved_count` | How many primary sources appear in the top 5. Each primary source counts once. |
+| `precision_at_k` | Relevant matches divided by the number of returned chunks. `null` when any returned chunk matches neither source list. `0` when the pipeline returns no chunks. |
+| `recall_at_k` | Relevant sources matched, divided by every relevant source on the case. Primary and supporting sources are both in that total. |
+| `reciprocal_rank` | 1 divided by the rank of the first primary source. A primary source at rank 1 scores `1`. A primary source at rank 2 scores `0.5`. The score is `0` when no primary source appears. |
+| `empty_result_correct` | `null` for an answerable case. |
+
+When any evaluated chunk is unjudged, the report sets precision to null. Recall still counts the relevant sources that matched.
+Recall still counts the relevant sources that did match.
+
+## Summary metrics
+
+The summary covers the whole dataset. Answerable totals use cases with `expect_empty` set to `false`.
+Expected-empty totals use the other cases. Rate fields in the JSON are ratios from 0 through 1. The Markdown
+report prints those rates as percentages. Mean reciprocal rank stays a decimal in both files.
+
+| Metric | What it counts |
+| --- | --- |
+| `hit_rate_at_k` | The share of answerable cases with `hit_at_k` set to `true`. The value is `0` when the run has no answerable cases. |
+| `mean_precision_at_k` | The mean of answerable `precision_at_k` values that aren't `null`. The value is `null` when no answerable case has a precision value. |
+| `precision_evaluable_cases` | How many answerable cases have a precision value. How many answerable cases have a non-null precision value, including cases whose precision is `0`. |
+| `mean_recall_at_k` | The mean of `recall_at_k` across answerable cases, including cases with an unjudged chunk. The value is `0` when the run has no answerable cases. |
+| `mean_reciprocal_rank` | The mean of `reciprocal_rank` across answerable cases, including scores of `0`. |
+| `unanswerable_accuracy` | The share of expected-empty cases with `empty_result_correct` set to `true`. The value is `0` when the run has no expected-empty cases. |
+| `overall_success_rate` | The share of all cases that pass under the rules in [When a case passes](#when-a-case-passes). Includes answerable and expected-empty cases. |
+
+`hit_rate_at_k` ignores expected-empty cases. `overall_success_rate` includes them.
+
+## Support-gate evaluation
+
+The retrieval command calls the current retrieval service, which applies the support gate before returning chunks.
+The evaluation scores that returned list against the dataset’s source judgments. It doesn’t apply another score cutoff.
+The report records the returned scores and configured support cutoff.
+
+For an expected-empty case, `empty_result_correct` is `true` only when that list is empty. The support gate
+returns no chunks when the top rerank score is below the configured support cutoff, or when the reranker returns
+no chunks. An empty list is also what the service returns when fusion finds no candidates. Retrieval evaluation
+treats every empty list the same way.
+
+A returned chunk fails an expected-empty case, including a chunk the case lists as nonrelevant.
+
+If retrieval fails before it can return a list, the command stops. It doesn't record that failure as an empty
+result.
+[Retrieval pipeline](/docs/architecture/retrieval-pipeline) explains the support gate.
+
+## When a case passes
+
+The report's `passed` value uses one of three rules.
+
+| Case | Pass rule |
+| --- | --- |
+| Expected-empty | `empty_result_correct` is `true`. The pipeline returned no chunks. |
+| Answerable `multi_section` | `primary_retrieved_count` equals the number of primary sources on the case. Every primary source appears in the top 5. |
+| Any other answerable case | `hit_at_k` is `true`. At least one primary source appears in the top 5. |
+
+An answerable case outside the `multi_section` category can pass with low recall. One primary source in the evaluated results is
+enough, even when other relevant sources are missing. An answerable `multi_section` case passes only when every primary source
+is retrieved.
+
+## Constraints and notes
+
+- **Precision availability:** Precision is calculated only when every evaluated chunk is judged. One unjudged chunk sets
+  precision_at_k to null, and the case is excluded from mean_precision_at_k.
+- **Recall denominator:** Recall's denominator is every relevant source, including supporting sources.
+- **Primary sources:** Reciprocal rank and `hit_at_k` use primary sources only.
+- **Expected-empty scores:** Expected-empty cases still receive `0` for recall and reciprocal rank. Those numbers aren't the pass rule.
+- **Success rates:** `overall_success_rate` and `hit_rate_at_k` answer different questions. The hit rate covers answerable cases only.
+
+## Next steps
+
+**[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Read the recorded retrieval results
+for this methodology.
+
+## Related pages
+
+- **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: See the pipeline the retrieval metrics score, including the support gate.
+- **[Evaluation architecture](/docs/architecture/evaluation-architecture)**: See how the retrieval command fits next to answer evaluation.
+- **[Known limitations](/docs/reference/known-limitations)**: See the retrieval limitations this scoring has already recorded.
+- **[How evaluation works](/docs/evaluate/how-evaluation-works)**: See why retrieval evaluation stays separate from answer evaluation.
+- **[Evaluation framework reference](/docs/reference/evaluation-framework-reference)**: Look up the retrieval report fields the metrics fill.

@@ -41,7 +41,7 @@ PAGE_FIXTURES = [
     TEST_TEMPLATE_DIR / "explanation_Retrieval-pipeline.mdx",
     TEST_TEMPLATE_DIR / "general-reference_Configuration-reference.mdx",
     TEST_TEMPLATE_DIR / "general-reference_Glossary.mdx",
-    TEST_TEMPLATE_DIR / "evaluation-results_Current-evaluation-results.mdx",
+    TEST_TEMPLATE_DIR / "evaluation-results_Recorded-evaluation-results.mdx",
     TEST_TEMPLATE_DIR / "release-note_Hybrid-retrieval.mdx",
 ]
 

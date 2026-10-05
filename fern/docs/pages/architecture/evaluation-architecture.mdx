@@ -8,22 +8,17 @@ lifecycle_status: draft
 topics: [topic-architecture, topic-evaluation]
 components: [component-evaluation-framework]
 next_steps: [RnEv]
-related_pages: [RtrvlEv, AnsEv, CurEvRes, HowEv, EvalRef]
+related_pages: [RtrvlEv, AnsEv, RecEvRes, HowEv, EvalRef]
 last_modified: 2026-10-05
 audience: [secondary]
 ---
 
-The Python RAG Service evaluates retrieval and answer generation from one versioned dataset. Two commands run that
-dataset against the live service and save separate reports. A person then reviews the saved answers. Retrieval
-experiments can reuse the same dataset, and their reports stay outside those baseline runs.
+The Python RAG Service uses one versioned dataset for retrieval and answer evaluation. Two commands independently run
+the service’s Python components against the live index and save separate reports. A person reviews selected answers
+from the saved answer report. Separate retrieval experiments reuse the dataset and write their own reports.
 
-[How evaluation works](/docs/evaluate/how-evaluation-works) explains what those checks measure.
-[Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists the dataset, report, and
-review fields.
-
-The evaluation architecture diagram shows that structure. One dataset feeds retrieval evaluation and answer
-evaluation. Answer evaluation saves the run that human review checks. The dashed line shows retrieval experiments
-reading the same dataset without replacing the baseline reports.
+The diagram shows how the dataset feeds both evaluation paths. The saved answer report supplies the answers, evidence,
+and required points for human review. The dashed line connects the dataset to separate retrieval experiments.
 
 <Frame caption="Python RAG Service evaluation architecture">
   <img
@@ -43,9 +38,8 @@ version, so a later run can use a different version of the same file.
 
 ## Retrieval evaluation
 
-`rag_service.commands.evaluate_retrieval` runs the production retrieval pipeline for every case. That pipeline is
-vector retrieval, BM25 retrieval, reciprocal rank fusion (RRF), reranking, and the support gate. The command
-requests 5 chunks and passes the case filters.
+`rag_service.commands.evaluate_answers` runs retrieval independently for each case, using the same pipeline and
+request settings as retrieval evaluation. It doesn’t read the saved retrieval report.
 
 It then compares those chunks with the case's retrieval expectation. The comparison records primary-source hits,
 precision, recall, reciprocal rank, and whether an expected-empty case returned no chunks. The command writes
@@ -60,19 +54,21 @@ retrieved chunks. Generation includes context assembly, the grounded prompt, the
 validation, and citation normalization. The application validates citations. The evaluation command compares the
 finished answer with the case.
 
-The automated checks compare evidence sufficiency and citation behavior with the answer expectation. They store
-the required points and don't score whether the prose covers them. The command writes
-`data/evaluation/answer_baseline.json` and `data/evaluation/answer_baseline.md`. That JSON file is the saved answer
-run.
+The automated checks compare the model-reported `sufficient_evidence` value with `expected_sufficient_evidence` and
+check citation behavior against the case’s source judgments and expected evidence sufficiency. The command saves
+required points for human review; automated checks don’t assess whether the answer covers them.
+
+The command writes `data/evaluation/answer_baseline.json` and `data/evaluation/answer_baseline.md`. The JSON file
+contains the saved answer run.
 
 [Answer evaluation](/docs/evaluate/answer-evaluation) defines the structural checks.
 
 ## Why the two evaluations stay separate
 
-Retrieval evaluation and answer evaluation share the dataset and measure different failures. A retrieval report can
-fail a case when the top chunks miss a required source, while the answer report for that same case still passes.
-Valid citations can also accompany an answer that drifts off the question. Separate reports keep those failures
-visible.
+Retrieval evaluation and answer evaluation measure different failures. For a multi_section case, retrieval evaluation
+requires every primary source. The answer’s structural checks can pass when its citations include one primary source,
+even if another is missing. Human review can then identify missing required points or an answer that drifts off the question.
+Separate reports make these outcomes visible.
 
 [How evaluation works](/docs/evaluate/how-evaluation-works) shows the cases behind that split.
 
@@ -81,37 +77,40 @@ visible.
 An expected-empty case sets `expect_empty` to `true` and lists no relevant sources. The current dataset pairs that
 flag with `expected_sufficient_evidence` set to `false`. The dataset model doesn't require the two fields to match.
 
-The retrieval command sends the case through the production pipeline, including the support gate. The case passes
-when that call returns no chunks. The answer command generates from those chunks and checks that the answer reports
-insufficient evidence and includes no citations.
+Retrieval evaluation runs the case through the current retrieval pipeline, including the support gate. The case passes
+when retrieval returns no chunks. Answer evaluation makes its own retrieval call, generates an answer from the returned
+chunks, and checks for a model-reported `sufficient_evidence` value of false and no citations.
 
 [Retrieval pipeline](/docs/architecture/retrieval-pipeline) explains the support gate.
 
 ## Human review
 
-A person reviews the saved answers for cases that expect sufficient evidence. The review scores support and
-faithfulness, required-point completeness, unsupported details, and focus. The reviewer stores the scores and
-notes in `data/evaluation/answer_qualitative_review.json`.
+A person reviews the saved answers for cases whose saved answer expectation sets expected_sufficient_evidence to true.
+The reviewer compares each answer with the retrieved evidence and required points stored in the answer report, then scores
+support and faithfulness, required-point completeness, unsupported details, and focus. Scores and notes are stored in
+`data/evaluation/answer_qualitative_review.json`.
 
-`rag_service.commands.report_qualitative_answers` doesn't score the answers. It checks that the review names the
-saved answer run, then writes `data/evaluation/answer_qualitative_review.md`. The check compares dataset ID, dataset
-version, the answer report's `generated_at` timestamp, and the generation model. The reviewed case IDs must be
-exactly the cases whose `expected_sufficient_evidence` is `true`.
+`rag_service.commands.report_qualitative_answers` doesn't score the answers. It validates that the review
+identifies the saved answer run and covers exactly the required cases, then summarizes the scores, then writes
+`data/evaluation/answer_qualitative_review.md`. The check compares dataset ID, dataset version, the answer report's
+`generated_at` timestamp, and the generation model. The reviewed case IDs must be exactly the cases whose
+`expected_sufficient_evidence` is `true`.
 
 [Answer evaluation](/docs/evaluate/answer-evaluation) defines how to apply the four scores.
 
 ## Retrieval experiments
 
-These commands try retrieval setups other than the production pipeline. They use the same dataset and the same
-retrieval scoring function. Each one writes its own JSON and Markdown files under `data/evaluation/`. Those files
-aren't `retrieval_baseline` or `answer_baseline`, and human review doesn't match them.
+These commands compare individual retrieval stages and experimental configurations using the same dataset and
+retrieval scoring function. They use the same dataset and the same retrieval scoring function. Each one writes
+its own JSON and Markdown files under `data/evaluation/`. Those files aren't `retrieval_baseline` or
+`answer_baseline`, and human review doesn't match them.
 
 - `evaluate_bm25` retrieves with BM25 only and keeps the top five matches.
 - `evaluate_hybrid` runs vector retrieval and BM25 retrieval, then combines the two ranked lists with reciprocal
   rank fusion. It doesn't rerank that combined list.
 - `evaluate_reranking` takes vector-retrieval candidates, reranks them, and keeps the top five.
-- `evaluate_hybrid_reranking` combines vector and BM25 results, reranks that list, and then applies a provisional
-  support cutoff of `0.70`.
+- `evaluate_hybrid_reranking` combines vector and BM25 results and reranks the combined list. It scores the raw
+  top five results and separately evaluates a provisional query-level support cutoff of 0.70.
 
 `evaluate_bm25`, `evaluate_hybrid`, and `evaluate_reranking` don't apply a support cutoff, so they don't score
 whether an expected-empty case returned no chunks. The production retrieval command does, because it runs the
@@ -119,13 +118,15 @@ service's support gate.
 
 ## Saved artifacts
 
-Each baseline report records the dataset ID, dataset version, generation time, Qdrant collection, and the models
-and retrieval settings used for that run. Separate runs can use different dataset versions. Compare runs that share
-the same version.
+Both baseline reports record the dataset ID and version, run timestamp, Qdrant collection, embedding model,
+support cutoff, and requested chunk count. The answer report also records the generation model. Separate runs
+can use different dataset versions. When comparing runs, use the same dataset version and account for changes
+to the indexed content, models, and retrieval settings.
 
-The commands write reports and reviews under `data/evaluation/`. Git ignores `/data/`, so those files stay on the
-machine that ran the command. [Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists
-the fields in each file.
+Each baseline command overwrites its report files. Save copies before rerunning if you need to retain anearlier
+run. A human review must match the saved answer report being checked. Reports and human-review files are stored
+under `data/evaluation/`. Git ignores `/data/`, so these files aren’t committed by default.
+[Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists their fields.
 
 ## Next steps
 
@@ -136,6 +137,6 @@ qualitative report.
 
 - **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation)**: Look up retrieval metrics and the case success rule.
 - **[Answer evaluation](/docs/evaluate/answer-evaluation)**: Look up the structural checks and the qualitative scores.
-- **[Current evaluation results](/docs/evaluate/current-evaluation-results)**: Read the recorded results for the current dataset version.
+- **[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Read the recorded results for the current dataset version.
 - **[How evaluation works](/docs/evaluate/how-evaluation-works)**: See what the dataset measures and why the checks stay separate.
 - **[Evaluation framework reference](/docs/reference/evaluation-framework-reference)**: Look up the dataset, report, and human-review fields for this architecture.

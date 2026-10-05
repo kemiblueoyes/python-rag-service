@@ -224,7 +224,7 @@ Do not duplicate API behavior, configuration details, or other factual system in
 
 Do not use **above**, **below**, **following**, **next**, or **previous** to point to another place on the same page.
 
-A phrase such as "in the section above," "the checks below," or "the following table" only works while the page stays in that order. Name the heading, setting, or concept instead.
+A phrase such as "in the section above," "the checks below," or "the following table" only works while the page stays in that order. Name the heading (and link to it), setting, or concept instead.
 
 Prefer:
 

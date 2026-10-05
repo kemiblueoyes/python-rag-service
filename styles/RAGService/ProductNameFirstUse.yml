@@ -1,7 +1,7 @@
 extends: conditional
 message: "Use 'Python RAG Service' before the shortened form '%s'."
 level: warning
-scope: text & ~frontmatter
+scope: text & ~frontmatter & ~alt
 ignorecase: false
 vocab: false
 

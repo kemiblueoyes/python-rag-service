@@ -1,0 +1,228 @@
+---
+id: RecEvRes
+title: Recorded evaluation results
+subtitle: Compare recorded retrieval, answer, and human-review results with your own runs.
+description: Review a published evaluation benchmark for The Doc Landscape corpus, inspect the saved reports, and compare your own runs using the same cases and scoring rules.
+content_type: eval_results
+lifecycle_status: draft
+topics: [topic-retrieval-evaluation, topic-answer-evaluation, topic-support-detection]
+components: [component-evaluation-framework, component-retrieval-service, component-answer-generation-service]
+dataset_version: "1.5"
+next_steps: [RnEv, KnLmt]
+related_pages: [RtrvlEv, AnsEv, EvArch, HowEv, EvalRef]
+last_modified: 2026-10-05
+audience: [secondary]
+---
+
+This benchmark records how the Python RAG Service performed on The Doc Landscape WordPress corpus using dataset
+version `1.5`. The published snapshots contain the test cases, retrieved evidence, generated answers, and review
+scores behind the results. Use them to inspect individual cases and compare your own evaluation runs.
+
+Retrieval passed 21 of 22 cases. All 22 cases passed the answer structural checks, and the human review passed
+all 14 answers selected for review. Retrieval and answer evaluation ran separately on different dates; the human
+review identifies the saved answer run.
+
+## Benchmark setup
+
+The dataset is `doc-landscape-baseline`, version `1.5`. It contains 22 cases: 14 expect relevant chunks and
+sufficient evidence, and 8 expect no chunks and insufficient evidence. Every case filters retrieval to
+`source: wordpress`.
+
+The reports record the following settings.
+
+| Setting | Recorded value |
+| --- | --- |
+| Corpus | The Doc Landscape WordPress content |
+| Qdrant collection | `rag_chunks` |
+| Embedding model | `voyage-4-lite` |
+| Retrieval support cutoff | `0.70` |
+| Requested chunks per query | `5` |
+| Generation model for the answer run | `gpt-5.6-terra` |
+
+Retrieval can return fewer than 5 chunks or none. [Evaluation architecture](/docs/architecture/evaluation-architecture)
+explains how retrieval, answer evaluation, and human review connect.
+
+## Published snapshots
+
+Read the Markdown reports for individual case results. Use the JSON files to inspect fields or compare results
+programmatically. These snapshots preserve the recorded runs; later runs belong in a separate snapshot set.
+
+| Evaluation | Dataset version | Run or review time (UTC) | Markdown report | JSON source |
+| --- | --- | --- | --- | --- |
+| Retrieval | `1.5` | October 3, 2026, 18:41:27 | [Retrieval report](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/retrieval_baseline.md) | [Retrieval JSON](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/retrieval_baseline.json) |
+| Answer structure | `1.5` | August 28, 2026, 06:10:50 | [Answer report](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/answer_baseline.md) | [Answer JSON](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/answer_baseline.json) |
+| Human review | `1.5` | Reviewed August 28, 2026, 06:20:00 | [Human-review report](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/answer_qualitative_review.md) | [Human-review JSON](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/answer_qualitative_review.json) |
+
+The [dataset snapshot](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/baseline.json) contains the queries, source judgments, and answer expectations.
+The human-review JSON identifies the August 28 answer run through its dataset ID, version, answer-run timestamp,
+and generation model. Full timestamps are preserved in the source files.
+
+## Retrieval results
+
+Retrieval evaluation scored up to 5 returned chunks per case. These results come from the October 3 retrieval
+run. [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines the metrics and pass rules.
+
+| Metric | Result |
+| --- | ---: |
+| All cases passed | 21/22 |
+| Overall retrieval success rate | 95.5% |
+| Answerable cases passed | 13/14 |
+| Answerable success rate | 92.9% |
+| Primary hit rate@5 | 100.0% (14/14) |
+| Mean precision@5 | 95.4% |
+| Precision-evaluable answerable cases | 13/14 |
+| Mean recall@5 | 76.5% |
+| Mean reciprocal rank | 0.907 |
+
+Mean precision covers 13 answerable cases. The remaining case, `context-001`, returned an unjudged chunk, so its
+precision is `null` and it's excluded from the mean. Read the precision value alongside the number of
+precision-evaluable cases.
+
+Every answerable case retrieved at least one primary source. The `multi-section-001` case still failed because
+its pass rule requires every primary source. The case examples below show that coverage failure.
+
+## Support-gate results
+
+In the retrieval run, all 14 answerable cases returned chunks and all 8 expected-empty cases returned none.
+These accept/reject outcomes matched each case's expected retrieval behavior.
+
+| Outcome | Result |
+| --- | ---: |
+| Correct accept/reject outcomes | 22/22 (100.0%) |
+| Answerable cases returning chunks | 14/14 |
+| Expected-empty cases returning no chunks | 8/8 |
+
+These counts describe the returned chunk lists. A query can return chunks and still fail source coverage, as
+`multi-section-001` did. [Retrieval evaluation](/docs/evaluate/retrieval-evaluation#support-gate-evaluation)
+explains how empty results are scored.
+
+## Answer-structure results
+
+The August 28 answer run passed the structural checks for all 22 cases. A structural pass requires the
+model-reported evidence-sufficiency flag to match the expectation and the cited sources to satisfy the case's
+citation rules. [Answer evaluation](/docs/evaluate/answer-evaluation) defines those checks.
+
+| Metric | Result |
+| --- | ---: |
+| Structural passes | 22/22 |
+| Structural pass rate | 100.0% |
+| Evidence-sufficiency accuracy | 100.0% |
+| Citation-behavior accuracy | 100.0% |
+| Answerable-case pass rate | 100.0% (14/14) |
+| Unanswerable-case pass rate | 100.0% (8/8) |
+
+The structural checks don't assess whether individual claims are supported, required points are covered, or
+the answer stays focused. Those criteria are assessed in the human review.
+
+## Human-review results
+
+The recorded review covers the 14 saved answers whose cases expect sufficient evidence. Each criterion uses a
+score from 0 through 2. A strict pass requires a score of 2 on all four criteria.
+
+| Metric | Result |
+| --- | ---: |
+| Answers reviewed | 14 |
+| Strict passes | 14/14 |
+| Strict failures | 0 |
+| Strict qualitative pass rate | 100.0% |
+| Support / faithfulness average | 2.00 / 2 |
+| Required-point completeness average | 2.00 / 2 |
+| Unsupported details average | 2.00 / 2 |
+| Focus / relevance average | 2.00 / 2 |
+
+All 14 reviewed answers received 2 on every criterion. Cases that expect insufficient evidence are outside this
+review. [Answer evaluation](/docs/evaluate/answer-evaluation#human-review-criteria) defines the review criteria.
+
+## Case examples
+
+### A primary hit with incomplete source coverage
+
+The `multi-section-001` case asks:
+
+> How can lost context during chunking, weak source authority, and missing metadata each cause retrieval failures?
+
+The dataset identifies 7 relevant sources, including 3 primary sources. The retrieval run returned 5 relevant
+chunks and matched 1 of those primary sources.
+
+| Retrieval result | Value |
+| --- | ---: |
+| Relevant returned chunks | 5/5 |
+| Primary sources retrieved | 1/3 |
+| Primary hit | `true` |
+| Precision@5 | 1.000 |
+| Recall@5 | 0.714 |
+| Reciprocal rank | 0.200 |
+| Case passed | `false` |
+
+The case failed because two designated primary sources were missing. A primary hit and high precision therefore
+coexist with incomplete source coverage.
+
+The August 28 answer for this case passed its structural checks and received 2 on every human-review criterion.
+Those outcomes use different rules: retrieval requires all designated primary sources for a `multi_section`
+case, while answer evaluation checks citation behavior and human review assesses support and required-point
+coverage. The answer and review results describe the earlier answer run.
+
+### An unjudged chunk makes precision unavailable
+
+The `context-001` case asks:
+
+> How important is context in documentation?
+
+The retrieval run returned 5 chunks: 4 counted as relevant and 1 as unjudged. It matched all 3 primary sources,
+so the case passed. Precision was `null` because one chunk was unjudged; recall remained 0.667. This case explains
+why the mean precision uses 13 of the 14 answerable cases.
+
+Inspect its returned evidence and the dataset's judgments when comparing a run that changes precision
+availability. A change in the mean can reflect a change in which cases have calculable precision.
+
+## Compare with your own runs
+
+1. **Check the benchmark inputs.** For a direct comparison, use the published version `1.5` dataset, the same
+   corpus, and the same source judgments. Confirm that the indexed chunk IDs and content still correspond to
+   those judgments. For another corpus, create expectations for its sources and identify the dataset separately.
+2. **Record the run conditions.** Follow [Run the evaluation](/docs/evaluate/run-the-evaluation). Record the
+   dataset version, indexed content, models, support cutoff, and requested chunk count so you can explain
+   differences from the published snapshots.
+3. **Compare counts as well as rates.** Check overall success, primary hits, recall, and how many cases contribute
+   to mean precision. For expected-empty behavior, compare how many cases returned no chunks.
+4. **Inspect individual cases.** Read failed cases and cases with unjudged results. Use the source text in the
+   reports to understand a coverage failure or a change in precision availability.
+5. **Review the saved answers separately.** Compare structural checks and human scores for the answer run under
+   review. Human-review metadata must identify that saved answer run, and reviews must cover its required cases.
+
+If the corpus or test cases differ, compare the evaluation approach and failure patterns. The percentages then
+describe different benchmarks.
+
+## Limitations
+
+- **Corpus and sample:** The benchmark covers 22 cases on The Doc Landscape WordPress corpus. Its rates describe
+  those cases and their recorded expectations.
+- **Separate runs:** Retrieval was recorded on October 3; answer generation and human review were recorded on
+  August 28. The dataset version matches, but the snapshots don't establish that the indexed content was
+  identical on both dates.
+- **Incomplete coverage:** The `multi-section-001` retrieval case matched 1 of 3 primary sources and failed.
+- **Precision availability:** Mean precision excludes `context-001`. Its unjudged chunk requires attention when
+  comparing precision across runs.
+- **One answer review:** Human scores describe one recorded set of 14 answers. They don't measure consistency
+  across repeated generation runs.
+- **Replay inputs:** The snapshots preserve returned evidence and expectations. They don't include the full
+  historical index or an implementation commit. The baseline reports also omit the reranking model and candidate
+  depths, so they don't record every retrieval setting.
+
+## Next steps
+
+- **[Run the evaluation](/docs/evaluate/run-the-evaluation):** Generate reports for your own run and compare the
+  results with these snapshots.
+- **[Known limitations](/docs/reference/known-limitations):** Read about the remaining retrieval-coverage limitation.
+
+## Related pages
+
+- **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation):** Look up metric definitions, precision availability,
+  and retrieval pass rules.
+- **[Answer evaluation](/docs/evaluate/answer-evaluation):** Look up the structural checks and human-review criteria.
+- **[Evaluation architecture](/docs/architecture/evaluation-architecture):** See how datasets, commands, saved
+  reports, and human review connect.
+- **[How evaluation works](/docs/evaluate/how-evaluation-works):** Understand why retrieval, structural checks,
+  and human review assess different outcomes.
+- **[Evaluation framework reference](/docs/reference/evaluation-framework-reference):** Look up the fields in
+  the published dataset and reports.

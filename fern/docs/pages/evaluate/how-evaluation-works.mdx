@@ -8,7 +8,7 @@ lifecycle_status: draft
 topics: [topic-evaluation]
 components: [component-evaluation-framework]
 next_steps: [RtrvlEv, AnsEv, RnEv, EvalRef]
-related_pages: [EvArch, CurEvRes, KnLmt]
+related_pages: [EvArch, RecEvRes, KnLmt]
 last_modified: 2026-10-05
 audience: [secondary]
 ---
@@ -36,7 +36,7 @@ The test suite loads the dataset and checks the scoring functions with fixture d
 and answer generation outside the regular test suite and CI. After a change that can affect retrieval or
 generation quality, run the evaluation again.
 
-[Current evaluation results](/docs/evaluate/current-evaluation-results) records the latest completed run.
+[Current evaluation results](/docs/evaluate/recorded-evaluation-results) records the latest completed run.
 
 ## The versioned evaluation dataset
 
@@ -132,7 +132,7 @@ A missing chunk and a weak answer are different failures. Retrieved chunks can o
 result and contain enough evidence for a grounded answer. In the recorded dataset `1.5` run, retrieval for
 `multi-section-001` misses full primary-section coverage in the top five chunks. The generated answer for that
 case covers the required points.
-[Known limitations](/docs/evaluate/known-limitations) records that retrieval-coverage gap.
+[Known limitations](/docs/reference/known-limitations) records that retrieval-coverage gap.
 
 Valid retrieval and valid citations can accompany an answer that drifts off the question. An earlier generated
 answer for `context-001` used the retrieved evidence and discussed related AI-assistant material. The question asked
@@ -178,9 +178,9 @@ artifacts fit together.
 
 - **[Evaluation architecture](/docs/architecture/evaluation-architecture)**: See how the dataset, evaluation
   commands, and result artifacts connect.
-- **[Current evaluation results](/docs/evaluate/current-evaluation-results)**: Read the recorded results for this
+- **[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Read the recorded results for this
   dataset.
-- **[Known limitations](/docs/evaluate/known-limitations)**: See the retrieval and answer limitations the evaluation
+- **[Known limitations](/docs/reference/known-limitations)**: See the retrieval and answer limitations the evaluation
   has already identified.
 - **[Evaluation framework reference](/docs/reference/evaluation-framework-reference)**: Look up the dataset,
   result, and human-review fields for the checks this page introduces.

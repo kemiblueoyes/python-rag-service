@@ -1,5 +1,141 @@
 ---
 id: RnEv
 title: Run the evaluation
-last_modified: 2026-09-29
+subtitle: Run retrieval and answer evaluation, then read the reports those commands write.
+description: Run the project's retrieval and answer evaluations and review the generated evaluation artifacts and results.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-architecture, topic-evaluation]
+components: [component-evaluation-framework]
+prerequisites: [IndxWP]
+next_steps: [RecEvRes]
+related_pages: [RtrvlEv, AnsEv, EvArch, HowEv, EvalRef]
+last_modified: 2026-10-05
+audience: [secondary]
 ---
+
+Run retrieval and answer evaluation from the repository root. Each command reads `evaluation/datasets/baseline.json`,
+runs the service’s Python components against the live index, and writes JSON and Markdown reports under `data/evaluation/`.
+
+Run retrieval evaluation to see whether the current index returns the expected chunks. Run answer evaluation when
+you also want a generated answer for each case. Answer evaluation retrieves again. It doesn't read the retrieval
+report.
+
+[How evaluation works](/docs/evaluate/how-evaluation-works) explains what the two runs measure.
+
+## Prerequisites
+
+**[Configure the service](/docs/get-started/configure-the-service)**: Configure Voyage and Qdrant in `.env`. Answer evaluation
+also requires OpenAI configuration.
+**[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index the evaluation queries search.
+The indexed collection must match `QDRANT_COLLECTION`. The local chunk file used by BM25 must also be available at
+`LEXICAL_CORPUS_PATH`, which defaults to data/wordpress-chunks.json.
+
+<Warning>Each command overwrites its existing report files. Save copies before rerunning if you need to retain earlier results.</Warning>
+
+<Steps toc={true}>
+    ## Run the retrieval evaluation
+
+    From the repository root, run:
+
+    ```bash
+    uv run python -m rag_service.commands.evaluate_retrieval
+    ```
+
+    The command requires `VOYAGE_API_KEY`. It also requires `QDRANT_API_KEY` when `QDRANT_URL` doesn't start with
+    `http://localhost`.
+
+    The command requests 5 chunks for each case and compares the returned chunks with the case’s retrieval expectations.
+    Retrieval can return fewer than 5 chunks, including none. When the command finishes, it prints:
+
+    ```text
+    PASS: Retrieval evaluation written to data/evaluation/retrieval_baseline.json and data/evaluation/retrieval_baseline.md
+    ```
+
+    That line means the command saved the files. It doesn't mean every case passed.
+
+    ## Read the retrieval report
+
+    Open `data/evaluation/retrieval_baseline.md`. The report header identifies the dataset, version, and run settings. The
+    Summary lists case counts and aggregate metrics. Each case heading ends with `PASS` or `FAIL`.
+
+    `data/evaluation/retrieval_baseline.json` stores the same run, including the retrieved chunks.
+    [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines the metrics.
+    [Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists the JSON fields.
+
+    ## Run the answer evaluation
+
+    From the repository root, run:
+
+    ```bash
+    uv run python -m rag_service.commands.evaluate_answers
+    ```
+
+    This command requires `VOYAGE_API_KEY` and `OPENAI_API_KEY`. It also requires `QDRANT_API_KEY` when
+    `QDRANT_URL` doesn't start with `http://localhost`.
+
+    The command requests 5 chunks for each case, generates an answer from the returned chunks, and checks the model-reported
+    evidence-sufficiency flag and citation behavior against the case’s expectations. When the command finishes, it prints:
+
+    ```text
+    PASS: Answer evaluation written to data/evaluation/answer_baseline.json and data/evaluation/answer_baseline.md
+    ```
+
+    That line means the command saved the files. Case results are inside the report.
+
+    ## Read the answer report
+
+    Open `data/evaluation/answer_baseline.md`. The Summary lists the structural pass rate, evidence-sufficiency
+    accuracy, and citation-behavior accuracy. Each case includes the expected and model-reported evidence-sufficiency
+    values, required points, generated answer, and cited sources.
+
+    The structural result doesn't score whether the answer covers the required points. Those points are in the
+    case section for a later human review. [Answer evaluation](/docs/evaluate/answer-evaluation) defines the checks.
+
+</Steps>
+
+You now have separate retrieval and answer reports. Both commands read `evaluation/datasets/baseline.json` independently.
+Check the recorded dataset versions before comparing the reports. Git ignores `/data/`, so these files aren’t
+committed by default.
+
+## Verification
+
+Confirm that each command printed the `PASS:` message naming its output files. In each Markdown report, check the dataset
+ID, dataset version, and run timestamp above the Summary. Then read the Summary and inspect any cases marked `FAIL`.
+The command’s `PASS:` message confirms that it wrote the reports. Individual cases can still fail.
+
+## Optional: Generate the human-review report
+
+Review the saved answers and record scores and notes in `data/evaluation/answer_qualitative_review.json`.
+[Evaluation framework reference](/docs/reference/evaluation-framework-reference) defines the required fields.
+[Answer evaluation](/docs/evaluate/answer-evaluation) explains how to score the answers.
+
+The review must identify the saved answer run and include exactly the cases whose saved `expected_sufficient_evidence`
+value is `true`.
+
+From the repository root, run:
+
+    ```bash
+    uv run python -m rag_service.commands.report_qualitative_answers
+    ```
+
+The command validates the review against `answer_baseline.json`, summarizes the recorded scores, and writes
+`data/evaluation/answer_qualitative_review.md`.
+
+## Next steps
+
+**[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Compare this run with the recorded
+results.
+
+## Related pages
+
+- **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation)**: Look up what the retrieval metrics and case
+  results mean.
+- **[Answer evaluation](/docs/evaluate/answer-evaluation)**: Look up the structural checks and the qualitative
+  scores.
+- **[Evaluation architecture](/docs/architecture/evaluation-architecture)**: See how the dataset, commands, and
+  saved reports fit together.
+- **[How evaluation works](/docs/evaluate/how-evaluation-works)**: See what the dataset measures and why the two
+  runs stay separate.
+- **[Evaluation framework reference](/docs/reference/evaluation-framework-reference)**: Look up the fields in the
+  retrieval report, the answer report, and the human-review file.

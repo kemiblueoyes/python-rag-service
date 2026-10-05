@@ -95,10 +95,8 @@ navigation:
             path: docs/pages/evaluate/retrieval-evaluation.mdx
           - page: Answer evaluation
             path: docs/pages/evaluate/answer-evaluation.mdx
-          - page: Current evaluation results
-            path: docs/pages/evaluate/current-evaluation-results.mdx
-          - page: Known limitations
-            path: docs/pages/evaluate/known-limitations.mdx
+          - page: Recorded evaluation results
+            path: docs/pages/evaluate/recorded-evaluation-results.mdx
       - section: Architecture
         contents:
           - page: System architecture
@@ -113,6 +111,8 @@ navigation:
             path: docs/pages/architecture/evaluation-architecture.mdx
       - section: Reference
         contents:
+          - page: Known limitations
+            path: docs/pages/reference/known-limitations.mdx
           - page: Configuration reference
             path: docs/pages/reference/configuration-reference.mdx
           - page: Evaluation framework reference

@@ -1,5 +1,214 @@
 ---
 id: IntWP
 title: Integrate with WordPress
-last_modified: 2026-09-29
+subtitle: Add Search and Ask to a WordPress site with the included reference client.
+description: Use the included WordPress reference client with the Python RAG service, including plugin setup, proxy configuration, shortcode use, and deployment.
+content_type: how_to
+lifecycle_status: draft
+topics: [topic-integration, topic-api, topic-authentication]
+components: [component-wordpress-client, component-public-api]
+prerequisites: [Auth, IndxWP]
+related_pages: [IntApp, Errs, SrchDoc, GenAns]
+last_modified: 2026-10-05
+audience: [primary]
 ---
+
+The included WordPress client lets site visitors search indexed documentation and ask for a grounded
+answer through the Python RAG Service. The browser sends Search and Ask requests to WordPress. The
+plugin calls the Python RAG service from PHP and keeps the service URL and API key on the server.
+
+The WordPress connector indexes source content. This page covers the WordPress client, which calls
+the public API and renders Search and Ask for visitors. Index that content before you expect Search
+or Ask to return documentation. See
+[Index WordPress content](/docs/index-content/index-wordpress-content).
+
+The plugin doesn't add a settings screen in wp-admin. You set two PHP constants, add the
+`[python_rag_service]` shortcode, and deploy the plugin directory.
+
+## Prerequisites
+
+- **[Authentication](/docs/get-started/authentication)**: Set `RAG_API_KEY` on the Python RAG service.
+  The WordPress API key constant has to use that same value.
+- **[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index that
+  Search and Ask retrieve.
+
+<Steps toc={true}>
+## Install the reference client
+
+Copy the complete `clients/wordpress/python-rag-service-client/` directory from this repository into
+the WordPress `wp-content/plugins/` directory. Keep the directory name. The plugin's main file
+should be:
+
+```text
+wp-content/plugins/python-rag-service-client/python-rag-service-client.php
+```
+
+That directory includes `includes/` and `assets/`. The main file loads the proxy classes from
+`includes/`, and the shortcode loads `assets/rag-search.js` and `assets/rag-search.css`.
+
+In wp-admin, activate **Python RAG Service Client**. Activation registers the
+`[python_rag_service]` shortcode and the REST routes `python-rag-service/v1/search` and
+`python-rag-service/v1/answer`.
+
+## Set the service URL and API key
+
+Define the Python service origin and API key in `wp-config.php`:
+
+```php
+define(
+    'RAG_SERVICE_API_BASE_URL',
+    'https://your-rag-service.example.com'
+);
+
+define(
+    'RAG_SERVICE_API_KEY',
+    'replace-with-the-same-long-random-value'
+);
+```
+
+`RAG_SERVICE_API_BASE_URL` is the service origin only. The plugin removes a trailing slash, then
+appends `/v1/search` or `/v1/answer`. Leave those paths out of the constant.
+
+`RAG_SERVICE_API_KEY` has to match `RAG_API_KEY` exactly. The plugin sends that value in the
+`X-API-Key` header. See [Authentication](/docs/get-started/authentication) for how the Python RAG
+service checks the header, and [Configuration reference](/docs/reference/configuration-reference)
+for both WordPress constants.
+
+WordPress calls `RAG_SERVICE_API_BASE_URL` from the server that runs PHP. The visitor's browser
+doesn't call that URL. During local development, the Python RAG service has to be running at an
+address the WordPress server can reach. When WordPress is hosted on another machine,
+`http://127.0.0.1:8000` on your computer isn't that address. A temporary HTTPS tunnel can connect
+them. For a deployed site, set `RAG_SERVICE_API_BASE_URL` to the origin of the hosted Python RAG
+service.
+
+If either constant is undefined, Search and Ask return HTTP 500 with the message
+`The RAG service URL isn't configured.` The plugin returns that same message when only
+`RAG_SERVICE_API_KEY` is undefined.
+
+## Route Search and Ask through WordPress
+
+The shortcode posts the visitor's query to WordPress. The browser request doesn't include the API
+key, a result limit, or metadata filters.
+
+Search sends a JSON body with `query` to `python-rag-service/v1/search`. The plugin then calls
+`POST /v1/search` on `RAG_SERVICE_API_BASE_URL` with that query, `limit` set to 5, and
+`X-API-Key`. The WordPress HTTP request times out after 15 seconds.
+
+Ask sends the same kind of body to `python-rag-service/v1/answer`. The plugin calls
+`POST /v1/answer` with `query` only. That route doesn't accept `limit`.
+
+On a site that uses the default WordPress REST prefix, the browser calls:
+
+```text
+https://your-wordpress-site.example/wp-json/python-rag-service/v1/search
+https://your-wordpress-site.example/wp-json/python-rag-service/v1/answer
+```
+
+A successful proxy call returns the Python response body with HTTP 200. See
+[Search documentation](/docs/search-and-answer/search-documentation) and
+[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers) for those fields.
+
+When the call to the Python RAG service fails, the visitor sees HTTP 503 and a fixed message. The
+Python status code and error body stay on the server. Search uses
+`Search is temporarily unavailable.` Ask uses `Answer generation is temporarily unavailable.` A
+wrong API key, an unreachable URL, a non-JSON body, and a timeout all produce that unavailable
+response. See [Errors](/reference/api-reference/errors) for the status codes and error bodies
+the Python RAG service returns.
+
+<Note>
+WordPress doesn't require a logged-in user for `python-rag-service/v1/search` or
+`python-rag-service/v1/answer`. A client that can reach the site can send Search and Ask through
+the proxy. The API key stays in `wp-config.php`.
+</Note>
+
+The form doesn't submit an empty query. The REST routes also reject an empty query before they
+call the Python RAG service. Search returns HTTP 400 with `A search query is required.` Ask
+returns HTTP 400 with `A question is required.`
+
+## Add the shortcode
+
+Add the shortcode to the page or post where visitors should search:
+
+```text
+[python_rag_service]
+```
+
+The client shows the label `Search or ask the documentation`, a query field, and Search and Ask
+buttons. Help text on the form says that Search finds relevant passages and that Ask generates an
+answer from the retrieved pages and articles.
+
+While a request runs, both buttons stay disabled. Search shows `Searching…`. Ask shows
+`Generating answer…`.
+
+When Search finishes with results, the status line reports the count, as in `1 result found.` or
+`2 results found.`
+Each result title links to the source document. When a result includes a heading path and an
+anchor, the deepest heading links to that heading on the source page. The client collapses
+whitespace in the excerpt, shortens text longer than 420 characters on a word boundary, and adds
+an ellipsis. When `results` is empty, the status line says `No relevant results found.`
+
+When Ask finishes, the client shows the answer. It turns blank lines into paragraphs, lines that
+start with `-` or `*` into a bulleted list, and `**bold**` markers into bold text. A citation
+such as `[S1]` links to the matching source when `citation_id` matches. Unmatched citation text
+stays as text. When the response includes sources, the client lists each citation ID, title, and
+heading path under `Sources`. When `sufficient_evidence` is true, the client clears the status
+line. When `sufficient_evidence` is false, the status line says
+`The available pages and articles may not contain enough information.`
+
+## Deploy plugin updates
+
+After you change the reference client, copy the complete
+`clients/wordpress/python-rag-service-client` directory to `wp-content/plugins` again. Updating
+the Python RAG service on its own doesn't update the live WordPress proxy or the Search and Ask
+interface.
+
+When the service origin or API key changes, update `RAG_SERVICE_API_BASE_URL` or
+`RAG_SERVICE_API_KEY` in `wp-config.php`. The plugin reads those constants on each request. It
+doesn't store them as WordPress options.
+
+This plugin is a reference client for `POST /v1/search` and `POST /v1/answer`. Change the plugin
+and deploy that directory when you need different proxy or interface behavior. Other applications
+can call the same public API. See
+[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application).
+</Steps>
+
+Visitors can then run Search and Ask on the published page. Their browsers call the WordPress
+routes. The plugin adds the API key when it calls the Python RAG service.
+
+## Verification
+
+Open the page that contains `[python_rag_service]`. The page should show the query field and the
+Search and Ask buttons.
+
+Run Search with a query the index should match. The status line should show a result count, and
+each title should link to a source document. When the response `results` array is empty, the
+status line says `No relevant results found.`
+
+Run Ask. A completed request shows the answer. When `sufficient_evidence` is true, the status line
+is empty. When `sufficient_evidence` is false, the status line says
+`The available pages and articles may not contain enough information.` When the response includes
+sources, the page also shows a `Sources` list.
+
+You can also call the WordPress proxy without an API key. The plugin adds `X-API-Key` on the
+server. On a site that uses the default REST prefix:
+
+```bash
+curl -s -X POST https://your-wordpress-site.example/wp-json/python-rag-service/v1/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "How does metadata improve retrieval?"}' \
+  | python -m json.tool
+```
+
+A working proxy returns HTTP 200 and the `POST /v1/search` body. Missing constants return HTTP 500
+and `The RAG service URL isn't configured.` A key that doesn't match `RAG_API_KEY`, or a service
+URL that WordPress can't reach, returns HTTP 503 and `Search is temporarily unavailable.`
+
+## Related pages
+
+- **[Integrate the RAG API into an application](/docs/integrate/integrate-rag-api-into-application)**:
+  Call `POST /v1/search` and `POST /v1/answer` from a client other than this plugin.
+- **[Errors](/reference/api-reference/errors)**: Look up the Python error codes the WordPress
+  proxy replaces with a generic unavailable message.
+- **[Search documentation](/docs/search-and-answer/search-documentation)**: See the `POST /v1/search` response that the Search button renders.
+- **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: See
+  `sufficient_evidence`, citations, and sources in the `POST /v1/answer` response.

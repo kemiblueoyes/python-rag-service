@@ -1,5 +1,188 @@
 ---
 id: AnsEv
 title: Answer evaluation
-last_modified: 2026-09-29
+subtitle: How answer evaluation checks evidence sufficiency and citations, and how human review scores support, completeness, and focus.
+description: Review the answer evaluation methodology, including evidence checks, citation behavior, and human criteria for support, completeness, and focus.
+content_type: general_reference
+lifecycle_status: draft
+topics: [topic-answer-evaluation, topic-evidence-sufficiency, topic-citations]
+components: [component-evaluation-framework, component-answer-generation-service]
+next_steps: [RecEvRes]
+related_pages: [AnsGenCit, EvArch, RtrvlEv, HowEv, EvalRef]
+last_modified: 2026-10-05
+audience: [secondary]
 ---
+
+Answer evaluation checks the model-reported evidence-sufficiency flag and cited sources for each generated answer.
+Human review separately scores support, completeness, unsupported details, and focus. This page defines both sets
+of checks and their pass rules.
+
+To generate an answer report, see [Run the evaluation](/docs/evaluate/run-the-evaluation).
+
+## How the command answers a case
+
+The answer command sends each case’s query and filters to the current retrieval pipeline and requests 5 chunks.
+Retrieval can return fewer chunks or none. The command generates an answer from the returned chunks and doesn’t
+read the saved retrieval report. The answer report records the requested count as `retrieval_limit`.
+
+Generation builds the answer the structural checks score. The model proposes the answer text, citation
+identifiers, and a `sufficient_evidence` flag. The application validates those citations against the sources it
+supplied to the model, then keeps the cited sources on the finished answer.
+[Answer generation and citations](/docs/architecture/answer-generation-and-citations) explains that workflow.
+
+The structural checks use the finished answer. They compare the model-reported sufficient_evidence flag with the
+answer expectation and check cited chunk IDs against the case’s relevant sources. If the case has no answer expectation,
+the command stops.
+
+If retrieval or generation fails before it returns an answer, the command stops. It doesn't record that failure
+as an answer with insufficient evidence.
+
+## Evidence sufficiency
+
+`sufficiency_correct` is true when the model's `sufficient_evidence` flag equals
+`expected_sufficient_evidence`. The report stores that flag as `actual_sufficient_evidence`.
+
+A correct sufficiency result means the model-reported flag matches the dataset expectation. The check doesn’t
+independently judge whether the retrieved evidence can answer the question.
+
+The application accepts the model's proposal only when the flag agrees with the citation list. A sufficient
+proposal includes at least one citation identifier. An insufficient proposal includes none. The application
+doesn't replace the flag with its own judgment.
+
+The answer summary treats a case as answerable when `expected_sufficient_evidence` is true, and as unanswerable
+when it's false. The summary doesn't use `expect_empty` or `category` for that split. In the current dataset, a
+case that expects sufficient evidence also has `expect_empty` false, and an expected-empty case expects
+insufficient evidence. The dataset model doesn't require those fields to agree.
+[Evaluation framework reference](/docs/reference/evaluation-framework-reference) defines the three fields.
+
+## Citation behavior
+
+Answer evaluation checks the chunk IDs on the finished answer's cited sources. Citation validation, during
+generation, checks that each citation identifier refers to a source supplied to the model. The structural check
+asks a different question: whether those cited chunks are relevant sources for the case.
+
+These checks establish that citations refer to supplied sources and match the case’s relevance judgments. They
+don’t assess whether a cited source supports the particular claim beside its citation. Human review assesses that support
+
+The check uses `chunk_id` only. A relevant source with `chunk_id` set to `null` can't satisfy a citation.
+Omitting `role` on a relevant source means `primary`.
+
+### Cases that expect sufficient evidence
+
+For a case with `expected_sufficient_evidence` true, `citation_behavior_correct` is true only when all three
+conditions hold.
+
+| Condition | Requirement |
+| --- | --- |
+| At least one citation | The finished answer includes one or more cited sources. |
+| Acceptable citations | Every cited chunk ID matches a relevant source that has a `chunk_id`. A supporting source counts. |
+| A primary citation | At least one cited chunk ID matches a primary source that has a `chunk_id`. |
+
+The report lists cited chunk IDs that fail the acceptable-citation condition in
+`unacceptable_citation_chunk_ids`. It sets `primary_citation_present` to true when the primary-citation
+condition holds.
+
+A supporting citation can appear together with a primary citation. A supporting citation alone fails the case.
+
+### Cases that expect insufficient evidence
+
+For a case with `expected_sufficient_evidence` false, `citation_behavior_correct` is true only when the finished
+answer cites no chunks. Any cited chunk fails the check, including a chunk the case lists as a primary source.
+`primary_citation_present` doesn't decide this check.
+
+## When a case passes
+
+The report's `passed` value is true only when both structural checks succeed.
+
+| Check | Pass condition |
+| --- | --- |
+| Evidence sufficiency | `sufficiency_correct` is true. |
+| Citation behavior | `citation_behavior_correct` is true. |
+
+The command copies `required_points` onto the result. The structural pass doesn't score those points.
+
+A case that expects sufficient evidence needs at least one primary citation, and every cited chunk must match a
+relevant source. The check doesn’t require citations to every primary source. [Retrieval evaluation](/docs/evaluate/retrieval-evaluation)
+uses a separate rule: an answerable `multi_section` case passes retrieval when every primary source appears in the evaluated
+chunks.
+
+## Summary metrics
+
+The summary covers the structural checks for the whole dataset. Each rate in the JSON report is a ratio from 0
+through 1. The Markdown report prints that rate as a percentage. When a group has no cases, the rate is `null`,
+and the Markdown report prints it as not applicable.
+
+| Metric | Definition |
+| --- | --- |
+| `overall_pass_rate` | The share of all cases with `passed` true. |
+| `sufficiency_accuracy` | The share of all cases with `sufficiency_correct` true. |
+| `citation_behavior_accuracy` | The share of all cases with `citation_behavior_correct` true. |
+| `answerable_pass_rate` | The share of passed cases among cases with `expected_sufficient_evidence` true. |
+| `unanswerable_pass_rate` | The share of passed cases among cases with `expected_sufficient_evidence` false. |
+
+`answerable_pass_rate` and `unanswerable_pass_rate` follow `expected_sufficient_evidence`. They don't follow
+`expect_empty`.
+
+## Human review criteria
+
+A person reviews the saved answer-report cases whose `expected_answer.expected_sufficient_evidence` value is `true`, including
+cases that failed the structural checks. The reviewer compares each answer with the retrieved evidence and required points
+stored in that report.
+
+Each score is an integer from 0 through 2. A review passes only when every score is 2.
+
+| Criterion | 2 | 1 | 0 |
+| --- | --- | --- | --- |
+| Support / faithfulness | Meaningful claims accurately reflect the evidence. | Minor inaccuracies or distortions in how evidence is represented. | Central claims contradict or substantially misrepresent the evidence. |
+| Required-point completeness | All required points are correctly covered. | Some required points are missing or incomplete. | Required points are largely missing or incorrectly covered. |
+| Unsupported details | No meaningful unsupported claims or details. | Minor unsupported details. | Major unsupported claims or details. |
+| Focus / relevance | Directly answers the question with relevant context. | Answers the question but includes unnecessary digressions. | Mostly off topic or doesn’t address the question. |
+
+The project stores the scores in `data/evaluation/answer_qualitative_review.json`.
+`rag_service.commands.report_qualitative_answers` doesn't assign the scores. It checks that the review matches
+the saved answer run, then writes `data/evaluation/answer_qualitative_review.md`.
+
+The review matches the run when the dataset ID, dataset version, answer-run timestamp, and generation model agree.
+The timestamps must identify the same moment; their string formatting can differ.
+
+The reviewed case IDs must match exactly those selected cases in the saved answer report. Missing and extra case IDs
+both fail validation. [Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists those
+match fields. `reviewed_at` records when the reviewer wrote the scores. It isn't part of the match.
+
+## Human review summary
+
+The summary counts how many reviews passed and averages each criterion. The command doesn't summarize an empty
+review set.
+
+| Metric | What it counts |
+| --- | --- |
+| `pass_rate` | Passed reviews divided by the number of reviews. |
+| `support_faithfulness_average` | The mean of `support_faithfulness_score`. |
+| `required_point_completeness_average` | The mean of `required_point_completeness_score`. |
+| `unsupported_details_average` | The mean of `unsupported_details_score`. |
+| `focus_relevance_average` | The mean of `focus_relevance_score`. |
+
+The Markdown report displays `pass_rate` as a percentage and each criterion average as a score out of 2.
+
+## Constraints and notes
+
+- **Required points:** The structural pass doesn't score `required_points`. Human review scores whether the answer covers them.
+- **Null chunk IDs:** A relevant source with `chunk_id` `null` can't satisfy a citation.
+- **Supporting citations:** A supporting citation alone fails a case that expects sufficient evidence.
+- **Primary citations:** For a case that expects sufficient evidence, the citation check requires at least one primary citation and no unacceptable citations. Other primary sources don’t have to appear among the citations.
+- **Summary groups:** Answerable and unanswerable rates follow `expected_sufficient_evidence`, not `expect_empty`.
+- **Null rates:** A summary rate is `null` when its group has no cases.
+- **Human scores:** Reviewers assign the four scores. The report command checks the review file and summarizes the scores.
+
+## Next steps
+
+**[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Read the recorded answer results and
+human-review scores for this methodology.
+
+## Related pages
+
+- **[Answer generation and citations](/docs/architecture/answer-generation-and-citations)**: See how the service builds the answer the structural checks score, including citation validation.
+- **[Evaluation architecture](/docs/architecture/evaluation-architecture)**: See how the answer command, the saved answer run, and human review connect.
+- **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation)**: Compare the retrieval and answer pass rules for the same cases.
+- **[How evaluation works](/docs/evaluate/how-evaluation-works)**: See why sufficiency checks, citation checks, and human review stay separate.
+- **[Evaluation framework reference](/docs/reference/evaluation-framework-reference)**: Look up the answer-report fields and the human-review fields.

@@ -1,0 +1,121 @@
+{
+    "dataset_id": "doc-landscape-baseline",
+    "dataset_version": "1.5",
+    "answer_baseline_generated_at": "2026-08-28T06:10:50.734440+00:00",
+    "generation_model": "gpt-5.6-terra",
+    "reviewed_at": "2026-08-28T06:20:00+00:00",
+    "reviews": [
+      {
+        "case_id": "terminology-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "chunking-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "metadata-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "bm25-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "rag-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "chunking-failure-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "embeddings-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "documentation-engineering-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "documentation-engineering-002",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "context-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": "The revised prompt keeps the answer focused on context in documentation and no longer uses the tangential AI-assistant source."
+      },
+      {
+        "case_id": "cms-selection-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "synonym-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      },
+      {
+        "case_id": "multi-section-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": "The generated answer covers all three required points despite the separate retrieval evaluation failure for this case."
+      },
+      {
+        "case_id": "updated-content-001",
+        "support_faithfulness_score": 2,
+        "required_point_completeness_score": 2,
+        "unsupported_details_score": 2,
+        "focus_relevance_score": 2,
+        "notes": null
+      }
+    ]
+  }

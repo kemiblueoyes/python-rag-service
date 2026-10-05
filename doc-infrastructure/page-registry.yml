@@ -57,7 +57,7 @@ pages:
   - id: AnsEv
     content_type: general_reference
 
-  - id: CurEvRes
+  - id: RecEvRes
     content_type: eval_results
 
   - id: KnLmt
