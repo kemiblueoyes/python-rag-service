@@ -29,6 +29,11 @@ FILENAME_PATTERN = re.compile(
     r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
 )
 
+# Fern changelog entries are dated files directly inside a folder named changelog.
+CHANGELOG_FILENAME_PATTERN = re.compile(
+    r"^(?:\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4}|\d{2}-\d{2}-\d{2})$"
+)
+
 MARKDOWN_LINK_PATTERN = re.compile(
     r"(?<!!)\[[^\]]+\]\(([^)]+)\)"
 )
@@ -100,11 +105,27 @@ def _validate_filename(
     path: Path,
     errors: list[str],
 ) -> None:
-    if not FILENAME_PATTERN.fullmatch(path.stem):
+    if FILENAME_PATTERN.fullmatch(path.stem):
+        return
+
+    if (
+        path.parent.name == "changelog"
+        and CHANGELOG_FILENAME_PATTERN.fullmatch(path.stem)
+    ):
+        return
+
+    if path.parent.name == "changelog":
         errors.append(
-            f"{path}: MDX filename must use lowercase "
-            "kebab case with no ordering prefix."
+            f"{path}: changelog MDX filename must use lowercase "
+            "kebab case or a Fern changelog date "
+            "(YYYY-MM-DD, MM-DD-YYYY, or MM-DD-YY)."
         )
+        return
+
+    errors.append(
+        f"{path}: MDX filename must use lowercase "
+        "kebab case with no ordering prefix."
+    )
 
 
 def _validate_platform_frontmatter(

@@ -119,6 +119,9 @@ navigation:
             path: docs/pages/reference/evaluation-framework-reference.mdx
           - page: Glossary
             path: docs/pages/reference/glossary.mdx
+          - changelog: ./changelog
+            title: Release notes
+            slug: release-notes
   - tab: api
     layout:
       - section: API reference

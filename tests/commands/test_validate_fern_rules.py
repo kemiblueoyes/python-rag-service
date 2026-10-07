@@ -342,6 +342,66 @@ def main() -> int:
 if __name__ == "__main__":
     raise SystemExit(main())
 
+def test_changelog_dated_filenames_are_allowed(
+    tmp_path: Path,
+) -> None:
+    from rag_service.commands.documentation.validate_fern_rules import (
+        validate_public_page as check_page,
+    )
+
+    for name in (
+        "2026-10-06.mdx",
+        "10-06-2024.mdx",
+        "10-06-24.mdx",
+        "overview.mdx",
+    ):
+        page = tmp_path / "changelog" / name
+        page.parent.mkdir(exist_ok=True)
+        page.write_text("Body\n", encoding="utf-8")
+
+        errors = check_page(page)
+
+        assert not any("filename" in error for error in errors)
+
+
+def test_dated_filename_outside_changelog_is_rejected(
+    tmp_path: Path,
+) -> None:
+    from rag_service.commands.documentation.validate_fern_rules import (
+        validate_public_page as check_page,
+    )
+
+    page = tmp_path / "reference" / "2026-10-06.mdx"
+    page.parent.mkdir()
+    page.write_text("Body\n", encoding="utf-8")
+
+    errors = check_page(page)
+
+    assert any(
+        "kebab case with no ordering prefix" in error
+        for error in errors
+    )
+
+
+def test_invalid_changelog_filename_is_rejected(
+    tmp_path: Path,
+) -> None:
+    from rag_service.commands.documentation.validate_fern_rules import (
+        validate_public_page as check_page,
+    )
+
+    page = tmp_path / "changelog" / "2026-10-06-notes.mdx"
+    page.parent.mkdir()
+    page.write_text("Body\n", encoding="utf-8")
+
+    errors = check_page(page)
+
+    assert any(
+        "Fern changelog date" in error
+        for error in errors
+    )
+
+
 def test_public_markdown_file_is_rejected(
     tmp_path: Path,
 ) -> None:

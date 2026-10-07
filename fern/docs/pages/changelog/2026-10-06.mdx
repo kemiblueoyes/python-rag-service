@@ -1,0 +1,58 @@
+---
+id: RNInitialSnapshot
+title: Initial development snapshot
+subtitle: Index WordPress content, search documentation, and generate answers with citations.
+description: An initial snapshot of indexing, hybrid retrieval, grounded answers, authentication, the WordPress client, and evaluation.
+content_type: release_note
+lifecycle_status: published
+topics: [topic-release-history, topic-hybrid-search, topic-answer-generation, topic-integration, topic-evaluation]
+components: [component-wordpress-connector, component-indexing-pipeline, component-retrieval-service, component-answer-generation-service, component-public-api, component-wordpress-client, component-evaluation-framework]
+tags: [initial-development, search, answers, wordpress, evaluation]
+related_pages: [Qstrt, RtrvPipe, GenAns, IntWP, RecEvRes, KnLmt]
+last_modified: 2026-10-06
+audience: [primary, secondary]
+type: improved
+---
+
+This first changelog entry records the capabilities already implemented in the Python
+Retrieval-Augmented Generation (RAG) Service. It establishes a starting point for
+tracking future changes. The project remains in active development.
+
+## What's changed
+
+- **WordPress indexing**: Retrieve content through the WordPress REST API, clean it,
+  split it into chunks that preserve heading context, and store embeddings and
+  metadata in Qdrant. Indexing supports full rebuilds and incremental updates.
+- **Hybrid search**: Use `POST /v1/search` to combine semantic search with BM25 keyword
+  matching, merge the rankings, and rerank candidates with Voyage. The support gate
+  returns no results when reranking produces no candidates or the highest score
+  falls below the configured cutoff.
+- **Grounded answers**: Use `POST /v1/answer` to generate an answer from retrieved
+  documentation through OpenAI. The application validates citation identifiers
+  against the supplied context and returns source links. It can report insufficient
+  evidence when the retrieved content doesn't support an answer.
+- **API authentication and diagnostics**: Both public endpoints require an
+  `X-API-Key` header. Handled service failures return standard error responses;
+  server logs record the failed operation and a controlled reason.
+- **WordPress reference client**: Add Search and Ask workflows through a shortcode.
+  The server-side proxy keeps the Python API key out of browser requests, and the
+  interface includes source links, clickable citations, and loading and error states.
+- **Evaluation tools**: Run retrieval metrics, automated answer and citation checks,
+  and human answer review using a versioned dataset. Save reports as JSON and Markdown.
+
+## Known issues
+
+WordPress is the only implemented content connector. Source changes require an
+indexing run, followed by an API restart to refresh the in-memory keyword index.
+Compound questions can miss evidence for part of the question, and citation checks
+don't establish that every claim has factual support.
+
+See [Known limitations](/docs/reference/known-limitations) for constraints and mitigations.
+
+## Related documentation
+
+- **[Quickstart](/docs/get-started/quickstart)**: Run the service and make a first search request.
+- **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: Understand hybrid search, reranking, and support detection.
+- **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: Request an answer and inspect its citations and sources.
+- **[Integrate with WordPress](/docs/integrate/integrate-with-wordpress)**: Configure the reference client and its server-side proxy.
+- **[Recorded evaluation results](/docs/evaluate/recorded-evaluation-results)**: Inspect the saved benchmark and its scope.
