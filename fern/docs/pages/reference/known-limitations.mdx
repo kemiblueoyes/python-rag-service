@@ -1,5 +1,108 @@
 ---
 id: KnLmt
 title: Known limitations
-last_modified: 2026-10-05
+subtitle: Constraints, practical effects, and available mitigations in the current implementation.
+description: Review known limitations of the current RAG service implementation, their observed effects, and constraints.
+content_type: general_reference
+lifecycle_status: draft
+topics: [topic-limitations]
+components: [component-wordpress-connector, component-indexing-pipeline, component-retrieval-service, component-answer-generation-service, component-public-api, component-evaluation-framework]
+related_pages: [SysArch, RtrvPipe, AnsGenCit, RecEvRes]
+last_modified: 2026-10-06
+audience: [primary, secondary]
 ---
+
+The Python RAG Service has constraints that affect what it can index, which evidence it retrieves, and how answers are generated
+and checked. This reference describes those limitations, their practical effects, and available mitigations. Use it when deciding
+whether the current implementation fits your content, integration, and quality requirements.
+
+## Content sources and index freshness
+
+### WordPress is the only implemented connector
+
+The core pipeline uses a platform-neutral document model, but WordPress is the only implemented connector. Indexing another content source requires
+a connector that maps its content into that model.
+
+See [Indexing pipeline](/docs/architecture/indexing-pipeline) for the connector's role.
+
+### Source changes require an indexing run
+
+Publishing, updating, or unpublishing WordPress content doesn't automatically refresh the index. Retrieval and citations can reflect older content
+until an indexing run completes.
+
+Follow [Re-index and update content](/docs/index-content/re-index-and-update-content) after source changes.
+Changes to embedding or chunking behavior require a full rebuild, as described in that procedure.
+
+### Running API processes don't automatically reload the lexical index
+
+Re-indexing updates Qdrant and the lexical corpus file, but running API processes retain their in-memory BM25 index. Retrieval can therefore combine
+current vector records with outdated lexical chunks.
+
+Restart each API process after a successful indexing run to load the updated corpus.
+
+## Retrieval coverage and support detection
+
+### Compound questions can miss primary sources
+
+The retrieval pipeline ranks chunks by relevance without explicitly selecting evidence for each part of a compound question.
+
+In the recorded `multi-section-001` case, the top five results were relevant but included only one of three designated primary sources.
+The earlier answer passed human review, so the observed limitation concerns retrieval coverage.
+
+For questions with several distinct parts, try separate queries and inspect their source coverage.
+See [Recorded evaluation results](/docs/evaluate/recorded-evaluation-results) for the case details.
+
+### The support cutoff needs validation for your corpus
+
+The default `0.70` support cutoff was selected for the evaluated corpus and models. It isn't a universal boundary between supported and unsupported queries.
+
+The gate checks only the highest reranking score. An accepted query can still return chunks that don't support every part of the question.
+
+Re-evaluate the cutoff when the corpus, models, chunking, or retrieval settings change.
+See [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) for the measurements and pass rules.
+
+## Answer context and citation checks
+
+### Answer context has a fixed retrieval depth and token budget
+
+The answer endpoint retrieves up to five chunks; clients can't increase that limit. The context assembler keeps whole chunks in rank order
+and stops when the next chunk exceeds the token budget. This can leave useful evidence out of the model's context.
+
+If the first chunk exceeds the budget, the request fails with `answer_unavailable`. Increasing the configured budget can address that constraint,
+but doesn't increase retrieval depth.
+
+See [Answer generation and citations](/docs/architecture/answer-generation-and-citations) for context selection and
+[Configuration reference](/docs/reference/configuration-reference) for the budget setting.
+
+### Valid citations don't establish factual support
+
+Citation validation checks that citation identifiers match the supplied context. It doesn't judge whether the cited passages support each claim,
+whether the answer is complete, or whether the model correctly reports sufficient evidence.
+
+Use [Answer evaluation](/docs/evaluate/answer-evaluation) to assess support, completeness, unsupported details, and focus through human review.
+
+## Service health checks
+
+A successful `/health` response doesn't establish that search or answer is available. The endpoint doesn't check Qdrant, Voyage, OpenAI,
+or the lexical corpus.
+
+Use authenticated search and answer requests to check those workflows.
+See [API reference](/reference/overview) for the endpoint references.
+
+## Evaluation scope
+
+The recorded benchmark covers 22 cases on The Doc Landscape corpus. Its results don't establish quality for other corpora or query patterns.
+
+Retrieval and answer evaluation were recorded in separate runs. The snapshots don't establish that both used identical indexed content.
+Human review covers one set of 14 answers and doesn't measure consistency across repeated generation runs.
+
+Evaluate your own corpus and representative queries before relying on the recorded rates.
+See [Recorded evaluation results](/docs/evaluate/recorded-evaluation-results) for run conditions and comparison limits,
+and [Run the evaluation](/docs/evaluate/run-the-evaluation) to generate your own reports.
+
+## Related pages
+
+- **[System architecture](/docs/architecture/system-architecture)**: Understand component responsibilities and integration boundaries.
+- **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: Review candidate selection, reranking, and the support gate.
+- **[Answer generation and citations](/docs/architecture/answer-generation-and-citations)**: Review context assembly and application-side citation checks.
+- **[Recorded evaluation results](/docs/evaluate/recorded-evaluation-results)**: Inspect the evidence behind the documented quality limitations.
