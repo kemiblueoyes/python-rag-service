@@ -17,6 +17,7 @@ theme:
 layout:
   tabs-placement: header
   hide-nav-links: true
+  changelog-layout: classic
 css: styles.css
 colors:
   accentPrimary: '#ffffff'
@@ -39,9 +40,14 @@ tabs:
     icon: book-open
     slug: docs
   api:
-    display-name: API Reference
+    display-name: API reference
     icon: puzzle
     slug: reference
+  changelog:
+    display-name: Release notes
+    changelog: docs/pages/changelog
+    icon: light clock
+
 navigation:
   - tab: docs
     layout:
@@ -119,9 +125,6 @@ navigation:
             path: docs/pages/reference/evaluation-framework-reference.mdx
           - page: Glossary
             path: docs/pages/reference/glossary.mdx
-          - changelog: docs/pages/changelog
-            title: Release notes
-            slug: release-notes
   - tab: api
     layout:
       - section: API reference
@@ -144,3 +147,4 @@ navigation:
           - endpoint: GET /health
             slug: health
             title: Health check
+  - tab: changelog

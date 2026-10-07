@@ -16,3 +16,8 @@ nav[aria-label="Up next"] {
 .fern-prose img{
     border: 4px solid #083f9d;
 }
+
+.fern-layout-changelog .fern-layout-page .fern-changelog-content, .fern-layout-changelog .fern-layout-page,
+.fern-layout-changelog, .fern-layout-changelog .fern-changelog-content .max-w-content-width.mx-auto.w-full{
+    max-width: 1000px !important;
+}
