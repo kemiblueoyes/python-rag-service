@@ -52,6 +52,21 @@ PUBLIC_PAGES = [
 def main() -> None:
     """Run all documentation validation checks."""
 
+    print("Checking documentation page registry...")
+
+    registry_check = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "rag_service.commands.documentation.update_page_registry",
+            "--check",
+        ],
+        check=False,
+    )
+
+    if registry_check.returncode != 0:
+        raise SystemExit(registry_check.returncode)
+
     print("Checking documentation frontmatter and content model...")
 
     model = load_content_model()

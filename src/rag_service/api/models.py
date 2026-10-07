@@ -22,19 +22,42 @@ class SearchFilters(BaseModel):
 
     document_id: FilterValue | None = Field(
         default=None,
-        description="Limit results to one or more canonical document IDs.",
+        description=(
+            "Limit results to chunks from specific documents using the document IDs "
+            "created by the RAG service, such as 'wordpress:page:123'. "
+            "Copy the document_id from a search result to use it as a filter. "
+            "Provide one ID as a string or multiple IDs as a list of strings, such "
+            "as ['wordpress:page:123', 'wordpress:page:124'].\n\n"
+            "If omitted, results are not restricted by document ID."
+        ),
     )
     source: FilterValue | None = Field(
         default=None,
-        description="Limit results to one or more content sources.",
+        description=(
+            "Limit results to one or more content sources. "
+            "If omitted, searches content from all sources in the index.\n\n"
+            "Currently, only 'wordpress' is supported, so omitting this filter "
+            "still searches only WordPress content."
+        ),
     )
     source_id: FilterValue | None = Field(
         default=None,
-        description="Limit results to one or more source-system document IDs.",
+        description=(
+            "Limit results to chunks from specific documents using their original "
+            "IDs in the source system. For WordPress, use the post or page ID "
+            "as a string, such as '123'. Provide one ID as a string or multiple IDs "
+            "as a list of strings, such as ['123', '124'].\n\n"
+            "If omitted, results are not restricted by source-system document ID."
+        ),
     )
     content_type: FilterValue | None = Field(
         default=None,
-        description="Limit results to one or more content types.",
+        description=(
+            "Limit results by the type of document the content came from, "
+            "such as 'post' or 'page' for WordPress content. Provide one type "
+            "as a string or multiple types as a list of strings, such as ['post', 'page'].\n\n"
+            "If omitted, searches all content types in the index."
+        ),
     )
 
 

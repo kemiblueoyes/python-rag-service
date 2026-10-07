@@ -1,43 +1,68 @@
+# GENERATED FILE — DO NOT EDIT DIRECTLY.
+#
+# Sources:
+# - fern/docs/pages/**/*.mdx
+# - generated API reference page IDs defined in update_page_registry.py
+#
+# Regenerate with:
+#   uv run python -m rag_service.commands.documentation.update_page_registry
+
 version: 1
 
-# Canonical documentation pages.
-
 pages:
-  - id: Home
+  - id: APIOvrvw
     content_type: overview
 
-  - id: Qstrt
-    content_type: how_to
+  - id: AnsAPI
+    content_type: api_reference
 
-  - id: Instl
-    content_type: how_to
+  - id: AnsEv
+    content_type: general_reference
 
-  - id: ConfSrv
-    content_type: how_to
+  - id: AnsGenCit
+    content_type: explanation
 
   - id: Auth
     content_type: how_to
 
-  - id: IndxWP
+  - id: CnfgRef
+    content_type: general_reference
+
+  - id: ConfSrv
     content_type: how_to
 
-  - id: RIndxUpdt
-    content_type: how_to
+  - id: Errs
+    content_type: general_reference
 
-  - id: TutIndx
-    content_type: tutorial
+  - id: EvArch
+    content_type: explanation
 
-  - id: SrchAnsOvrvw
-    content_type: overview
-
-  - id: SrchDoc
-    content_type: how_to
+  - id: EvalRef
+    content_type: general_reference
 
   - id: GenAns
     content_type: how_to
 
-  - id: TutSrch
-    content_type: tutorial
+  - id: Gloss
+    content_type: general_reference
+
+  - id: HlthAPI
+    content_type: api_reference
+
+  - id: Home
+    content_type: overview
+
+  - id: HowEv
+    content_type: explanation
+
+  - id: IndxPipe
+    content_type: explanation
+
+  - id: IndxWP
+    content_type: how_to
+
+  - id: Instl
+    content_type: how_to
 
   - id: IntApp
     content_type: how_to
@@ -45,62 +70,47 @@ pages:
   - id: IntWP
     content_type: how_to
 
-  - id: HowEv
-    content_type: explanation
+  - id: KnLmt
+    content_type: general_reference
 
-  - id: RnEv
+  - id: Qstrt
     content_type: how_to
 
-  - id: RtrvlEv
-    content_type: general_reference
+  - id: RIndxUpdt
+    content_type: how_to
 
-  - id: AnsEv
-    content_type: general_reference
+  - id: RNEvalReports
+    content_type: release_note
+
+  - id: RNInitialSnapshot
+    content_type: release_note
 
   - id: RecEvRes
     content_type: eval_results
 
-  - id: KnLmt
-    content_type: general_reference
-
-  - id: SysArch
-    content_type: explanation
-
-  - id: IndxPipe
-    content_type: explanation
+  - id: RnEv
+    content_type: how_to
 
   - id: RtrvPipe
     content_type: explanation
 
-  - id: AnsGenCit
-    content_type: explanation
-
-  - id: EvArch
-    content_type: explanation
-
-  - id: APIOvrvw
-    content_type: overview
+  - id: RtrvlEv
+    content_type: general_reference
 
   - id: SrchAPI
     content_type: api_reference
 
-  - id: AnsAPI
-    content_type: api_reference
+  - id: SrchAnsOvrvw
+    content_type: overview
 
-  - id: HlthAPI
-    content_type: api_reference
+  - id: SrchDoc
+    content_type: how_to
 
-  - id: Errs
-    content_type: general_reference
+  - id: SysArch
+    content_type: explanation
 
-  - id: CnfgRef
-    content_type: general_reference
+  - id: TutIndx
+    content_type: tutorial
 
-  - id: EvalRef
-    content_type: general_reference
-
-  - id: Gloss
-    content_type: general_reference
-
-  - id: RN
-    content_type: release_note
+  - id: TutSrch
+    content_type: tutorial

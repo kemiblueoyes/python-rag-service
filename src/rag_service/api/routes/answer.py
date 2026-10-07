@@ -135,8 +135,9 @@ ANSWER_UNAVAILABLE_RESPONSE = {
     response_model=AnswerResponse,
     summary="Generate a grounded answer",
     description=(
-        "Retrieve relevant documentation and generate an answer "
-        "grounded in validated source content."
+        "Search indexed documentation and generate an answer based on the retrieved "
+        "content. The response includes citations to the sources used. "
+        "Optional `filters` narrow the documents searched."
     ),
     responses={
         200: {

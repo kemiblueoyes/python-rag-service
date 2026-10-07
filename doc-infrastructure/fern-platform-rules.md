@@ -156,7 +156,7 @@ Use a plain Markdown image when the image does not need a caption:
 
 Fern has native single-sourcing. ([Build With Fern](https://buildwithfern.com/learn/docs/writing-content/reusable-snippets?utm_source=chatgpt.com))
 
-Create snippets in fern/docs/snippets and reuse them with:
+If it makes sense to, create snippets in fern/docs/snippets and reuse them with:
 
 \<Markdown src="/snippets/api-key-prerequisite.mdx" /\>
 

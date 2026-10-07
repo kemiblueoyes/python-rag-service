@@ -110,8 +110,10 @@ SEARCH_UNAVAILABLE_RESPONSE = {
     response_model=SearchResponse,
     summary="Search indexed documentation",
     description=(
-        "Retrieve documentation chunks through the hybrid retrieval pipeline "
-        "without generating an answer."
+        "Search indexed documentation and retrieve relevant content chunks. "
+        "Each result includes a text excerpt, document details, a source URL, "
+        "and a relevance score. Optional `filters` narrow the documents searched.\n\n"
+        "This endpoint does not generate an answer."
     ),
     responses={
         200: {
