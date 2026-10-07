@@ -55,7 +55,8 @@ class SearchFilters(BaseModel):
         description=(
             "Limit results by the type of document the content came from, "
             "such as 'post' or 'page' for WordPress content. Provide one type "
-            "as a string or multiple types as a list of strings, such as ['post', 'page'].\n\n"
+            "as a string or multiple types as a list of strings, such as "
+            "['post', 'page'].\n\n"
             "If omitted, searches all content types in the index."
         ),
     )

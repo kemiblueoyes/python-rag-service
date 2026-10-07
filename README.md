@@ -923,9 +923,34 @@ Evaluation datasets live in `evaluation/datasets/` and generated evaluation arti
 
 Documentation for the Python RAG Service is currently being built. The public pages live in `fern/docs` and are authored as MDX with Fern, which publishes the documentation site (coming soon). The set covers installation, configuration, indexing, search, grounded answers, architecture, evaluation, and the API. Many of those pages are still drafts.
 
-`doc-infrastructure/` defines how those pages are written. The style guide, terminology reference, and Fern platform rules set the voice, preferred terms, and Fern publishing rules. `content-model.yml` and `page-registry.yml` define required frontmatter, content types, and the canonical page list. Templates in the same directory show the expected structure for each content type.
+`doc-infrastructure/` defines how those pages are written.
 
-`src/rag_service/commands/documentation/` checks the pages against that contract. `validate_docs` runs frontmatter, content-type structure, Fern authoring rules, Markdown lint, `last_modified` metadata, the generated glossary, Vale, the OpenAPI specification, and `fern check`. `update_last_modified` writes each authored page's `last_modified` date from Git. Vale reads `.vale.ini` and the rules in `styles/`. The Microsoft package covers general prose, and `styles/RAGService/` covers project terminology, headings, citations, and how the documentation describes system behavior.
+- `style-guide.md` sets the voice.
+- `terminology.md` sets preferred terms.
+- `fern-platform-rules.md` sets the Fern publishing rules.
+- `content-model.yml` defines required frontmatter and content types.
+- `page-registry.yml` is the generated canonical page list.
+- Templates show the expected structure for each content type.
+
+`src/rag_service/commands/documentation/` checks the pages against that contract.
+
+- `validate_docs` runs:
+  - the page registry
+  - frontmatter
+  - content-type structure
+  - Fern authoring rules
+  - Markdown lint
+  - `last_modified` metadata
+  - the generated glossary
+  - Vale
+  - the OpenAPI specification
+  - `fern check`
+- `update_page_registry` writes `doc-infrastructure/page-registry.yml` from the `id` and `content_type` of active MDX pages under `fern/docs/pages`, together with the generated API reference page IDs defined in the command.
+  - Archived pages are omitted.
+  - Duplicate page IDs fail generation.
+  - `--check` verifies that the registry matches those sources.
+- `update_last_modified` writes each authored page's `last_modified` date from Git.
+- Vale reads `.vale.ini` and the rules in `styles/`. The Microsoft package covers general prose, and `styles/RAGService/` covers project terminology, headings, citations, and how the documentation describes system behavior.
 
 ## License
 
