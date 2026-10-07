@@ -1,0 +1,51 @@
+---
+id: RNEvalReports
+title: Recorded evaluation reports added
+subtitle: Inspect saved retrieval results, answer checks, and human review for dataset version 1.5.
+description: Saved evaluation reports and a matching dataset snapshot are now available for reviewing individual cases and comparing evaluation runs.
+content_type: release_note
+lifecycle_status: draft
+topics: [topic-release-history, topic-evaluation, topic-retrieval-evaluation, topic-answer-evaluation]
+components: [component-evaluation-framework]
+tags: [evaluation, reports]
+related_pages: [RecEvRes, RnEv, RtrvlEv, AnsEv]
+last_modified: 2026-10-06
+audience: [secondary]
+---
+
+Saved evaluation reports are now available for The Doc Landscape corpus using
+dataset version `1.5`. You can inspect the evidence behind the recorded results
+and compare individual cases with your own evaluation runs.
+
+## What's changed
+
+The [evaluation snapshot directory](https://github.com/kemiblueoyes/python-rag-service/tree/main/evaluation/reports/doc-landscape-v1.5-2026-10-05)
+now includes:
+
+- **Retrieval reports** with returned evidence, relevance judgments, metrics, and
+  case outcomes.
+- **Answer reports** with generated answers, evidence-sufficiency results, and
+  citation checks.
+- **Human-review reports** with scores for support, completeness, unsupported
+  details, and focus across 14 saved answers.
+- **A matching dataset snapshot** with 22 queries, filters, source judgments, and
+  answer expectations.
+
+Each report is available as Markdown for reading and JSON for programmatic
+comparison. The Recorded evaluation results page links to these files and
+explains the findings and comparison limits.
+
+## Known issues
+
+The retrieval report records an October 3 run; the answer report and human review
+record August 28 results. These are separate runs, even though they use the same
+dataset version. The snapshots don't include the full historical index, an
+implementation commit, or every retrieval setting, so they don't provide all the
+inputs needed to reproduce those runs exactly.
+
+## Related documentation
+
+- **[Recorded evaluation results](/docs/evaluate/recorded-evaluation-results)**: Review the benchmark, saved reports, findings, and limitations.
+- **[Run the evaluation](/docs/evaluate/run-the-evaluation)**: Generate reports for your own evaluation run.
+- **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation)**: Understand retrieval metrics and case pass rules.
+- **[Answer evaluation](/docs/evaluate/answer-evaluation)**: Understand automated answer checks and human-review criteria.
