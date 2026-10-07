@@ -10,7 +10,7 @@ components: [component-wordpress-connector, component-indexing-pipeline]
 prerequisites: [IndxWP]
 next_steps: [SrchDoc]
 related_pages: [IndxPipe, TutIndx]
-last_modified: 2026-09-29
+last_modified: 2026-10-07
 audience: [primary]
 ---
 
@@ -49,9 +49,7 @@ Embedding finishes before any Qdrant delete, so a Voyage failure doesn't remove 
 Run a full rebuild when you change the embedding model, the embedding dimension, the chunking rules, or the stored payload structure.
 An incremental update can't refresh vectors that those changes leave behind, because unchanged documents aren't embedded again.
 
-```bash
-uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
-```
+<Markdown src="/docs/snippets/code/rebuild-vector-index.mdx" />
 
 `--rebuild-vector-index` embeds every current document and replaces its Qdrant points.
 See [Index WordPress content](/docs/index-content/index-wordpress-content) for what that rebuild writes.

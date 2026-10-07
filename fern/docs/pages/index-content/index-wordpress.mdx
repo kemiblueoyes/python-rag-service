@@ -10,7 +10,7 @@ components: [component-wordpress-connector, component-indexing-pipeline]
 prerequisites: [ConfSrv]
 next_steps: [Auth]
 related_pages: [IndxPipe, RIndxUpdt, TutIndx]
-last_modified: 2026-09-29
+last_modified: 2026-10-07
 audience: [primary, secondary]
 ---
 
@@ -31,9 +31,7 @@ Run it for the first build. After WordPress content changes, use
 
 From the project directory, run:
 
-```bash
-uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
-```
+<Markdown src="/docs/snippets/code/rebuild-vector-index.mdx" />
 
 `--rebuild-vector-index` fetches the published records in `WORDPRESS_COLLECTIONS`, processes
 every eligible document, creates embeddings, and replaces the matching points (vector records)

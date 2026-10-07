@@ -9,7 +9,7 @@ topics: [topic-integration, topic-api, topic-authentication]
 components: [component-public-api]
 prerequisites: [Auth, IndxWP]
 related_pages: [Errs, IntWP, SrchDoc, GenAns]
-last_modified: 2026-10-05
+last_modified: 2026-10-07
 audience: [primary]
 ---
 
@@ -153,15 +153,7 @@ When `sufficient_evidence` is false, `sources` is empty. Show `answer` on its ow
 When `call_rag` returns a status other than 200, `payload` is the public error body. A missing or
 wrong API key looks like this:
 
-```json
-{
-  "error": {
-    "code": "authentication_failed",
-    "message": "A valid API key is required.",
-    "details": []
-  }
-}
-```
+<Markdown src="/docs/snippets/code/authentication-failed-error-body.mdx" />
 
 For documented API errors, read `payload["error"]["code"]` to choose how your application responds.
 Treat authentication failures as an application configuration problem. Use validation details to identify

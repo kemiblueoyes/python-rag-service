@@ -10,15 +10,14 @@ components: [component-retrieval-service, component-public-api]
 prerequisites: [IndxWP, Auth]
 next_steps: [GenAns, IntApp]
 related_pages: [SrchAPI, RtrvPipe, TutSrch]
-last_modified: 2026-10-02
+last_modified: 2026-10-07
 audience: [primary]
 ---
 
 Use `POST /v1/search` to retrieve ranked documentation for a natural-language query.
 The endpoint runs hybrid retrieval and returns the selected chunks as search results.
 
-The examples call a service at `http://127.0.0.1:8000`.
-See [Quickstart](/docs/get-started/quickstart) if that service isn't running yet.
+<Markdown src="/docs/snippets/local-service-examples.mdx" />
 
 ## Prerequisites
 
@@ -28,8 +27,7 @@ See [Quickstart](/docs/get-started/quickstart) if that service isn't running yet
 <Steps toc={true}>
 ## Send a search request
 
-Send `POST /v1/search` with `Content-Type: application/json` and your API key.
-The body needs a `query` string. The service trims leading and trailing whitespace, and it rejects an empty query.
+<Markdown src="/docs/snippets/send-request-header-body.mdx" endpoint="POST /v1/search" />
 
 <CodeBlocks>
 ```bash curl
@@ -66,9 +64,7 @@ with urlopen(request) as response:
 
 </CodeBlocks>
 
-A successful search returns `200`. The body echoes `query` and includes a `results` list.
-The Python example prints that body only when the status is `200`. For any other status,
-the example stops with an error and doesn't print the body.
+<Markdown src="/docs/snippets/successful-return-python-example.mdx" includes="a `results` list" />
 
 ## Narrow results with filters and a limit
 
@@ -158,12 +154,11 @@ Titles, excerpts, and URLs come from your index. This sample shows the response 
 }
 ```
 
-A real `chunk_id` is `{document_id}:chunk:v1:` followed by a content hash. `<sha256>` stands in for that hash.
-
-Use `title`, `heading_path`, and `excerpt` when you display the passage.
-`url` is the source document's URL. `anchor` is the heading anchor, and it's `null` when the chunk has no anchor.
-`chunk_id` identifies the chunk, and `document_id` identifies its document.
-`score` is the rerank score for this query. The retrieval service reranks the fused candidates when it handles the request and returns that score.
+- <Markdown src="/docs/snippets/real-chunk-id-format.mdx" />
+- Use `title`, `heading_path`, and `excerpt` when you display the passage.
+- `url` is the source document's URL. `anchor` is the heading anchor, and it's `null` when the chunk has no anchor.
+- `chunk_id` identifies the chunk, and `document_id` identifies its document.
+- `score` is the rerank score for this query. The retrieval service reranks the fused candidates when it handles the request and returns that score.
 
 See [Search API](api:POST/reference/search) for the response schema.
 
@@ -186,23 +181,16 @@ Your client can show the ranked chunks, or an empty state when `results` is empt
 
 ## Troubleshooting
 
-Check the terminal where you started the API with uvicorn. The service logs the failed operation and a diagnostic reason there.
+<Markdown src="/docs/snippets/check-uvicorn-for-logs.mdx" />
 
-### 401 `authentication_failed`
-
-Send an `X-API-Key` that matches the service's `RAG_API_KEY`.
-A missing or wrong key makes `POST /v1/search` return `401` with `authentication_failed`.
-See [Authentication](/docs/get-started/authentication) for the API key checks.
+<Markdown src="/docs/snippets/authentication-failed.mdx" endpoint="POST /v1/search" />
 
 ### 422 `validation_error`
 
 Check the query, the supported filters, and `limit`.
 `POST /v1/search` returns `422` with `validation_error` when the request doesn't match the schema.
 
-### 503 `authentication_unavailable`
-
-Set `RAG_API_KEY` in the service's `.env`, then restart the API.
-`POST /v1/search` returns `503` with `authentication_unavailable` when that key isn't set.
+<Markdown src="/docs/snippets/authentication-unavailable.mdx" endpoint="POST /v1/search" />
 
 ### 503 `retrieval_unavailable`
 

@@ -154,7 +154,7 @@ Use a plain Markdown image when the image does not need a caption:
 
 ## Reusable snippets
 
-Fern has native single-sourcing. ([Build With Fern](https://buildwithfern.com/learn/docs/writing-content/reusable-snippets?utm_source=chatgpt.com))
+Fern has native single-sourcing. ([Build With Fern](https://buildwithfern.com/learn/docs/writing-content/reusable-snippets))
 
 If it makes sense to, create snippets in fern/docs/snippets and reuse them with:
 
@@ -170,7 +170,7 @@ Don't make entire content-type sections reusable just to reduce duplication. Two
 
 ## Changelog should use Fern's changelog feature
 
-Rather than building an ordinary Markdown page containing every release, use Fern's dedicated changelog support. Fern supports a changelog folder, post metadata, tags, descriptions, authors, draft entries, and changelog-specific layouts. ([Build With Fern](https://buildwithfern.com/learn/docs/configuration/changelogs?utm_source=chatgpt.com))
+Rather than building an ordinary Markdown page containing every release, use Fern's dedicated changelog support. Fern supports a changelog folder, post metadata, tags, descriptions, authors, draft entries, and changelog-specific layouts. ([Build With Fern](https://buildwithfern.com/learn/docs/configuration/changelogs))
 
 Individual entries still follow our content model for a release note.
 

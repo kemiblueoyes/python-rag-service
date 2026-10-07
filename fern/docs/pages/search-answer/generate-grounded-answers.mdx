@@ -10,7 +10,7 @@ components: [component-answer-generation-service, component-public-api]
 prerequisites: [ConfSrv, IndxWP, Auth]
 next_steps: [IntApp]
 related_pages: [AnsAPI, AnsGenCit, SrchDoc]
-last_modified: 2026-10-02
+last_modified: 2026-10-07
 audience: [primary]
 ---
 
@@ -18,8 +18,7 @@ audience: [primary]
 the answer, its cited sources, and whether the evidence was sufficient.
 The endpoint calls an OpenAI language model (LLM). That call needs `OPENAI_API_KEY` in the service's `.env`.
 
-The examples call a service at `http://127.0.0.1:8000`.
-See [Quickstart](/docs/get-started/quickstart) if that service isn't running yet.
+<Markdown src="/docs/snippets/local-service-examples.mdx" />
 
 ## Prerequisites
 
@@ -30,8 +29,8 @@ See [Quickstart](/docs/get-started/quickstart) if that service isn't running yet
 <Steps toc={true}>
 ## Send an answer request
 
-Send `POST /v1/answer` with `Content-Type: application/json` and your API key.
-The body needs a `query` string. The service trims leading and trailing whitespace, and it rejects an empty query.
+<Markdown src="/docs/snippets/send-request-header-body.mdx" endpoint="POST /v1/answer" />
+
 The request doesn't include `limit`. Sending `limit` returns `422` with `validation_error`.
 
 <CodeBlocks>
@@ -69,8 +68,7 @@ with urlopen(request) as response:
 
 </CodeBlocks>
 
-A successful request returns `200`. The body echoes `query` and includes `answer`, `sources`, and `sufficient_evidence`.
-The Python example prints that body only when the status is `200`. For any other status, the example stops with an error and doesn't print the body.
+<Markdown src="/docs/snippets/successful-return-python-example.mdx" includes="`answer`, `sources`, and `sufficient_evidence`" />
 
 ## Narrow retrieval with filters
 
@@ -154,9 +152,9 @@ This sample shows the response shape. Titles, excerpts, and URLs come from your 
 }
 ```
 
-A real `chunk_id` is `{document_id}:chunk:v1:` followed by a content hash. `<sha256>` stands in for that hash.
-`anchor` is the heading anchor, and it's `null` when the chunk has no anchor.
-Use `url` with `anchor` when you link a reader to the cited passage.
+- <Markdown src="/docs/snippets/real-chunk-id-format.mdx" />
+- `anchor` is the heading anchor, and it's `null` when the chunk has no anchor.
+- Use `url` with `anchor` when you link a reader to the cited passage.
 
 See [Answer generation and citations](/docs/architecture/answer-generation-and-citations) for how context, generation, and citation checks fit together.
 See [Answer API](api:POST/reference/answer) for the response schema.
@@ -184,11 +182,11 @@ Your client can show the answer with its sources when `sufficient_evidence` is `
 
 ## Troubleshooting
 
-Check the terminal where you started the API with uvicorn. The service logs the failed operation and a diagnostic reason there.
+<Markdown src="/docs/snippets/check-uvicorn-for-logs.mdx" />
 
-A missing or wrong `X-API-Key` returns `401` with `authentication_failed`.
-If `RAG_API_KEY` isn't set, `POST /v1/answer` returns `503` with `authentication_unavailable`.
-See [Authentication](/docs/get-started/authentication) for the API key checks.
+<Markdown src="/docs/snippets/authentication-failed.mdx" endpoint="POST /v1/answer" />
+
+<Markdown src="/docs/snippets/authentication-unavailable.mdx" endpoint="POST /v1/answer" />
 
 ### 503 `answer_unavailable`
 

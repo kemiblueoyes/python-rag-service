@@ -9,7 +9,7 @@ topics: [topic-installation, topic-configuration, topic-authentication, topic-in
 components: [component-indexing-pipeline, component-retrieval-service, component-public-api]
 next_steps: [SrchDoc, GenAns]
 related_pages: [Instl, ConfSrv, Auth, IndxWP]
-last_modified: 2026-10-05
+last_modified: 2026-10-07
 audience: [primary]
 ---
 
@@ -118,9 +118,7 @@ for each step live on the related pages.
     command reads the configured WordPress site, writes canonical documents and chunks 
     under `data/`, and stores embeddings in Qdrant:
 
-    ```bash
-    uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
-    ```
+    <Markdown src="/docs/snippets/code/rebuild-vector-index.mdx" />
 
     When the command finishes, it prints how many canonical documents and chunks
     it wrote, and how many documents and chunks it stored in the vector index.

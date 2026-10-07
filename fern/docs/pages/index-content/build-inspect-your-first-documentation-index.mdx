@@ -10,7 +10,7 @@ components: [component-wordpress-connector, component-indexing-pipeline]
 prerequisites: [ConfSrv, IndxWP]
 next_steps: [SrchDoc, GenAns]
 related_pages: [IndxWP, RIndxUpdt, IndxPipe]
-last_modified: 2026-10-02
+last_modified: 2026-10-07
 audience: [primary]
 ---
 
@@ -32,9 +32,7 @@ post or page for the connector to index.
 
 From the project directory, run a full rebuild:
 
-```bash
-uv run python -m rag_service.commands.index_wordpress --rebuild-vector-index
-```
+<Markdown src="/docs/snippets/code/rebuild-vector-index.mdx" />
 
 The WordPress connector fetches the published records in `WORDPRESS_COLLECTIONS` and maps them
 to canonical documents. The indexing pipeline creates chunks from eligible documents. The
