@@ -978,8 +978,32 @@ navigation entries and links before publishing. The glossary generator owns the
 generated glossary page's published status. Templates and reusable snippets do
 not receive page-level frontmatter or content-type structure checks.
 
-The production publishing workflow should run this command before deployment
-and stop if validation fails.
+The `CI` workflow uses production validation on `main` and regular validation
+on other branches and pull requests.
+
+### Publish documentation
+
+On pushes to `main`, the `CI` workflow runs tests and production documentation
+validation, publishes that same commit to
+<https://python-rag-service.docs.buildwithfern.com/>, and checks the live links.
+Every successful push to `main` republishes the documentation, including pushes
+that only change code.
+Before enabling publication, create a Fern token for the `doc-landscape`
+organization with `fern token` and add it to GitHub Actions as the repository
+secret `FERN_TOKEN` under **Settings > Secrets and variables > Actions**.
+
+To publish without a new commit, open **Actions > CI > Run workflow** and select
+`main`. The manual run repeats tests and validation before publishing. Pull
+requests and other branches run validation only.
+
+The workflow installs the Fern version from `fern/fern.config.json` and uses the
+Python and documentation lint lockfiles. Validation failure stops publication.
+A missing token fails the publish job with a setup message. Runs on the same
+branch are serialized, and a superseded commit is skipped before publishing.
+
+The `Documentation link check` workflow runs after publication, every Monday,
+and on manual request. A link-check failure occurs after publication and does
+not roll it back. Fix the reported links and push the correction to `main`.
 
 ## License
 

@@ -2,19 +2,34 @@ name: Documentation link check
 
 on:
   workflow_dispatch:
+  workflow_call:
   schedule:
     - cron: "0 15 * * 1" # Run every Monday at 3pm UTC
+
+permissions:
+  contents: read
 
 jobs:
   check-links:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - name: Install Fern CLI
-        run: npm install -g fern-api
+        run: |
+          FERN_VERSION=$(node -p "require('./fern/fern.config.json').version")
+          npm install -g "fern-api@${FERN_VERSION}"
 
       - name: Check published documentation links
         run: >

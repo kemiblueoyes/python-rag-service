@@ -6,6 +6,8 @@
 # - Installs Python and your dependencies
 # - Checks code with Ruff
 # - Runs your tests
+# - Validates documentation
+# - Publishes documentation on main, then checks live links
 
 name: CI
 
@@ -13,6 +15,15 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Do not interrupt a production deployment already in progress.
+  cancel-in-progress: false
 
 jobs:
   test:
@@ -36,11 +47,19 @@ jobs:
 
       # Install project + dev dependencies from pyproject.toml / uv.lock
       - name: Install dependencies
-        run: uv sync --dev
+        run: uv sync --dev --locked
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
 
       # Install Fern so documentation validation can run
       - name: Install Fern CLI
-        run: npm install -g fern-api
+        run: |
+          FERN_VERSION=$(node -p "require('./fern/fern.config.json').version")
+          npm install -g "fern-api@${FERN_VERSION}"
 
       # Install markdownlint-cli2 from package-lock.json
       - name: Install documentation lint dependencies
@@ -67,4 +86,67 @@ jobs:
 
       # Validate generated OpenAPI and Fern configuration
       - name: Validate documentation
-        run: uv run python -m rag_service.commands.documentation.validate_docs
+        run: |
+          if [ "$GITHUB_REF" = 'refs/heads/main' ]; then
+            uv run python -m rag_service.commands.documentation.validate_docs --production
+          else
+            uv run python -m rag_service.commands.documentation.validate_docs
+          fi
+
+  publish-docs:
+    name: Publish Fern documentation
+    needs: test
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      published: ${{ steps.publish.outcome == 'success' }}
+    steps:
+      - name: Check out validated commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Check whether the validated commit is still current
+        id: current-commit
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          if [ "$(git rev-parse FETCH_HEAD)" = "$GITHUB_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+            echo 'Skipping publication because main has a newer commit.'
+          fi
+
+      - name: Set up Node.js
+        if: steps.current-commit.outputs.current == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Fern CLI
+        if: steps.current-commit.outputs.current == 'true'
+        run: |
+          FERN_VERSION=$(node -p "require('./fern/fern.config.json').version")
+          npm install -g "fern-api@${FERN_VERSION}"
+
+      - name: Publish production documentation
+        id: publish
+        if: steps.current-commit.outputs.current == 'true'
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+        run: |
+          if [ -z "$FERN_TOKEN" ]; then
+            echo '::error::Add the FERN_TOKEN repository secret before publishing.'
+            exit 1
+          fi
+          fern generate --docs --instance python-rag-service.docs.buildwithfern.com
+
+  check-published-links:
+    name: Check published documentation links
+    needs: publish-docs
+    if: needs.publish-docs.outputs.published == 'true'
+    uses: ./.github/workflows/docs-link-check.yml
