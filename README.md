@@ -202,7 +202,7 @@ The answer endpoint accepts a natural-language query and optional metadata filte
 
 The route always retrieves 5 chunks through the same hybrid retrieval pipeline as search, then runs grounded answer generation and citation validation.
 
-If retrieval, the language model, the context budget, or citation validation fails, the API returns `503 Service Unavailable`. It does not return `retrieval_unavailable`:
+If retrieval, the language model, the context budget, or citation validation fails, the API returns `503 Service Unavailable`. It does not return `retrieval_unavailable`. The same response is returned when `GENERATION_ENABLED` is `false`:
 
 ```json
 {
@@ -214,7 +214,7 @@ If retrieval, the language model, the context budget, or citation validation fai
 }
 ```
 
-Both endpoints require an `X-API-Key` header. A missing or wrong key returns `401` with `authentication_failed`. If `RAG_API_KEY` is unset, both endpoints return `503` with `authentication_unavailable`.
+Both endpoints require an `X-API-Key` header. A missing or wrong key returns `401` with `authentication_failed`. The API refuses to start when `RAG_API_KEY` is blank. If a request is handled while that key is unset, both endpoints return `503` with `authentication_unavailable`.
 
 See `docs/design/003-api-design.md` for the current API contract.
 
@@ -690,6 +690,7 @@ The internal answer-generation workflow accepts a question and ranked retrieval 
 Configure answer generation in `.env`:
 
 ```dotenv
+GENERATION_ENABLED=true
 GENERATION_PROVIDER=openai
 GENERATION_MODEL=gpt-5.6-terra
 GENERATION_REASONING_EFFORT=low
@@ -697,6 +698,8 @@ GENERATION_CONTEXT_BUDGET_TOKENS=8000
 GENERATION_MAX_OUTPUT_TOKENS=1000
 OPENAI_API_KEY=your-openai-api-key
 ```
+
+Set `GENERATION_ENABLED=false` to start the API and serve search without `OPENAI_API_KEY`. `POST /v1/answer` then returns `503` with `answer_unavailable`.
 
 `GENERATION_CONTEXT_BUDGET_TOKENS` applies to the fully rendered evidence blocks. The workflow includes whole sources in retrieval order. It doesn't truncate chunks to fit the budget.
 

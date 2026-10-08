@@ -10,13 +10,16 @@ components: [component-wordpress-connector, component-retrieval-service, compone
 prerequisites: [Instl]
 next_steps: [IndxWP]
 related_pages: [CnfgRef]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary]
 ---
 
 Set the provider, content source, and retrieval values the Python RAG Service reads from `.env`.
 The example file already sets the embedding model, reranking model, retrieval defaults, and WordPress collections.
 This page fills the values that are still empty and the ones that depend on your Qdrant instance and WordPress site.
+
+When the API process starts, it checks these local settings and the chunk file. It doesn't call Voyage, OpenAI, Qdrant, or WordPress during that check.
+`GET /health` reports that the process is running after startup succeeds. A successful start doesn't show that those services are reachable.
 
 Indexing and search also need `RAG_API_KEY`. See [Authentication](/docs/get-started/authentication) for how to set that key.
 For every setting's type, default, and accepted values, see [Configuration reference](/docs/reference/configuration-reference).
@@ -87,7 +90,8 @@ For every setting's type, default, and accepted values, see [Configuration refer
     and the support gate. 
     
     `LEXICAL_CORPUS_PATH` is `data/wordpress-chunks.json`, which is the chunk
-    file the WordPress indexing command writes. 
+    file the WordPress indexing command writes. The API reads that file when it starts.
+    Index WordPress content before you start the API. Startup stops when the file is missing, unreadable, malformed, invalid, or empty.
     
     `RETRIEVAL_SUPPORT_CUTOFF` is `0.70`. After reranking, the retrieval service returns no results 
     when the highest rerank score is below that cutoff.
@@ -98,14 +102,21 @@ For every setting's type, default, and accepted values, see [Configuration refer
 
     ## Set the OpenAI API key
 
-    OpenAI generates answers for `POST /v1/answer`. Indexing and search don't use this key. Set it in `.env`:
+    OpenAI generates answers for `POST /v1/answer`. Indexing and search don't use this key.
+    Answer generation is on by default. Set the key in `.env`:
 
     ```dotenv
+    GENERATION_ENABLED=true
     OPENAI_API_KEY=your-openai-api-key
     ```
 
+    Set `GENERATION_ENABLED=false` when you want search without answer generation.
+    The API can then start without `OPENAI_API_KEY`. `POST /v1/answer` returns `503` with `answer_unavailable`, and the API log uses `reason=generation_disabled`.
+    Search still uses Voyage and Qdrant.
+
     The example file already sets `GENERATION_PROVIDER` to `openai`, `GENERATION_MODEL` to `gpt-5.6-terra`,
     and the context and output token limits. Leave those unless you intend to change the language model.
+    When `GENERATION_ENABLED` is `true`, startup also requires a non-empty model name and token budgets of at least 1.
 
     `.env` now has the Voyage, Qdrant, WordPress, retrieval, and OpenAI values the service needs. Don't commit `.env`.
 </Steps>

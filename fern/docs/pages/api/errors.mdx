@@ -8,7 +8,7 @@ lifecycle_status: published
 topics: [topic-error-handling]
 components: [component-public-api]
 related_pages: [SrchAPI, AnsAPI, Auth]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary, secondary]
 ---
 
@@ -106,9 +106,10 @@ Both routes check `X-API-Key` before retrieval or answer generation.
 service's `RAG_API_KEY`. The body is the example under **Error response**. `details` is empty.
 
 `authentication_unavailable` is HTTP 503. `RAG_API_KEY` isn't set on the service, so the routes
-can't authenticate a client. The message is `API authentication is temporarily unavailable.`
-`details` is empty. The service logs `operation=authentication` and `reason=missing_service_api_key`.
-That log line isn't part of the response.
+can't authenticate a client. Startup also stops when that key is blank. The route returns this
+response if it receives a request while the key is unset. The message is
+`API authentication is temporarily unavailable.` `details` is empty. The service logs
+`operation=authentication` and `reason=missing_service_api_key`. That log line isn't part of the response.
 
 See [Authentication](/docs/get-started/authentication) to set the key and send the header.
 
@@ -133,8 +134,9 @@ public body covers every cause below. The response doesn't include provider exce
 
 The route returns this code when:
 
+- `GENERATION_ENABLED` is `false`. The service logs `operation=generation` and `reason=generation_disabled`. It doesn't build the answer generator or call providers.
 - Retrieval can't complete.
-- The language-model provider key (`OPENAI_API_KEY`) is missing.
+- The language-model provider key (`OPENAI_API_KEY`) is missing at request time. When `GENERATION_ENABLED` is `true`, startup also requires a non-empty key.
 - The request to the language-model provider fails.
 - The language model refuses the request or returns no usable structured answer.
 - The formatted context for the highest-ranked chunk exceeds the configured token budget.

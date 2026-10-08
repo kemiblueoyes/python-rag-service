@@ -9,7 +9,7 @@ topics: [topic-configuration]
 components: [component-wordpress-connector, component-retrieval-service, component-vector-database, component-embedding-provider, component-language-model-provider]
 next_steps: [IndxWP]
 related_pages: [ConfSrv, Auth, RtrvPipe]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary, secondary]
 ---
 
@@ -27,7 +27,7 @@ The service uses one shared API key. Clients send it on search and answer reques
 
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
-| `RAG_API_KEY` | string | Yes, for `POST /v1/search` and `POST /v1/answer` | none | A non-empty string | Clients send this value in the `X-API-Key` header. An empty value makes those endpoints return `503` with `authentication_unavailable`. `GET /health` doesn't check the key. |
+| `RAG_API_KEY` | string | Yes, for the API to start | none | A non-empty string | Clients send this value in the `X-API-Key` header. The API requires a non-empty value before it starts. `GET /health` doesn't check the key. If search or answer receives a request while the key is unset, the route returns `503` with `authentication_unavailable`. |
 
 ## Embedding
 
@@ -38,9 +38,9 @@ the request batch size, and the API key.
 | --- | --- | --- | --- | --- | --- |
 | `EMBEDDING_PROVIDER` | string | No | `voyage` | `voyage` | Selects the embedding provider. `voyage` is the only supported value. |
 | `EMBEDDING_MODEL` | string | No | `voyage-4-lite` | A Voyage model name | Selects the Voyage model used to create document and query embeddings. |
-| `EMBEDDING_DIMENSION` | integer | No | `1024` | An integer that matches the model output | Sets the vector size expected by Qdrant. This value must match the output dimension of the configured embedding model. The default `voyage-4-lite` configuration uses 1,024 dimensions.|
+| `EMBEDDING_DIMENSION` | integer | No | `1024` | An integer of at least 1 that matches the model output | Sets the vector size stored in Qdrant. Use the output dimension of `EMBEDDING_MODEL`. The default `voyage-4-lite` configuration uses 1,024 dimensions. Startup rejects a value below 1. It doesn't call Voyage to compare the dimension with the model. |
 | `EMBEDDING_BATCH_SIZE` | integer | No | `128` | An integer of at least 1 | Sets how many texts the indexing command sends to Voyage in one embedding request. |
-| `VOYAGE_API_KEY` | string | Yes, for indexing, search, and answer generation | none | A Voyage API key | Authenticates requests to the Voyage embedding and reranking. |
+| `VOYAGE_API_KEY` | string | Yes, for the API to start | none | A non-empty Voyage API key | Authenticates Voyage embedding and reranking requests. The API requires a non-empty value before it starts. Startup doesn't call Voyage. |
 
 ## Vector database
 
@@ -75,7 +75,7 @@ the fusion constant, the chunk file used for BM25, and the score cutoff.
 
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
-| `LEXICAL_CORPUS_PATH` | path | No | `data/wordpress-chunks.json` | A path to a retrieval-ready chunk JSON file | Sets the path to the retrieval-ready chunk file used to build the BM25 index. The default matches the WordPress indexing command's default chunk output. |
+| `LEXICAL_CORPUS_PATH` | path | No | `data/wordpress-chunks.json` | A readable JSON file with at least one valid chunk | Sets the path to the retrieval-ready chunk file used to build the BM25 index. The default matches the WordPress indexing command's default chunk output. The API reads this file when it starts and rejects a missing, unreadable, malformed, invalid, or empty file. |
 | `RETRIEVAL_VECTOR_CANDIDATE_DEPTH` | integer | No | `20` | An integer of at least 1 | Sets the maximum number of vector retrieval candidates sent to reciprocal rank fusion. |
 | `RETRIEVAL_LEXICAL_CANDIDATE_DEPTH` | integer | No | `20` | An integer of at least 1 | Sets the maximum number of BM25 lexical retrieval candidates sent to reciprocal rank fusion. |
 | `RETRIEVAL_FUSED_CANDIDATE_DEPTH` | integer | No | `20` | An integer of at least 1 | Sets how many fused candidates the pipeline sends to the reranker. |
@@ -93,17 +93,18 @@ After fusion, a reranker reorders the candidates. These settings choose that pro
 
 ## Answer generation
 
-Answer requests send retrieved chunks to a language model. These settings choose the model, the reasoning
-effort, the context and output limits, and the API key.
+Answer requests send retrieved chunks to a language model. These settings turn that step on or off and
+choose the model, the reasoning effort, the context and output limits, and the API key.
 
 | Setting | Type | Required | Default | Accepted values | Suggested description |
 | --- | --- | --- | --- | --- | --- |
+| `GENERATION_ENABLED` | boolean | No | `true` | `true`, `false` | Turns answer generation on or off. `true` requires `OPENAI_API_KEY` and the other answer-generation settings when the API starts. `false` lets the API start and serve search without an OpenAI key. `POST /v1/answer` then returns `503` with `answer_unavailable`. |
 | `GENERATION_PROVIDER` | string | No | `openai` | `openai` | Selects the language model provider used for answer generation. `openai` is the only supported value. |
 | `GENERATION_MODEL` | string | No | `gpt-5.6-terra` | A supported OpenAI model name | Selects the OpenAI model used to generate grounded answers. |
 | `GENERATION_REASONING_EFFORT` | string | No | `low` | `none`, `low`, `medium`, `high`, `xhigh`, `max` | Sets the reasoning effort requested from the OpenAI model. |
 | `GENERATION_CONTEXT_BUDGET_TOKENS` | integer | No | `8000` | An integer of at least 1 | Sets the maximum number of retrieved-evidence tokens the service can include in the model context. The service keeps whole chunks in ranked order and doesn't split a chunk to fit the budget. |
 | `GENERATION_MAX_OUTPUT_TOKENS` | integer | No | `1000` | An integer of at least 1 | Sets the maximum number of tokens allowed for the generated answer. |
-| `OPENAI_API_KEY` | string | Yes, for answer generation | none | An OpenAI API key | Authenticates requests to OpenAI for answer generation. |
+| `OPENAI_API_KEY` | string | Yes, when `GENERATION_ENABLED` is `true` | none | A non-empty OpenAI API key | Authenticates OpenAI requests for answer generation. Required before startup when answer generation is on. Leave it unset when `GENERATION_ENABLED` is `false`. |
 
 ## WordPress client
 
@@ -116,7 +117,22 @@ The WordPress client calls the Python service from PHP. Define these constants i
 
 ## Constraints and notes
 
-- `EMBEDDING_DIMENSION` must match the configured embedding model's output. Qdrant stores vectors at
+- When the API process starts, it checks local settings and the chunk file at `LEXICAL_CORPUS_PATH`.
+The check covers `RAG_API_KEY`, `VOYAGE_API_KEY`, and the supported providers.
+It also covers model names, `QDRANT_URL`, `QDRANT_COLLECTION`, and the numeric retrieval limits.
+When answer generation is on, it checks the OpenAI key and the token budgets too.
+A failing check names the setting or file to correct.
+The log doesn't include setting values, credentials, or chunk text.
+- That startup check doesn't call Voyage, OpenAI, Qdrant, or WordPress. A process that stays up has
+valid local configuration. It doesn't show that those services are reachable. `GET /health` reports
+that the process is running.
+- `QDRANT_API_KEY` can be empty for a local Qdrant instance that doesn't require a key. Startup
+doesn't require it. Indexing requires `WORDPRESS_BASE_URL`. The API can start and serve an existing
+index when that value is empty.
+- `GENERATION_ENABLED` defaults to `true`. Set it to `false` for search without answer generation.
+The API can then start without `OPENAI_API_KEY`. An authenticated, valid `POST /v1/answer` returns
+`503` with `answer_unavailable`, and the API log uses `reason=generation_disabled`.
+- `EMBEDDING_DIMENSION` has to match the configured embedding model's output. Qdrant stores vectors at
 that size. After changing the embedding model, embedding dimension, chunking rules, or chunk payload
 structure, run a full index rebuild. See [Index WordPress content](/docs/index-content/index-wordpress-content).
 - `RETRIEVAL_SUPPORT_CUTOFF` applies to the highest rerank score for the query, not to each result.

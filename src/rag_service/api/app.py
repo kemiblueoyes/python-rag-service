@@ -1,4 +1,6 @@
 # Used to confirm that the Python service starts and responds correctly
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import cast
 
 from fastapi import FastAPI
@@ -20,11 +22,22 @@ from rag_service.api.errors import (
 from rag_service.api.models import HealthResponse
 from rag_service.api.routes.answer import router as answer_router
 from rag_service.api.routes.search import router as search_router
+from rag_service.api.startup import validate_api_configuration
+from rag_service.config import settings
 from rag_service.retrieval import RetrievalUnavailableError
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """Validate local API configuration before serving requests."""
+    validate_api_configuration(settings)
+    yield
+
 
 app = FastAPI(
     title="Python RAG Service",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_exception_handler(
@@ -40,18 +53,19 @@ app.add_exception_handler(
 app.include_router(search_router)
 app.include_router(answer_router)
 
+
 @app.get(
     "/health",
     response_model=HealthResponse,
     summary="Check service health",
     description=(
-        "Check whether the Python RAG Service is running and "
-        "responding to requests."
+        "Check whether the Python RAG Service is running and responding to requests."
     ),
 )
 def health_check() -> HealthResponse:
     return HealthResponse(status="ok")
-    
+
+
 app.add_exception_handler(
     AnswerUnavailableError,
     cast(ExceptionHandler, answer_unavailable_exception_handler),

@@ -9,7 +9,7 @@ topics: [topic-installation, topic-configuration, topic-authentication, topic-in
 components: [component-indexing-pipeline, component-retrieval-service, component-public-api]
 next_steps: [SrchDoc, GenAns]
 related_pages: [Instl, ConfSrv, Auth, IndxWP]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary]
 ---
 
@@ -133,7 +133,10 @@ for each step live on the related pages.
     uv run uvicorn rag_service.api.app:app --reload
     ```
 
-    Open `http://127.0.0.1:8000/health`. A running service returns:
+    The API checks local configuration before it serves requests. If a required setting or the chunk file is invalid, the process stops and the log names what to correct.
+    It doesn't contact Voyage, OpenAI, Qdrant, or WordPress during that check.
+
+    Open `http://127.0.0.1:8000/health` after the process stays up. A running service returns:
 
     ```json
     {
@@ -164,8 +167,8 @@ for each step live on the related pages.
     support the query. If that happens, retry with a question your WordPress content
     actually covers.
 
-    A missing or wrong `X-API-Key` returns `401`. If `RAG_API_KEY` isn't set, or Qdrant
-    or Voyage can't be reached, search returns `503`.
+    A missing or wrong `X-API-Key` returns `401`. A blank `RAG_API_KEY` stops the API at startup.
+    If the API can't reach Qdrant or Voyage after startup, search returns `503`.
     
 </Steps>
 

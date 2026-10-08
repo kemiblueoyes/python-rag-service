@@ -39,3 +39,7 @@ class LanguageModelRefusalError(LanguageModelResponseError):
 
 class CitationValidationError(RuntimeError):
     """Raised when a generated answer contains invalid citations."""
+
+
+class GenerationDisabledError(RuntimeError):
+    """Raised when answer generation is turned off."""

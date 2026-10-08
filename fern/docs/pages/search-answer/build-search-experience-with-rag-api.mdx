@@ -10,7 +10,7 @@ components: [component-retrieval-service, component-public-api]
 prerequisites: [IndxWP, Auth]
 next_steps: [IntApp]
 related_pages: [SrchDoc, SrchAPI, RtrvPipe]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary]
 ---
 
@@ -120,7 +120,8 @@ uv run python search_experience.py
 If `RAG_API_KEY` isn't set in that terminal, the script stops before it sends the request.
 A successful search prints status `200`. The body echoes `query` and includes a `results` list.
 A wrong key returns status `401` and `authentication_failed`.
-If the service's own key isn't set, the status is `503` and the code is `authentication_unavailable`.
+A blank `RAG_API_KEY` on the service stops the API at startup.
+If search or answer receives a request while that key is unset, the status is `503` and the code is `authentication_unavailable`.
 See [Authentication](/docs/get-started/authentication).
 
 The `results` list may be empty when retrieval finds no qualifying results. The next step treats that as part of a normal search response.

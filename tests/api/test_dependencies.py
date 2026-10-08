@@ -1,9 +1,12 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from rag_service.api.dependencies import (
     get_answer_generator,
     get_retrieval_service,
 )
+from rag_service.config import settings
 from rag_service.generation import AnswerGenerator
 from rag_service.retrieval import RetrievalService
 
@@ -43,7 +46,10 @@ def test_get_retrieval_service_builds_on_first_retrieve() -> None:
     get_retrieval_service.cache_clear()
 
 
-def test_get_answer_generator_is_cached() -> None:
+def test_get_answer_generator_is_cached(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(settings, "generation_enabled", True)
     generator = MagicMock(spec=AnswerGenerator)
 
     get_answer_generator.cache_clear()

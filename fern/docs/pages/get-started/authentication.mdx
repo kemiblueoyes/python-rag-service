@@ -10,7 +10,7 @@ components: [component-public-api]
 prerequisites: [Instl]
 next_steps: [SrchDoc]
 related_pages: [SrchAPI, AnsAPI, IntApp, Errs]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary]
 ---
 
@@ -35,7 +35,10 @@ Send that key in the `X-API-Key` header from a server-side client.
     Set the key before you start the service.
     If the service is already running, restart it so it reads the new value.
 
-    When `RAG_API_KEY` is empty, both search and answer return `503` with
+    The API checks `RAG_API_KEY` when it starts. A blank value stops startup, and the log names `RAG_API_KEY`.
+    Set the key, then start the service again.
+
+    If search or answer receives a request while the key is unset, the route returns `503` with
     `authentication_unavailable`. A request can succeed only after you set the key.
 
     ## Send the key from a server-side client

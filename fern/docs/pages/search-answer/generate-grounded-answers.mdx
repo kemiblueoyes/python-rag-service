@@ -10,7 +10,7 @@ components: [component-answer-generation-service, component-public-api]
 prerequisites: [ConfSrv, IndxWP, Auth]
 next_steps: [IntApp]
 related_pages: [AnsAPI, AnsGenCit, SrchDoc]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary]
 ---
 
@@ -191,9 +191,15 @@ Your client can show the answer with its sources when `sufficient_evidence` is `
 ### 503 `answer_unavailable`
 
 `POST /v1/answer` returns `503` with `answer_unavailable` when it can't finish the answer.
-Confirm that `OPENAI_API_KEY` is set in the service's `.env`.
-Restart the API after you update `.env`, then retry the request.
-A missing `OPENAI_API_KEY` is one possible cause. Retrieval, generation, context assembly, or citation checking can also produce this error.
+
+If `GENERATION_ENABLED` is `false`, the service returns this error for an authenticated, valid request.
+It doesn't build the answer generator or call Voyage, OpenAI, or Qdrant for that request.
+The API log uses `operation=generation` and `reason=generation_disabled`.
+Set `GENERATION_ENABLED` to `true`, set `OPENAI_API_KEY`, and restart the API.
+
+When answer generation is on, startup requires a non-empty `OPENAI_API_KEY`.
+After startup, retrieval, the language-model request, context assembly, or citation checking can still produce this error.
+Restart the API after you change `.env`, then retry the request.
 
 ## Next steps
 

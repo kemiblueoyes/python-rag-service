@@ -14,10 +14,12 @@ from rag_service.api.models import (
     AnswerSource,
     ErrorResponse,
 )
+from rag_service.config import settings
 from rag_service.generation import AnswerGenerator
 from rag_service.generation.errors import (
     CitationValidationError,
     ContextBudgetError,
+    GenerationDisabledError,
     LanguageModelError,
 )
 from rag_service.retrieval import (
@@ -130,6 +132,7 @@ ANSWER_UNAVAILABLE_RESPONSE = {
     }
 }
 
+
 @router.post(
     "/answer",
     response_model=AnswerResponse,
@@ -189,8 +192,8 @@ ANSWER_UNAVAILABLE_RESPONSE = {
                     }
                 }
             },
-        }
-    }
+        },
+    },
 )
 def answer(
     request: Annotated[
@@ -206,6 +209,11 @@ def answer(
         Depends(get_answer_generator),
     ],
 ) -> AnswerResponse:
+    if not settings.generation_enabled:
+        raise AnswerUnavailableError(
+            "The answer workflow could not be completed."
+        ) from GenerationDisabledError("Answer generation is disabled.")
+
     filters = (
         request.filters.model_dump(exclude_none=True)
         if request.filters is not None
@@ -230,6 +238,7 @@ def answer(
         LanguageModelError,
         ContextBudgetError,
         CitationValidationError,
+        GenerationDisabledError,
     ) as exc:
         raise AnswerUnavailableError(
             "The answer workflow could not be completed."

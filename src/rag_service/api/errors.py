@@ -16,6 +16,7 @@ from rag_service.api.models import (
 from rag_service.generation.errors import (
     CitationValidationError,
     ContextBudgetError,
+    GenerationDisabledError,
     LanguageModelError,
     LanguageModelProviderError,
     LanguageModelRefusalError,
@@ -30,6 +31,13 @@ logger = logging.getLogger(__name__)
 # attach exc_info, or include request data: provider causes can contain secrets.
 # Specific subclasses must precede their parent classes.
 _FAILURE_DIAGNOSTICS = (
+    (
+        GenerationDisabledError,
+        "generation",
+        "generation_disabled",
+        "Answer generation is disabled. "
+        "Set GENERATION_ENABLED to true and restart the service.",
+    ),
     (
         MissingLanguageModelAPIKeyError,
         "generation",
@@ -93,7 +101,8 @@ def _failure_diagnostic(exc: Exception) -> tuple[str, str, str]:
         if isinstance(exc, error_type):
             return operation, reason, message
     return (
-        "answer", "unclassified_answer_failure",
+        "answer",
+        "unclassified_answer_failure",
         "The answer workflow could not complete.",
     )
 

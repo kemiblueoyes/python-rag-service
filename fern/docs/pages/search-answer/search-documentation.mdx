@@ -10,7 +10,7 @@ components: [component-retrieval-service, component-public-api]
 prerequisites: [IndxWP, Auth]
 next_steps: [GenAns, IntApp]
 related_pages: [SrchAPI, RtrvPipe, TutSrch]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary]
 ---
 
@@ -196,6 +196,7 @@ Check the query, the supported filters, and `limit`.
 
 Check the configuration, credentials, and availability of the retrieval dependencies.
 `POST /v1/search` returns `503` with `retrieval_unavailable` when one of those dependencies can't complete the search.
+Startup already checks local settings and the chunk file, so this response means a dependency such as Qdrant or Voyage failed after that check.
 See [Configuration reference](/docs/reference/configuration-reference) for those settings.
 
 ## Next steps

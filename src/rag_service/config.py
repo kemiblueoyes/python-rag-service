@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     reranking_model: str = "rerank-2.5"
 
     # Answer generation
+    generation_enabled: bool = True
     generation_provider: Literal["openai"] = "openai"
     generation_model: str = "gpt-5.6-terra"
     generation_reasoning_effort: Literal[

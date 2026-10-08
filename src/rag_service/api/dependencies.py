@@ -3,6 +3,7 @@ from typing import cast
 
 from rag_service.config import settings
 from rag_service.generation import AnswerGenerator, create_answer_generator
+from rag_service.generation.errors import GenerationDisabledError
 from rag_service.retrieval import (
     RetrievalRequest,
     RetrievalResult,
@@ -39,7 +40,22 @@ def get_retrieval_service() -> RetrievalService:
     return cast(RetrievalService, _LazyRetrievalService())
 
 
+class _GenerationDisabled:
+    """Placeholder resolved before request-body validation.
+
+    FastAPI resolves endpoint dependencies before it validates the
+    body. This object keeps that resolution from building the answer
+    generator or contacting a provider while generation is off.
+    """
+
+    def generate(self, **_kwargs: object) -> object:
+        raise GenerationDisabledError("Answer generation is disabled.")
+
+
 @lru_cache(maxsize=1)
 def get_answer_generator() -> AnswerGenerator:
     """Return the configured answer generator used by API endpoints."""
+    if not settings.generation_enabled:
+        return cast(AnswerGenerator, _GenerationDisabled())
+
     return create_answer_generator(settings)

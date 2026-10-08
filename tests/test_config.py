@@ -1,3 +1,5 @@
+import pytest
+
 from rag_service.config import Settings
 
 
@@ -36,6 +38,7 @@ def test_retrieval_provider_settings_have_expected_defaults() -> None:
     assert settings.qdrant_url == "http://localhost:6333"
     assert settings.qdrant_collection == "rag_chunks"
 
+
 def test_generation_settings_have_expected_defaults() -> None:
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
 
@@ -44,5 +47,16 @@ def test_generation_settings_have_expected_defaults() -> None:
     assert settings.generation_reasoning_effort == "low"
     assert settings.generation_context_budget_tokens == 8_000
     assert settings.generation_max_output_tokens == 1_000
+    assert settings.generation_enabled is True
     assert settings.openai_api_key is None
     assert settings.rag_api_key is None
+
+
+def test_generation_enabled_reads_false_from_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GENERATION_ENABLED", "false")
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.generation_enabled is False

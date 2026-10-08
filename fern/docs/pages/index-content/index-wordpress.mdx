@@ -10,7 +10,7 @@ components: [component-wordpress-connector, component-indexing-pipeline]
 prerequisites: [ConfSrv]
 next_steps: [Auth]
 related_pages: [IndxPipe, RIndxUpdt, TutIndx]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary, secondary]
 ---
 
@@ -40,7 +40,7 @@ in the Qdrant collection named by `QDRANT_COLLECTION`.
 The command writes canonical documents to `data/wordpress-documents.json` and retrieval-ready
 chunks to `data/wordpress-chunks.json`. Leave these output paths at their defaults. BM25
 retrieval reads the chunk file at `LEXICAL_CORPUS_PATH`, which is `data/wordpress-chunks.json`
-unless you changed it.
+unless you changed it. The API reads that same file when it starts, so start the API after this command writes it.
 
 If `WORDPRESS_BASE_URL` is empty, the command stops and doesn't write either file. Let the
 run finish. The command writes the document and chunk files only after vector synchronization
