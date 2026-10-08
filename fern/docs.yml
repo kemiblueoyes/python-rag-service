@@ -7,7 +7,7 @@ default-language: curl
 metadata:
   og:site_name: "Python RAG Service Documentation"
   og:title: "Python RAG Service Documentation"
-  og:description: "to come"
+  og:description: "Learn how to install, configure, and use the Python RAG Service to index documentation, search content, and generate grounded answers."
   og:url: "https://python-rag-service.docs.buildwithfern.com/"
   og:locale: "en_US"
 
