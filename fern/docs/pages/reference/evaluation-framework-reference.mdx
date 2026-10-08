@@ -8,7 +8,7 @@ lifecycle_status: draft
 topics: [topic-evaluation]
 components: [component-evaluation-framework]
 related_pages: [EvArch, HowEv, RtrvlEv, AnsEv]
-last_modified: 2026-10-05
+last_modified: 2026-10-07
 audience: [secondary]
 ---
 
@@ -291,7 +291,7 @@ that file, checks it against `data/evaluation/answer_baseline.json`, and writes 
 #### Human review run matching
 
 These fields identify the saved answer run. The report command rejects the review when any comparison fails. The timestamps must
-refer to the same moment; their string formatting can differ.
+refer to the same moment, though their string formatting can differ.
 
 | Review field | Must equal this answer-report field |
 | --- | --- |
@@ -311,7 +311,7 @@ the review time and isn't used to match the answer run.
 | `dataset_version` | string | Yes | none | Any string | Dataset version of that answer run. |
 | `answer_baseline_generated_at` | string | Yes | none | The answer report's `generated_at` value | The same timestamp of the answer run under review. |
 | `generation_model` | string | Yes | none | Any string | `generation_model` from the answer report. |
-| `reviewed_at` | string | Yes | none | A date-time value; use an ISO 8601 string with a timezone offset. UTC is recommended. | When the reviewer recorded the review. |
+| `reviewed_at` | string | Yes | none | A date-time value. Use an ISO 8601 string with a timezone offset. UTC is recommended. | When the reviewer recorded the review. |
 | `reviews` | array of objects | Yes | none | One object per reviewed case | The case scores. Case IDs in this array must be unique. |
 
 #### Human review case fields

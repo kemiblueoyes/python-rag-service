@@ -1,3 +1,501 @@
 version: 1
 
-terms: []
+terms:
+  - id: content-source
+    term: Content source
+    definition: >
+      A system that supplies documentation to the Python RAG Service for
+      indexing. WordPress is the current content source. Other content systems
+      can be supported through additional connectors.
+    example: >
+      A WordPress site is a content source. The WordPress connector retrieves
+      its published content and maps it into canonical documents.
+    related_terms:
+      - connector
+      - canonical-document
+
+  - id: connector
+    term: Connector
+    definition: >
+      Code that retrieves content from a content source and maps
+      source-specific data into the Python RAG Service's canonical document
+      model.
+    example: >
+      The WordPress connector retrieves published WordPress content and maps
+      each record into a canonical document.
+    related_terms:
+      - content-source
+      - canonical-document
+
+  - id: canonical-document
+    term: Canonical document
+    definition: >
+      The platform-neutral document representation used by the Python RAG
+      Service after content is retrieved from a source. It gives later
+      indexing stages a consistent structure that doesn't depend on the
+      original content system.
+    example: >
+      The WordPress connector maps a WordPress page into a canonical document
+      containing fields such as its document ID, title, URL, body, content
+      type, and source metadata.
+    related_terms:
+      - content-source
+      - connector
+      - chunking
+
+  - id: client
+    term: Client
+    definition: >
+      An application that sends requests to the Python RAG Service API and
+      uses the responses it returns.
+    example: >
+      The included WordPress client sends Search and Ask requests to the RAG
+      service and displays the returned search results, answers, and sources.
+    related_terms:
+      - connector
+
+  - id: retrieval-augmented-generation
+    term: Retrieval-augmented generation (RAG)
+    definition: >
+      An approach that retrieves relevant information from an external source
+      and provides it to a language model (LLM) as context for generating a response.
+      In the Python RAG Service, retrieved documentation chunks provide the
+      context used to generate grounded answers.
+    related_terms:
+      - retrieval
+      - context
+      - grounded-answer
+
+  - id: chunk
+    term: Chunk
+    definition: >
+      A smaller, retrieval-ready unit of content created from a canonical
+      document. A chunk keeps enough document and heading information to
+      preserve where the content came from.
+    example: >
+      One documentation page can produce several chunks, each containing text
+      from a section of the page along with its document ID, heading path,
+      URL, and other metadata.
+    related_terms:
+      - canonical-document
+      - chunking
+      - retrieval
+
+  - id: chunking
+    term: Chunking
+    definition: >
+      The process of splitting document content into smaller units that can be
+      indexed and retrieved independently. The Python RAG Service uses document
+      structure, including headings, to help preserve useful context in each
+      chunk.
+    example: >
+      A documentation page with several sections can be divided into separate
+      chunks while keeping each chunk associated with its section heading and
+      source document.
+    related_terms:
+      - canonical-document
+      - chunk
+
+  - id: embedding
+    term: Embedding
+    definition: >
+      A numeric representation of text that allows the retrieval system to
+      compare text by meaning. The Python RAG Service creates embeddings for
+      indexed chunks and for incoming queries.
+    example: >
+      During indexing, Voyage creates an embedding for each chunk. During
+      retrieval, the service creates an embedding for the query and compares
+      it with the stored chunk embeddings.
+    related_terms:
+      - chunk
+      - vector-retrieval
+
+  - id: indexing
+    term: Indexing
+    definition: >
+      The process of turning source content into retrieval-ready data. In the
+      Python RAG Service, indexing includes retrieving source content, mapping
+      it to canonical documents, creating chunks and embeddings, and storing
+      the data used by retrieval.
+    example: >
+      Indexing a WordPress site retrieves its published content, creates
+      canonical documents and chunks, generates embeddings, and stores the
+      resulting retrieval data.
+    related_terms:
+      - content-source
+      - connector
+      - canonical-document
+      - chunking
+      - embedding
+
+  - id: lexical-corpus
+    term: Lexical corpus
+    definition: >
+      The collection of indexed chunk text used for lexical retrieval. In the
+      Python RAG Service, the lexical corpus is stored in
+      data/wordpress-chunks.json and is used to build the in-memory BM25 index.
+    example: >
+      After indexing WordPress content, the service writes the current chunks
+      to the lexical corpus so BM25 retrieval can search them by words and
+      other textual matches.
+    related_terms:
+      - chunk
+      - indexing
+      - bm25-retrieval
+  
+  - id: retrieval
+    term: Retrieval
+    definition: >
+      The process of finding content that's relevant to a query. In the
+      Python RAG Service, retrieval combines vector retrieval and BM25
+      retrieval, then applies fusion, reranking, and the support gate to
+      select the chunks returned to search or answer generation.
+    related_terms:
+      - vector-retrieval
+      - bm25-retrieval
+      - hybrid-retrieval
+      - retrieved-chunk
+      - reranking
+      - support-gate
+
+  - id: vector-retrieval
+    term: Vector retrieval
+    definition: >
+      A retrieval method that compares an embedding of the query with stored
+      chunk embeddings to find chunks with similar meaning. In the Python RAG
+      Service, vector retrieval searches the embeddings stored in Qdrant.
+    example: >
+      A query can retrieve a relevant chunk even when the query and chunk use
+      different words for the same idea.
+    related_terms:
+      - retrieval
+      - embedding
+      - hybrid-retrieval
+      - candidate-chunk
+
+  - id: bm25-retrieval
+    term: BM25 retrieval
+    definition: >
+      The lexical retrieval method used by the Python RAG Service to find
+      chunks based on words and other textual matches in the query. It searches
+      the lexical corpus using the BM25 ranking algorithm.
+    related_terms:
+      - retrieval
+      - lexical-corpus
+      - hybrid-retrieval
+      - candidate-chunk
+
+  - id: hybrid-retrieval
+    term: Hybrid retrieval
+    definition: >
+      The retrieval approach used by the Python RAG Service that combines
+      vector retrieval and BM25 retrieval. The two methods produce separate
+      candidate lists that are combined with reciprocal rank fusion before
+      reranking.
+    example: >
+      A chunk missed by vector retrieval can still become a candidate through
+      BM25 retrieval, and a chunk found by both methods can receive a stronger
+      fused rank.
+    related_terms:
+      - retrieval
+      - vector-retrieval
+      - bm25-retrieval
+      - reciprocal-rank-fusion
+      - reranking
+
+  - id: candidate-chunk
+    term: Candidate chunk
+    definition: >
+      A chunk being considered during retrieval before the pipeline has
+      finished selecting the results to return. Vector retrieval and BM25
+      retrieval each produce ranked lists of candidate chunks.
+    related_terms:
+      - chunk
+      - retrieval
+      - retrieved-chunk
+      - reciprocal-rank-fusion
+      - reranking
+
+  - id: retrieved-chunk
+    term: Retrieved chunk
+    definition: >
+      A chunk that remains after the retrieval pipeline has selected the
+      content to return or use as evidence. For POST /v1/search, retrieved
+      chunks become search results. For POST /v1/answer, they're passed to
+      answer generation.
+    related_terms:
+      - chunk
+      - retrieval
+      - candidate-chunk
+      - support-gate
+      - context
+
+  - id: reciprocal-rank-fusion
+    term: Reciprocal rank fusion (RRF)
+    definition: >
+      A method for combining multiple ranked result lists using each
+      candidate's position in those lists rather than comparing their raw
+      scores. The Python RAG Service uses RRF to combine the vector and BM25
+      candidate lists.
+    example: >
+      A chunk that ranks well in both vector retrieval and BM25 retrieval
+      receives contributions from both lists and can move higher in the fused
+      ranking.
+    related_terms:
+      - hybrid-retrieval
+      - candidate-chunk
+      - reranking
+
+  - id: reranking
+    term: Reranking
+    definition: >
+      A second-stage retrieval step that scores a smaller set of candidate
+      chunks against the query and puts them into a new relevance order. In
+      the Python RAG Service, reranking happens after reciprocal rank fusion.
+    related_terms:
+      - hybrid-retrieval
+      - candidate-chunk
+      - reciprocal-rank-fusion
+      - support-gate
+      - relevance
+
+  - id: relevance
+    term: Relevance
+    definition: >
+      How closely content relates to a query. Relevant content can be useful
+      for the topic without containing enough information to answer the
+      question.
+    related_terms:
+      - retrieval
+      - support
+
+  - id: support
+    term: Support
+    definition: >
+      Whether retrieved content contains enough information to answer the
+      user's question. Support is different from relevance: content can be
+      relevant to a topic without adequately answering the query.
+    related_terms:
+      - relevance
+      - support-gate
+      - retrieved-chunk
+
+  - id: support-gate
+    term: Support gate
+    definition: >
+      The retrieval decision that determines whether the reranked candidates
+      adequately support returning results for a query. In the Python RAG
+      Service, the gate checks the highest reranking score against the
+      configured support cutoff and returns no chunks when the requirement
+      isn't met or when reranking returns no chunks.
+    example: >
+      A query can retrieve topically relevant candidates but still return no
+      search results when the support gate determines that the candidates don't
+      adequately support the query.
+    related_terms:
+      - reranking
+      - relevance
+      - support
+      - retrieved-chunk
+
+  - id: context
+    term: Context
+    definition: >
+      The retrieved chunks selected and assembled for the language model (LLM) to
+      use when generating an answer. Context is what the model receives. Not
+      every part of the context necessarily supports the final answer.
+    related_terms:
+      - retrieved-chunk
+      - evidence
+      - generated-answer
+
+  - id: evidence
+    term: Evidence
+    definition: >
+      Information in the retrieved context that supports an answer to the
+      user's question. Evidence is different from context because context can
+      include retrieved information that the answer doesn't use.
+    related_terms:
+      - context
+      - sufficient-evidence
+      - insufficient-evidence
+      - grounded-answer
+
+  - id: generated-answer
+    term: Generated answer
+    definition: >
+      An answer produced by the language model (LLM) from the supplied context. A
+      generated answer becomes a grounded answer only when the application's
+      evidence and citation checks required by the Python RAG Service succeed.
+    related_terms:
+      - context
+      - grounded-answer
+      - citation-validation
+
+  - id: grounded-answer
+    term: Grounded answer
+    definition: >
+      An answer generated from retrieved documentation and supported by the
+      evidence supplied to the language model (LLM). In the Python RAG Service, a grounded
+      answer also passes the required evidence-sufficiency and citation
+      validation checks before it's returned.
+    related_terms:
+      - generated-answer
+      - evidence
+      - sufficient-evidence
+      - citation-validation
+
+  - id: sufficient-evidence
+    term: Sufficient evidence
+    definition: >
+      Retrieved evidence that contains enough information to support a
+      grounded answer to the user's question.
+    example: >
+      If the retrieved chunks contain the information needed to answer the
+      question and the answer-generation checks succeed, the response can
+      report sufficient_evidence as true.
+    related_terms:
+      - evidence
+      - insufficient-evidence
+      - grounded-answer
+      - support
+
+  - id: insufficient-evidence
+    term: Insufficient evidence
+    definition: >
+      A condition where the retrieved context doesn't contain enough
+      information to support a grounded answer. This can happen even when
+      relevant chunks were retrieved.
+    example: >
+      Retrieval may find documentation about the right topic while still
+      missing the information needed to answer the specific question.
+    related_terms:
+      - evidence
+      - sufficient-evidence
+      - relevance
+      - support
+
+  - id: citation-validation
+    term: Citation validation
+    definition: >
+      The application-side check that verifies that citation identifiers in a
+      generated answer refer to chunks that were actually supplied in the
+      language model's context. It also verifies that their source metadata comes 
+      from those trusted retrieved chunks.
+    example: >
+      If the language model cites S1, citation validation confirms that S1 was included
+      in the context supplied for that request before the answer is returned.
+    related_terms:
+      - context
+      - generated-answer
+      - grounded-answer
+      - retrieved-chunk
+
+  - id: unsupported-claim
+    term: Unsupported claim
+    definition: >
+      A statement in a generated answer that's not supported by the
+      retrieved evidence. An unsupported claim is an answer-quality problem,
+      not the same thing as an unsupported user query.
+    related_terms:
+      - generated-answer
+      - evidence
+      - grounded-answer
+      - citation-validation
+
+  - id: evaluation-dataset
+    term: Evaluation dataset
+    definition: >
+      A maintained collection of test cases used to measure retrieval or
+      answer quality against defined expectations. In the Python RAG Service,
+      the evaluation dataset is versioned so results can be tied to the exact
+      cases and expectations used for a run.
+    related_terms:
+      - retrieval-evaluation
+      - answer-evaluation
+
+  - id: expected-empty
+    term: Expected-empty
+    definition: >
+      An evaluation outcome where retrieval is expected to return no chunks
+      because the indexed documentation doesn't contain an adequate answer
+      to the query.
+    example: >
+      A test case asking about information that's not documented can be
+      marked expected-empty so the case passes only when retrieval returns
+      no chunks.
+    related_terms:
+      - retrieval-evaluation
+      - support-gate
+      - retrieval
+
+  - id: retrieval-evaluation
+    term: Retrieval evaluation
+    definition: >
+      Evaluation of whether the retrieval pipeline returns the expected
+      chunks for a set of test cases. The Python RAG Service measures
+      retrieval quality using relevance judgments, expected-empty behavior,
+      precision, recall, and reciprocal rank.
+    related_terms:
+      - evaluation-dataset
+      - expected-empty
+      - precision
+      - recall
+      - reciprocal-rank
+      - retrieval
+
+  - id: answer-evaluation
+    term: Answer evaluation
+    definition: >
+      Evaluation of generated answers against expected answer behavior. In
+      the Python RAG Service, automated checks evaluate evidence sufficiency
+      and citation behavior, while human review evaluates support,
+      completeness, unsupported details, and focus.
+    related_terms:
+      - evaluation-dataset
+      - generated-answer
+      - grounded-answer
+      - sufficient-evidence
+      - citation-validation
+      - unsupported-claim
+
+  - id: precision
+    term: Precision
+    definition: >
+      The proportion of evaluated retrieval results that are judged relevant
+      to the query. In the Python RAG Service, Precision@5 measures precision
+      across up to the first five returned chunks.
+    example: >
+      If four of five evaluated results are relevant, Precision@5 is 0.8.
+    related_terms:
+      - retrieval-evaluation
+      - relevance
+      - recall
+
+  - id: recall
+    term: Recall
+    definition: >
+      The proportion of the known relevant sources for a test case that
+      retrieval successfully finds. In the Python RAG Service, Recall@5
+      measures how much of the expected relevant content appears in up to
+      the first five returned chunks.
+    example: >
+      If a test case defines four relevant sources and retrieval finds three
+      of them in the evaluated results, Recall@5 is 0.75.
+    related_terms:
+      - retrieval-evaluation
+      - relevance
+      - precision
+
+  - id: reciprocal-rank
+    term: Reciprocal rank
+    definition: >
+      A retrieval metric based on the position of the first expected primary
+      source in the ranked results. The score is 1 divided by that result's
+      rank, so finding a primary source earlier produces a higher score.
+    example: >
+      If the first primary source appears at rank 2, the reciprocal rank is
+      0.5.
+    related_terms:
+      - retrieval-evaluation
+      - reciprocal-rank-fusion

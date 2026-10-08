@@ -1,3 +1,38 @@
+Answer evaluation
+BM25 retrieval
+Candidate chunk
+Canonical document
+Chunk
+Chunking
+Citation validation
+Client
+Connector
+Content source
+Context
+Embedding
+Evaluation dataset
+Evidence
+Expected-empty
+Generated answer
+Grounded answer
+Hybrid retrieval
+Indexing
+Insufficient evidence
+Lexical corpus
+Precision
 Pydantic
 pytest
-reranking
+Recall
+Reciprocal rank
+Reciprocal rank fusion (RRF)
+Relevance
+Reranking
+Retrieval
+Retrieval evaluation
+Retrieval-augmented generation (RAG)
+Retrieved chunk
+Sufficient evidence
+Support
+Support gate
+Unsupported claim
+Vector retrieval
