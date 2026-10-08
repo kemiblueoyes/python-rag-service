@@ -4,6 +4,11 @@ title: Python RAG Service | Documentation
 
 default-language: curl
 
+logo:
+  href: https://python-rag-service.docs.buildwithfern.com
+  dark: docs/assets/images/Python-RAG-Service-logo-courier.png
+  height: 90
+
 metadata:
   og:site_name: "Python RAG Service Documentation"
   og:title: "Python RAG Service Documentation"
