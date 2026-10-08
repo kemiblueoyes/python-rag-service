@@ -1,8 +1,10 @@
 import logging
+from concurrent.futures import CancelledError as FutureCancelledError
 
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from rag_service.api.auth import (
     APIAuthenticationConfigurationError,
@@ -13,6 +15,7 @@ from rag_service.api.models import (
     ErrorDetail,
     ErrorResponse,
 )
+from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.errors import (
     CitationValidationError,
     ContextBudgetError,
@@ -24,6 +27,9 @@ from rag_service.generation.errors import (
     MissingLanguageModelAPIKeyError,
 )
 from rag_service.retrieval import RetrievalUnavailableError
+
+CONFIGURATION_ERROR_MESSAGE = "The service configuration is invalid."
+INTERNAL_ERROR_MESSAGE = "The service couldn't complete the request."
 
 logger = logging.getLogger(__name__)
 
@@ -110,12 +116,29 @@ def _failure_diagnostic(exc: Exception) -> tuple[str, str, str]:
 def _log_service_failure(exc: Exception) -> None:
     """Log one safe diagnostic for a handled service failure."""
     operation, reason, message = _failure_diagnostic(exc)
+    _log_diagnostic(operation, reason, message)
+
+
+def _log_diagnostic(operation: str, reason: str, message: str) -> None:
     logger.error(
         "operation=%s reason=%s: %s",
         operation,
         reason,
         message,
         extra={"operation": operation, "reason": reason},
+    )
+
+
+def _error_json(status_code: int, code: str, message: str) -> JSONResponse:
+    response = ErrorResponse(
+        error=ErrorBody(
+            code=code,
+            message=message,
+        )
+    )
+    return JSONResponse(
+        status_code=status_code,
+        content=response.model_dump(mode="json"),
     )
 
 
@@ -238,3 +261,57 @@ async def authentication_configuration_exception_handler(
         status_code=503,
         content=response.model_dump(mode="json"),
     )
+
+
+async def missing_language_model_key_exception_handler(
+    _request: Request,
+    exc: MissingLanguageModelAPIKeyError,
+) -> JSONResponse:
+    """Return a fixed configuration error when the provider key is missing."""
+
+    _log_service_failure(exc)
+    return _error_json(500, "configuration_error", CONFIGURATION_ERROR_MESSAGE)
+
+
+async def configuration_exception_handler(
+    _request: Request,
+    exc: ServiceConfigurationError,
+) -> JSONResponse:
+    """Return a fixed configuration error for a known settings problem."""
+
+    _log_diagnostic(exc.operation, exc.reason, exc.diagnostic)
+    return _error_json(500, "configuration_error", CONFIGURATION_ERROR_MESSAGE)
+
+
+def _unexpected_error_response() -> JSONResponse:
+    _log_diagnostic(
+        "request",
+        "unexpected_failure",
+        "The service hit an unexpected error. Review the application code.",
+    )
+    return _error_json(500, "internal_error", INTERNAL_ERROR_MESSAGE)
+
+
+class UnexpectedErrorMiddleware:
+    """Convert unhandled request exceptions into a fixed JSON response.
+
+    More specific handlers run first. This middleware does not re-raise, so
+    the server does not log the original exception after the response.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        try:
+            await self.app(scope, receive, send)
+        except Exception as exc:
+            # asyncio.CancelledError is a BaseException and is not caught here.
+            # concurrent.futures.CancelledError is an Exception on Python 3.14.
+            if isinstance(exc, (BaseExceptionGroup, FutureCancelledError)):
+                raise
+            response = _unexpected_error_response()
+            await response(scope, receive, send)

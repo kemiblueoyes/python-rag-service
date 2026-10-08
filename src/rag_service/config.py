@@ -9,11 +9,13 @@ from dotenv.parser import parse_stream
 from pydantic import SecretStr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict, SettingsError
 
+from rag_service.logging_config import configure_logging
+
 
 class Settings(BaseSettings):
     app_name: str = "python-rag-service"
     environment: str = "development"
-    log_level: str = "INFO"
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
     # API authentication
     rag_api_key: SecretStr | None = None
@@ -113,16 +115,19 @@ def load_settings() -> Settings:
     generation still work. Invalid values are not replaced with defaults.
     """
 
+    configure_logging("INFO")
     file_failures = _dotenv_failures()
     if file_failures:
         _reject_settings(file_failures)
 
     try:
-        return Settings()
+        loaded = Settings()
     except ValidationError as exc:
         _reject_settings(_validation_failures(exc))
     except SettingsError as exc:
         _reject_settings(_settings_error_failures(exc))
+    configure_logging(loaded.log_level)
+    return loaded
 
 
 def _reject_settings(failures: list[SettingsLoadFailure]) -> NoReturn:

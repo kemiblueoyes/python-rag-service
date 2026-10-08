@@ -1,7 +1,11 @@
 from unittest.mock import MagicMock
 
 import pytest
+from httpx import Headers
+from qdrant_client.http.exceptions import UnexpectedResponse
+from voyageai.error import APIConnectionError, RateLimitError
 
+from rag_service.errors import ServiceConfigurationError
 from rag_service.models.chunk import DocumentChunk
 from rag_service.retrieval.errors import RetrievalUnavailableError
 from rag_service.retrieval.models import RetrievalRequest, RetrievalResult
@@ -683,7 +687,7 @@ def test_constructor_rejects_invalid_configuration(
     }
 
     with pytest.raises(
-        ValueError,
+        ServiceConfigurationError,
         match=message,
     ):
         RetrievalService(**kwargs)  # type: ignore[arg-type]
@@ -698,8 +702,8 @@ def test_retrieve_wraps_embedding_provider_failure() -> None:
         _,
     ) = _service()
 
-    embedding_provider.embed_query.side_effect = (
-        RuntimeError("Voyage unavailable")
+    embedding_provider.embed_query.side_effect = APIConnectionError(
+        "Voyage unavailable"
     )
 
     with pytest.raises(
@@ -725,8 +729,11 @@ def test_retrieve_wraps_vector_store_failure() -> None:
         _,
     ) = _service()
 
-    vector_store.search.side_effect = (
-        RuntimeError("Qdrant unavailable")
+    vector_store.search.side_effect = UnexpectedResponse(
+        status_code=503,
+        reason_phrase="unavailable",
+        content=b"Qdrant unavailable",
+        headers=Headers(),
     )
 
     with pytest.raises(
@@ -742,7 +749,7 @@ def test_retrieve_wraps_vector_store_failure() -> None:
     lexical_retriever.search.assert_not_called()
 
 
-def test_retrieve_wraps_lexical_retriever_failure() -> None:
+def test_retrieve_propagates_lexical_programming_errors() -> None:
     (
         service,
         _,
@@ -758,8 +765,8 @@ def test_retrieve_wraps_lexical_retriever_failure() -> None:
     )
 
     with pytest.raises(
-        RetrievalUnavailableError,
-        match="Retrieval could not be completed",
+        RuntimeError,
+        match="BM25 unavailable",
     ):
         service.retrieve(
             RetrievalRequest(
@@ -788,8 +795,8 @@ def test_retrieve_wraps_reranker_failure() -> None:
         )
     ]
 
-    reranker.rerank.side_effect = (
-        RuntimeError("Voyage reranking unavailable")
+    reranker.rerank.side_effect = RateLimitError(
+        "Voyage reranking unavailable"
     )
 
     with pytest.raises(

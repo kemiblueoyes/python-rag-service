@@ -5,8 +5,8 @@ import tiktoken
 from openai import OpenAI, OpenAIError
 from pydantic import ValidationError
 
+from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.errors import (
-    LanguageModelProviderError,
     LanguageModelRefusalError,
     LanguageModelResponseError,
     MissingLanguageModelAPIKeyError,
@@ -15,6 +15,7 @@ from rag_service.generation.models import (
     GenerationPrompt,
     ProposedAnswer,
 )
+from rag_service.provider_failures import language_model_exception_for
 
 # tiktoken maps "gpt-5" and the "gpt-5-" prefix, but not dotted
 # minor versions such as "gpt-5.6-terra".
@@ -34,17 +35,25 @@ class OpenAITokenCounter:
         model: str,
     ) -> None:
         if not model.strip():
-            raise ValueError("model must not be empty")
+            raise ServiceConfigurationError(
+                operation="generation",
+                reason="invalid_generation_model",
+                diagnostic="Set GENERATION_MODEL to a non-empty model name.",
+            )
 
         try:
             self._encoding = tiktoken.encoding_for_model(model)
-        except KeyError as exc:
+        except KeyError:
             encoding_name = _MODEL_ENCODING_FALLBACKS.get(model)
 
             if encoding_name is None:
-                raise ValueError(
-                    f"tiktoken does not recognize model {model!r}"
-                ) from exc
+                raise ServiceConfigurationError(
+                    operation="generation",
+                    reason="unrecognized_generation_model",
+                    diagnostic=(
+                        "Set GENERATION_MODEL to a model this service can tokenize."
+                    ),
+                ) from None
 
             self._encoding = tiktoken.get_encoding(
                 encoding_name
@@ -83,11 +92,19 @@ class OpenAILanguageModel:
         max_output_tokens: int = 1_000,
     ) -> None:
         if not model.strip():
-            raise ValueError("model must not be empty")
+            raise ServiceConfigurationError(
+                operation="generation",
+                reason="invalid_generation_model",
+                diagnostic="Set GENERATION_MODEL to a non-empty model name.",
+            )
 
         if max_output_tokens <= 0:
-            raise ValueError(
-                "max_output_tokens must be greater than zero"
+            raise ServiceConfigurationError(
+                operation="generation",
+                reason="invalid_generation_output_budget",
+                diagnostic=(
+                    "Set GENERATION_MAX_OUTPUT_TOKENS to an integer of at least 1."
+                ),
             )
 
         self._client = client
@@ -139,13 +156,14 @@ class OpenAILanguageModel:
                 store=False,
             )
         except OpenAIError as exc:
-            raise LanguageModelProviderError(
-                "OpenAI answer-generation request failed"
-            ) from exc
-        except ValidationError as exc:
+            replacement = language_model_exception_for(exc)
+            if replacement is None:
+                raise
+            raise replacement from None
+        except ValidationError:
             raise LanguageModelResponseError(
                 "OpenAI returned an invalid structured answer"
-            ) from exc
+            ) from None
 
         if response.status == "incomplete":
             reason = (

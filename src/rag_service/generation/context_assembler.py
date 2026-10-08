@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 
+from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.context_formatter import (
     format_context_sources,
 )
@@ -22,8 +23,13 @@ class ContextAssembler:
         max_context_tokens: int,
     ) -> None:
         if max_context_tokens <= 0:
-            raise ValueError(
-                "max_context_tokens must be greater than zero"
+            raise ServiceConfigurationError(
+                operation="generation",
+                reason="invalid_context_budget",
+                diagnostic=(
+                    "Set GENERATION_CONTEXT_BUDGET_TOKENS to an integer "
+                    "of at least 1."
+                ),
             )
 
         self._token_counter = token_counter

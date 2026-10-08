@@ -1,6 +1,7 @@
 from rag_service.config import Settings
 from rag_service.embeddings.base import EmbeddingProvider
 from rag_service.embeddings.voyage import VoyageEmbeddingProvider
+from rag_service.errors import ServiceConfigurationError
 
 
 def create_embedding_provider(settings: Settings) -> EmbeddingProvider:
@@ -11,4 +12,8 @@ def create_embedding_provider(settings: Settings) -> EmbeddingProvider:
             model=settings.embedding_model,
             api_key=settings.voyage_api_key,
         )
-    raise ValueError(f"Unsupported embedding provider: {settings.embedding_provider!r}")
+    raise ServiceConfigurationError(
+        operation="retrieval",
+        reason="unsupported_embedding_provider",
+        diagnostic="Set EMBEDDING_PROVIDER to voyage.",
+    )

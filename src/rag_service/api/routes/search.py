@@ -152,6 +152,41 @@ SEARCH_UNAVAILABLE_RESPONSE = {
                 }
             },
         },
+        500: {
+            "model": ErrorResponse,
+            "description": (
+                "The service configuration is invalid, or the request "
+                "failed unexpectedly."
+            ),
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "configuration_error": {
+                            "summary": "Configuration error",
+                            "value": {
+                                "error": {
+                                    "code": "configuration_error",
+                                    "message": "The service configuration is invalid.",
+                                    "details": [],
+                                }
+                            },
+                        },
+                        "internal_error": {
+                            "summary": "Unexpected error",
+                            "value": {
+                                "error": {
+                                    "code": "internal_error",
+                                    "message": (
+                                        "The service couldn't complete the request."
+                                    ),
+                                    "details": [],
+                                }
+                            },
+                        },
+                    }
+                }
+            },
+        },
         503: {
             "model": ErrorResponse,
             "description": "Search is temporarily unavailable.",

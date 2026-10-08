@@ -1,7 +1,8 @@
 from rag_service.embeddings.base import EmbeddingProvider
+from rag_service.errors import ServiceConfigurationError
 from rag_service.lexical.base import LexicalRetriever
+from rag_service.provider_failures import retrieval_exception_for
 from rag_service.reranking.base import Reranker
-from rag_service.retrieval.errors import RetrievalUnavailableError
 from rag_service.retrieval.fusion import reciprocal_rank_fusion
 from rag_service.retrieval.models import (
     RetrievalRequest,
@@ -36,27 +37,27 @@ class RetrievalService:
         support_cutoff: float = 0.70,
     ) -> None:
         if vector_candidate_depth < 1:
-            raise ValueError(
+            raise _invalid_retrieval_settings(
                 "Vector candidate depth must be at least 1."
             )
 
         if lexical_candidate_depth < 1:
-            raise ValueError(
+            raise _invalid_retrieval_settings(
                 "Lexical candidate depth must be at least 1."
             )
 
         if fused_candidate_depth < 1:
-            raise ValueError(
+            raise _invalid_retrieval_settings(
                 "Fused candidate depth must be at least 1."
             )
 
         if rrf_k < 1:
-            raise ValueError(
+            raise _invalid_retrieval_settings(
                 "RRF constant must be at least 1."
             )
 
         if not 0.0 <= support_cutoff <= 1.0:
-            raise ValueError(
+            raise _invalid_retrieval_settings(
                 "Support cutoff must be between 0 and 1."
             )
 
@@ -131,9 +132,12 @@ class RetrievalService:
             )
 
         except Exception as exc:
-            raise RetrievalUnavailableError(
-                "Retrieval could not be completed."
-            ) from exc
+            # Classify documented provider failures only. Programming errors
+            # are re-raised so they are not reported as temporarily unavailable.
+            replacement = retrieval_exception_for(exc)
+            if replacement is None:
+                raise
+            raise replacement from None
 
         if not reranked_results:
             return []
@@ -248,3 +252,11 @@ class RetrievalService:
             )
 
         return unique_results
+
+
+def _invalid_retrieval_settings(diagnostic: str) -> ServiceConfigurationError:
+    return ServiceConfigurationError(
+        operation="retrieval",
+        reason="invalid_retrieval_settings",
+        diagnostic=diagnostic,
+    )

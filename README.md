@@ -182,7 +182,7 @@ Invalid requests return `422 Unprocessable Content` using the standard error for
 }
 ```
 
-If retrieval can't complete because a required dependency such as the embedding provider or vector database is unavailable, the API returns `503 Service Unavailable`:
+If a retrieval provider is temporarily unavailable, the API returns `503 Service Unavailable`. That covers connection failures, timeouts, rate limits, and provider server errors:
 
 ```json
 {
@@ -196,13 +196,15 @@ If retrieval can't complete because a required dependency such as the embedding 
 
 Provider-specific exception details aren't exposed through the public API.
 
+A known configuration problem found while handling the request returns `500` with `configuration_error` and the message `The service configuration is invalid.` An unexpected programming error returns `500` with `internal_error` and the message `The service couldn't complete the request.` Both bodies use the same `error` object and an empty `details` list.
+
 ### `POST /v1/answer`
 
 The answer endpoint accepts a natural-language query and optional metadata filters. It does not accept a `limit` field. Extra fields, including `limit`, are rejected with `422 Unprocessable Content` and the `validation_error` response shown above.
 
 The route always retrieves 5 chunks through the same hybrid retrieval pipeline as search, then runs grounded answer generation and citation validation.
 
-If retrieval, the language model, the context budget, or citation validation fails, the API returns `503 Service Unavailable`. It does not return `retrieval_unavailable`. The same response is returned when `GENERATION_ENABLED` is `false`:
+If retrieval or the language model is temporarily unavailable, or if the context budget or citation validation fails, the API returns `503 Service Unavailable`. It does not return `retrieval_unavailable`. The same response is returned when `GENERATION_ENABLED` is `false`. A missing `OPENAI_API_KEY` at request time returns `500` with `configuration_error` instead:
 
 ```json
 {
@@ -348,12 +350,16 @@ Run the application:
 uv run uvicorn rag_service.api.app:app --reload
 ```
 
-For handled `503` failures, check the terminal running the API. The
-`rag_service.api.errors` logger records the failed operation and a controlled
-reason, such as `operation=generation reason=missing_provider_api_key`.
+For handled `500` and `503` failures, check the terminal running the API. On a
+hosted deployment, use that platform's application logs. Each handled failure
+writes one line. The line includes the time, the severity, the logger name, the
+operation, and the reason, such as `operation=generation reason=missing_provider_api_key`.
+`LOG_LEVEL` accepts `DEBUG`, `INFO`, `WARNING`, `ERROR`, or `CRITICAL` and applies
+only to `rag_service` loggers. It doesn't enable provider SDK or HTTP-client
+debug logging, and it leaves Uvicorn's own logs in place.
 These diagnostics exclude exception text, stack traces, credentials, and request
-content. The public error response stays generic. After correcting a missing
-key in `.env`, restart the API and retry the request.
+content. The public error response stays generic. After correcting a setting in
+`.env`, restart the API and retry the request.
 
 Open the health-check endpoint:
 

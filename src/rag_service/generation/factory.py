@@ -1,4 +1,5 @@
 from rag_service.config import Settings
+from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.answer_generator import AnswerGenerator
 from rag_service.generation.citation_validator import (
     CitationValidator,
@@ -15,9 +16,10 @@ def create_answer_generator(settings: Settings) -> AnswerGenerator:
     """Build the configured answer-generation workflow."""
 
     if settings.generation_provider != "openai":
-        raise ValueError(
-            "Unsupported generation provider: "
-            f"{settings.generation_provider!r}"
+        raise ServiceConfigurationError(
+            operation="generation",
+            reason="unsupported_generation_provider",
+            diagnostic="Set GENERATION_PROVIDER to openai.",
         )
 
     token_counter = OpenAITokenCounter(

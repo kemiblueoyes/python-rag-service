@@ -15,12 +15,14 @@ from rag_service.api.models import (
     ErrorResponse,
 )
 from rag_service.config import settings
+from rag_service.errors import ServiceConfigurationError
 from rag_service.generation import AnswerGenerator
 from rag_service.generation.errors import (
     CitationValidationError,
     ContextBudgetError,
     GenerationDisabledError,
     LanguageModelError,
+    MissingLanguageModelAPIKeyError,
 )
 from rag_service.retrieval import (
     RetrievalRequest,
@@ -179,6 +181,41 @@ ANSWER_UNAVAILABLE_RESPONSE = {
                 }
             },
         },
+        500: {
+            "model": ErrorResponse,
+            "description": (
+                "The service configuration is invalid, or the request "
+                "failed unexpectedly."
+            ),
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "configuration_error": {
+                            "summary": "Configuration error",
+                            "value": {
+                                "error": {
+                                    "code": "configuration_error",
+                                    "message": "The service configuration is invalid.",
+                                    "details": [],
+                                }
+                            },
+                        },
+                        "internal_error": {
+                            "summary": "Unexpected error",
+                            "value": {
+                                "error": {
+                                    "code": "internal_error",
+                                    "message": (
+                                        "The service couldn't complete the request."
+                                    ),
+                                    "details": [],
+                                }
+                            },
+                        },
+                    }
+                }
+            },
+        },
         503: {
             "model": ErrorResponse,
             "description": "Answer generation is temporarily unavailable.",
@@ -233,6 +270,8 @@ def answer(
             question=request.query,
             results=retrieval_results,
         )
+    except (ServiceConfigurationError, MissingLanguageModelAPIKeyError):
+        raise
     except (
         RetrievalUnavailableError,
         LanguageModelError,

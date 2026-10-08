@@ -1,5 +1,6 @@
 import pytest
 
+from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.context_assembler import ContextAssembler
 from rag_service.generation.context_formatter import (
     format_context_sources,
@@ -59,8 +60,8 @@ def test_context_assembler_rejects_invalid_budget(
     max_context_tokens: int,
 ) -> None:
     with pytest.raises(
-        ValueError,
-        match="max_context_tokens must be greater than zero",
+        ServiceConfigurationError,
+        match="Set GENERATION_CONTEXT_BUDGET_TOKENS to an integer of at least 1",
     ):
         ContextAssembler(
             token_counter=CharacterTokenCounter(),

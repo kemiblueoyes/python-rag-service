@@ -196,8 +196,20 @@ Check the query, the supported filters, and `limit`.
 
 Check the configuration, credentials, and availability of the retrieval dependencies.
 `POST /v1/search` returns `503` with `retrieval_unavailable` when one of those dependencies can't complete the search.
-Startup already checks local settings and the chunk file, so this response means a dependency such as Qdrant or Voyage failed after that check.
+Startup already checks local settings and the chunk file. This response means a provider connection,
+timeout, rate limit, or server error happened after that check.
 See [Configuration reference](/docs/reference/configuration-reference) for those settings.
+
+### 500 `configuration_error`
+
+`POST /v1/search` returns `500` with `configuration_error` when a known configuration problem shows
+up while the service handles the request. Check the log reason, then correct the setting it names.
+Restart the API after you change `.env`.
+
+### 500 `internal_error`
+
+`POST /v1/search` returns `500` with `internal_error` for an unexpected programming error.
+The public message stays the same for every request. The log reason is `unexpected_failure`.
 
 ## Next steps
 

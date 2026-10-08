@@ -2,9 +2,11 @@ from rag_service.config import Settings
 from rag_service.embeddings import (
     create_embedding_provider,
 )
+from rag_service.errors import ServiceConfigurationError
 from rag_service.lexical import (
     create_lexical_retriever,
 )
+from rag_service.provider_failures import retrieval_exception_for
 from rag_service.reranking import (
     create_reranker,
 )
@@ -21,6 +23,18 @@ def create_retrieval_service(
 ) -> RetrievalService:
     """Build the configured retrieval service."""
 
+    try:
+        return _build_retrieval_service(settings)
+    except ServiceConfigurationError:
+        raise
+    except Exception as exc:
+        replacement = retrieval_exception_for(exc)
+        if replacement is None:
+            raise
+        raise replacement from None
+
+
+def _build_retrieval_service(settings: Settings) -> RetrievalService:
     return RetrievalService(
         embedding_provider=(
             create_embedding_provider(settings)

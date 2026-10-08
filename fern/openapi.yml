@@ -98,6 +98,28 @@ paths:
                       details:
                       - field: limit
                         message: Input should be greater than or equal to 1
+        '500':
+          description: The service configuration is invalid, or the request failed
+            unexpectedly.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                configuration_error:
+                  summary: Configuration error
+                  value:
+                    error:
+                      code: configuration_error
+                      message: The service configuration is invalid.
+                      details: []
+                internal_error:
+                  summary: Unexpected error
+                  value:
+                    error:
+                      code: internal_error
+                      message: The service couldn't complete the request.
+                      details: []
         '503':
           description: Search is temporarily unavailable.
           content:
@@ -205,6 +227,28 @@ paths:
                       details:
                       - field: limit
                         message: Extra inputs aren't permitted
+        '500':
+          description: The service configuration is invalid, or the request failed
+            unexpectedly.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                configuration_error:
+                  summary: Configuration error
+                  value:
+                    error:
+                      code: configuration_error
+                      message: The service configuration is invalid.
+                      details: []
+                internal_error:
+                  summary: Unexpected error
+                  value:
+                    error:
+                      code: internal_error
+                      message: The service couldn't complete the request.
+                      details: []
         '503':
           description: Answer generation is temporarily unavailable.
           content:

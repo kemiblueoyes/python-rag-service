@@ -1,1 +1,3 @@
-Check the terminal where you started the API with uvicorn. The service logs the failed operation and a diagnostic reason there.
+Check the terminal where you started the API with uvicorn. Each handled failure writes one line there.
+The line includes the time, the severity, the logger name, the operation, and the reason.
+`LOG_LEVEL` controls which `rag_service` lines appear. It doesn't enable provider or HTTP-client debug logs.

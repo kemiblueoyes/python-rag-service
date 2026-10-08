@@ -198,8 +198,15 @@ The API log uses `operation=generation` and `reason=generation_disabled`.
 Set `GENERATION_ENABLED` to `true`, set `OPENAI_API_KEY`, and restart the API.
 
 When answer generation is on, startup requires a non-empty `OPENAI_API_KEY`.
-After startup, retrieval, the language-model request, context assembly, or citation checking can still produce this error.
+After startup, a temporary retrieval or language-model failure, context assembly, or citation checking can still produce this error.
+A missing `OPENAI_API_KEY` at request time returns `500` with `configuration_error` instead.
 Restart the API after you change `.env`, then retry the request.
+
+### 500 `configuration_error` and `internal_error`
+
+`POST /v1/answer` returns `500` with `configuration_error` for a known configuration problem found
+while handling the request. It returns `500` with `internal_error` for an unexpected programming error.
+Each code uses one public message. The log names the operation and the reason.
 
 ## Next steps
 

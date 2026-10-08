@@ -9,7 +9,7 @@ topics: [topic-integration, topic-api, topic-authentication]
 components: [component-public-api]
 prerequisites: [Auth, IndxWP]
 related_pages: [Errs, IntWP, SrchDoc, GenAns]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary]
 ---
 
@@ -158,10 +158,12 @@ wrong API key looks like this:
 For documented API errors, read `payload["error"]["code"]` to choose how your application responds.
 Treat authentication failures as an application configuration problem. Use validation details to identify
 invalid request fields. Show an unavailable state when the service returns HTTP 503.
+HTTP 500 `configuration_error` means the service settings need a correction.
+HTTP 500 `internal_error` means the service hit an unexpected error. Show a generic failure for both.
 
-For handled HTTP 503 failures, the Python RAG service logs the failed operation and a diagnostic reason on
+For handled HTTP 500 and 503 failures, the Python RAG service logs the failed operation and a diagnostic reason on
 the API server. During local development, check the terminal where you started uvicorn. The response doesn't
-include that diagnostic reason.
+include that diagnostic reason. `LOG_LEVEL` controls those `rag_service` lines.
 
 See [Errors](/reference/errors) for status codes, error codes, messages, and validation details.
 

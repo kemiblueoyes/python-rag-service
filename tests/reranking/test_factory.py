@@ -1,6 +1,7 @@
 import pytest
 
 from rag_service.config import Settings
+from rag_service.errors import ServiceConfigurationError
 from rag_service.reranking import (
     VoyageReranker,
     create_reranker,
@@ -28,7 +29,7 @@ def test_create_reranker_rejects_unknown_provider() -> None:
     )
 
     with pytest.raises(
-        ValueError,
-        match="Unsupported reranking provider",
+        ServiceConfigurationError,
+        match="Set RERANKING_PROVIDER to voyage",
     ):
         create_reranker(settings)

@@ -1,7 +1,10 @@
 import json
 from pathlib import Path
 
+from pydantic import ValidationError
+
 from rag_service.config import Settings
+from rag_service.errors import ServiceConfigurationError
 from rag_service.lexical.base import LexicalRetriever
 from rag_service.lexical.bm25 import Bm25Retriever
 from rag_service.models.chunk import DocumentChunk
@@ -37,8 +40,22 @@ def create_lexical_retriever(
 ) -> LexicalRetriever:
     """Build the configured lexical retriever."""
 
-    chunks = load_lexical_corpus(
-        settings.lexical_corpus_path
-    )
+    try:
+        chunks = load_lexical_corpus(settings.lexical_corpus_path)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValidationError, ValueError):
+        raise _invalid_lexical_corpus() from None
 
-    return Bm25Retriever(chunks)
+    try:
+        return Bm25Retriever(chunks)
+    except ValueError:
+        raise _invalid_lexical_corpus() from None
+
+
+def _invalid_lexical_corpus() -> ServiceConfigurationError:
+    return ServiceConfigurationError(
+        operation="retrieval",
+        reason="invalid_lexical_corpus",
+        diagnostic=(
+            "Check LEXICAL_CORPUS_PATH. Use a readable JSON list of valid chunks."
+        ),
+    )

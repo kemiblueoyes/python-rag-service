@@ -60,9 +60,12 @@ def test_get_answer_generator_is_cached(
     ) as create_generator:
         first = get_answer_generator()
         second = get_answer_generator()
+        create_generator.assert_not_called()
+        first.generate(question="What is RAG?", results=[])
+        second.generate(question="What is RAG?", results=[])
 
-    assert first is generator
-    assert second is generator
+    assert first is second
     create_generator.assert_called_once()
+    assert generator.generate.call_count == 2
 
     get_answer_generator.cache_clear()

@@ -4,6 +4,7 @@ title: Python RAG Service | Documentation
 
 default-language: curl
 
+favicon: docs/assets/images/favicon.ico
 logo:
   href: https://python-rag-service.docs.buildwithfern.com
   dark: docs/assets/images/Python-RAG-Service-logo-courier.png

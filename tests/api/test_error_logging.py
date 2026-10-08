@@ -16,7 +16,6 @@ from rag_service.generation.errors import (
     LanguageModelProviderError,
     LanguageModelRefusalError,
     LanguageModelResponseError,
-    MissingLanguageModelAPIKeyError,
 )
 from rag_service.generation.models import GenerationPrompt
 from rag_service.generation.providers.openai import OpenAILanguageModel
@@ -51,11 +50,6 @@ def assert_safe_log(
 @pytest.mark.parametrize(
     ("failure", "operation", "reason"),
     [
-        (
-            MissingLanguageModelAPIKeyError(SENSITIVE),
-            "generation",
-            "missing_provider_api_key",
-        ),
         (
             LanguageModelProviderError(SENSITIVE),
             "generation",
@@ -173,11 +167,11 @@ def test_missing_provider_key_reaches_api_log(
     response = TestClient(app).post(
         "/v1/answer", json={"query": SENSITIVE}, headers=api_key_headers
     )
-    assert response.status_code == 503
+    assert response.status_code == 500
     assert response.json() == {
         "error": {
-            "code": "answer_unavailable",
-            "message": "Answer generation is temporarily unavailable.",
+            "code": "configuration_error",
+            "message": "The service configuration is invalid.",
             "details": [],
         }
     }

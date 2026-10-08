@@ -35,8 +35,9 @@ Errors on this page share a JSON structure. This example shows an authentication
 Use `error.code` and `error.details[].field` when handling validation failures programmatically.
 Treat `error.details[].message` as explanatory text.
 
-`details` can contain more than one entry. Read `error.code` when the status is 503, because search
-can return `authentication_unavailable` or `retrieval_unavailable`.
+`details` can contain more than one entry. Read `error.code` when the status is 500 or 503.
+Search can return `authentication_unavailable` or `retrieval_unavailable` for HTTP 503.
+Both routes can return `configuration_error` or `internal_error` for HTTP 500.
 
 ## Error codes
 
@@ -47,6 +48,8 @@ can return `authentication_unavailable` or `retrieval_unavailable`.
 | 503 | `authentication_unavailable` | API authentication is temporarily unavailable. | `POST /v1/search`, `POST /v1/answer` |
 | 503 | `retrieval_unavailable` | Search is temporarily unavailable. | `POST /v1/search` |
 | 503 | `answer_unavailable` | Answer generation is temporarily unavailable. | `POST /v1/answer` |
+| 500 | `configuration_error` | The service configuration is invalid. | `POST /v1/search`, `POST /v1/answer` |
+| 500 | `internal_error` | The service couldn't complete the request. | `POST /v1/search`, `POST /v1/answer` |
 
 The search route's OpenAPI example for HTTP 503 is `retrieval_unavailable`. The answer route's
 OpenAPI example for HTTP 503 is `answer_unavailable`. A missing `RAG_API_KEY` still returns
@@ -115,9 +118,10 @@ See [Authentication](/docs/get-started/authentication) to set the key and send t
 
 ## Retrieval errors
 
-`retrieval_unavailable` is HTTP 503 from `POST /v1/search` when retrieval can't complete. The
-message is `Search is temporarily unavailable.` `details` is empty. The response doesn't include
-the underlying exception. The service logs `operation=retrieval` and
+`retrieval_unavailable` is HTTP 503 from `POST /v1/search` when a retrieval provider is
+temporarily unavailable. That includes connection failures, timeouts, rate limits, and provider
+server errors. The message is `Search is temporarily unavailable.` `details` is empty. The
+response doesn't include the underlying exception. The service logs `operation=retrieval` and
 `reason=retrieval_dependency_failed`.
 
 `POST /v1/answer` doesn't return this code. A retrieval failure on that route returns
@@ -135,9 +139,8 @@ public body covers every cause below. The response doesn't include provider exce
 The route returns this code when:
 
 - `GENERATION_ENABLED` is `false`. The service logs `operation=generation` and `reason=generation_disabled`. It doesn't build the answer generator or call providers.
-- Retrieval can't complete.
-- The language-model provider key (`OPENAI_API_KEY`) is missing at request time. When `GENERATION_ENABLED` is `true`, startup also requires a non-empty key.
-- The request to the language-model provider fails.
+- Retrieval hits a temporary provider failure.
+- The language-model request hits a connection failure, timeout, rate limit, or provider server error.
 - The language model refuses the request or returns no usable structured answer.
 - The formatted context for the highest-ranked chunk exceeds the configured token budget.
 - Citation validation fails.
@@ -147,13 +150,43 @@ The service logs `operation` and `reason` for that cause. Those values stay on t
 An answer with `sufficient_evidence` set to false is HTTP 200, and `sources` is empty. See
 [Generate grounded answer](api:POST/reference/answer).
 
+## Configuration errors
+
+`configuration_error` is HTTP 500. A known configuration problem occurred while the service handled
+the request. Startup problems still stop the process. They don't use this response.
+
+The public message is `The service configuration is invalid.` `details` is empty. The body doesn't
+include the setting value or the provider exception.
+
+A missing `OPENAI_API_KEY` at request time uses this code. The log reason is
+`missing_provider_api_key`. When `GENERATION_ENABLED` is `true`, startup also requires that key.
+Other request-time causes include an unreadable chunk file, an unrecognized generation model, and
+a provider status such as 400, 401, 403, 404, or 422. The log reason names that cause. The
+diagnostic says which setting to check.
+
+## Unexpected errors
+
+`internal_error` is HTTP 500. The service hit a programming error. The message is
+`The service couldn't complete the request.` `details` is empty. The log uses
+`operation=request` and `reason=unexpected_failure`.
+
+The response and the log omit the exception text, the traceback, and the request body.
+
 ## Constraints and notes
 
-Handled HTTP 503 failures write a diagnostic log on the API server. During local development, check the terminal where you started uvicorn.
-For a hosted service, check your hosting platform's application logs. The HTTP 401 and 422 handlers don't write these diagnostic failure logs.
+Each handled failure writes one diagnostic line on the API server. During local development, check
+the terminal where you started uvicorn. For a hosted service, check your hosting platform's
+application logs. The line includes the time, the severity, the logger name, the operation, and
+the reason.
 
-These response bodies describe errors handled by the service. A connection failure produces no API response, and an unexpected server
-or hosting failure can return a different response format.
+`LOG_LEVEL` accepts `DEBUG`, `INFO`, `WARNING`, `ERROR`, or `CRITICAL`. It sets that severity for
+`rag_service` loggers. It doesn't change Uvicorn's logs. It doesn't enable debug logging for
+provider SDKs or HTTP clients. See [Configuration reference](/docs/reference/configuration-reference).
+
+The HTTP 401 and 422 handlers don't write these diagnostic failure logs.
+
+A client that can't connect receives no API response. The codes on this page are the responses the
+service returns after it accepts the request.
 
 ## Related pages
 

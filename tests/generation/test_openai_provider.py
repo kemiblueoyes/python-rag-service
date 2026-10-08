@@ -2,10 +2,12 @@ from types import SimpleNamespace
 from typing import cast
 from unittest.mock import Mock, patch
 
+import httpx
 import pytest
-from openai import OpenAI, OpenAIError
+from openai import APIConnectionError, OpenAI
 from pydantic import ValidationError
 
+from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.errors import (
     LanguageModelProviderError,
     LanguageModelRefusalError,
@@ -69,8 +71,8 @@ def test_openai_token_counter_handles_special_token_text() -> None:
 
 def test_openai_token_counter_rejects_empty_model() -> None:
     with pytest.raises(
-        ValueError,
-        match="model must not be empty",
+        ServiceConfigurationError,
+        match="Set GENERATION_MODEL to a non-empty model name",
     ):
         OpenAITokenCounter(model=" ")
 
@@ -86,8 +88,8 @@ def test_openai_token_counter_rejects_unknown_model(
     model: str,
 ) -> None:
     with pytest.raises(
-        ValueError,
-        match="tiktoken does not recognize model",
+        ServiceConfigurationError,
+        match="Set GENERATION_MODEL to a model this service can tokenize",
     ):
         OpenAITokenCounter(model=model)
 
@@ -166,8 +168,9 @@ def test_openai_language_model_returns_parsed_answer() -> None:
 
 def test_openai_language_model_wraps_provider_error() -> None:
     client, model = make_openai_language_model()
-    client.responses.parse.side_effect = OpenAIError(
-        "provider failure"
+    client.responses.parse.side_effect = APIConnectionError(
+        message="provider failure",
+        request=httpx.Request("POST", "https://api.openai.com/v1/responses"),
     )
 
     with pytest.raises(
@@ -284,8 +287,8 @@ def test_openai_language_model_rejects_missing_parsed_answer() -> None:
 
 def test_openai_language_model_rejects_empty_model() -> None:
     with pytest.raises(
-        ValueError,
-        match="model must not be empty",
+        ServiceConfigurationError,
+        match="Set GENERATION_MODEL to a non-empty model name",
     ):
         OpenAILanguageModel(
             client=cast(OpenAI, Mock()),
@@ -298,8 +301,8 @@ def test_openai_language_model_rejects_invalid_output_limit(
     max_output_tokens: int,
 ) -> None:
     with pytest.raises(
-        ValueError,
-        match="max_output_tokens must be greater than zero",
+        ServiceConfigurationError,
+        match="Set GENERATION_MAX_OUTPUT_TOKENS to an integer of at least 1",
     ):
         OpenAILanguageModel(
             client=cast(OpenAI, Mock()),

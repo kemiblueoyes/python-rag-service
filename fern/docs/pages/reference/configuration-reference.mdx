@@ -21,6 +21,20 @@ If a usable default exists, you don't need to set the value unless you want to c
 
 For the setup procedure, see [Configure the service](/docs/get-started/configure-the-service).
 
+## Application
+
+| Setting | Type | Required | Default | Accepted values | Description |
+| --- | --- | --- | --- | --- | --- |
+| `LOG_LEVEL` | string | No | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` | Sets the severity for `rag_service` logs. Any other value stops settings load. The diagnostic names `LOG_LEVEL` and lists these values. It doesn't print the supplied value. |
+
+Logs from the service appear in the terminal where you started uvicorn. On a hosted deployment,
+use that platform's application logs. Each line includes the time, the severity, the logger name,
+the operation, and the reason.
+
+`LOG_LEVEL` doesn't change Uvicorn's access or server logs. It doesn't enable debug logging for
+the Voyage SDK, the OpenAI SDK, Qdrant, or HTTP clients. Those logs can include request content
+or credentials.
+
 ## API and authentication
 
 The service uses one shared API key. Clients send it on search and answer requests.
