@@ -952,6 +952,35 @@ Documentation for the Python RAG Service is currently being built. The public pa
 - `update_last_modified` writes each authored page's `last_modified` date from Git.
 - Vale reads `.vale.ini` and the rules in `styles/`. The Microsoft package covers general prose, and `styles/RAGService/` covers project terminology, headings, citations, and how the documentation describes system behavior.
 
+### Validate documentation for production
+
+The regular validation command checks every MDX page under `fern/docs/pages`,
+including the generated glossary and release notes. It allows draft and review
+pages while work is in progress:
+
+```bash
+uv run python -m rag_service.commands.documentation.validate_docs
+```
+
+Before publishing, add the production check:
+
+```bash
+uv run python -m rag_service.commands.documentation.validate_docs --production
+```
+
+Production validation requires `lifecycle_status: published` or `deprecated` for
+every page under `fern/docs/pages`, including pages omitted from navigation. It
+rejects missing or invalid statuses, `draft`, `review`, and `archived` pages, and
+Fern's `draft` field unless it is absent or explicitly `false`.
+
+Keep unfinished or archived content outside `fern/docs/pages` and remove its
+navigation entries and links before publishing. The glossary generator owns the
+generated glossary page's published status. Templates and reusable snippets do
+not receive page-level frontmatter or content-type structure checks.
+
+The production publishing workflow should run this command before deployment
+and stop if validation fails.
+
 ## License
 
 The MIT License covers this project.

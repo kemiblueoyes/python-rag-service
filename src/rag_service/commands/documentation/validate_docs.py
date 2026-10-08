@@ -1,5 +1,6 @@
 """Run documentation validation checks."""
 
+import argparse
 import subprocess
 import sys
 from pathlib import Path
@@ -17,8 +18,10 @@ from rag_service.commands.documentation.validate_fern_rules import (
     validate_fern_rules,
 )
 from rag_service.commands.documentation.validate_frontmatter import (
+    FrontmatterValidationError,
     load_content_model,
     load_page_registry,
+    parse_frontmatter,
 )
 from rag_service.commands.documentation.validate_frontmatter import (
     validate_paths as validate_frontmatter_paths,
@@ -45,12 +48,60 @@ PAGE_FIXTURES = [
     TEST_TEMPLATE_DIR / "release-note_Hybrid-retrieval.mdx",
 ]
 
-PUBLIC_PAGES = [
-    REPO_ROOT / "fern" / "docs" / "pages" / "home.mdx",
-]
+PUBLIC_PAGES_ROOT = REPO_ROOT / "fern" / "docs" / "pages"
+
+
+def validate_production_pages(paths: list[Path]) -> list[str]:
+    """Reject unpublished content in the production Fern source tree.
+
+    Keep drafts, review pages, and archives outside fern/docs/pages.
+    Check all page sources, including pages omitted from navigation.
+    """
+    errors: list[str] = []
+    for path in paths:
+        try:
+            frontmatter = parse_frontmatter(path)
+        except FrontmatterValidationError as exc:
+            errors.extend(exc.errors)
+            continue
+
+        status = frontmatter.get("lifecycle_status")
+        if status not in ("published", "deprecated"):
+            errors.append(
+                f"{path}: production pages must use lifecycle_status "
+                f"'published' or 'deprecated'; found {status!r}. "
+                "Move drafts, review pages, and archives outside fern/docs/pages."
+            )
+        if "draft" in frontmatter and frontmatter["draft"] is not False:
+            errors.append(f"{path}: production pages cannot set Fern 'draft'.")
+
+    return errors
+
 
 def main() -> None:
     """Run all documentation validation checks."""
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--production",
+        action="store_true",
+        help="Require every page in fern/docs/pages to be publishable.",
+    )
+    args = parser.parse_args()
+    public_pages = sorted(PUBLIC_PAGES_ROOT.rglob("*.mdx"))
+    if not public_pages:
+        raise SystemExit("No public documentation pages found.")
+
+    print(f"Validating {len(public_pages)} documentation page(s).")
+
+    if args.production:
+        production_errors = validate_production_pages(public_pages)
+        if production_errors:
+            print("Production lifecycle validation failed:")
+            for error in production_errors:
+                print(f"- {error}")
+            raise SystemExit(1)
+        print("Production lifecycle validation passed.")
 
     print("Checking documentation page registry...")
 
@@ -73,7 +124,7 @@ def main() -> None:
     registry = load_page_registry(model)
 
     frontmatter_errors = validate_frontmatter_paths(
-        PUBLIC_PAGES,
+        public_pages,
         model,
         registry,
     )
@@ -91,7 +142,7 @@ def main() -> None:
     print("\nChecking content-type structure...")
 
     structure_errors = validate_structure_paths(
-        PUBLIC_PAGES,
+        public_pages,
     )
 
     if structure_errors:

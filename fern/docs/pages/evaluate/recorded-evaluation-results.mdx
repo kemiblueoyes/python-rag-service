@@ -10,7 +10,7 @@ components: [component-evaluation-framework, component-retrieval-service, compon
 dataset_version: "1.5"
 next_steps: [RnEv, KnLmt]
 related_pages: [RtrvlEv, AnsEv, EvArch, HowEv, EvalRef]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [secondary]
 ---
 
@@ -22,7 +22,7 @@ Retrieval passed 21 of 22 cases. All 22 cases passed the answer structural check
 all 14 answers selected for review. Retrieval and answer evaluation ran separately on different dates; the human
 review identifies the saved answer run.
 
-## Benchmark setup
+## Evaluation dataset
 
 The dataset is `doc-landscape-baseline`, version `1.5`. It contains 22 cases: 14 expect relevant chunks and
 sufficient evidence, and 8 expect no chunks and insufficient evidence. Every case filters retrieval to
@@ -133,7 +133,7 @@ score from 0 through 2. A strict pass requires a score of 2 on all four criteria
 All 14 reviewed answers received 2 on every criterion. Cases that expect insufficient evidence are outside this
 review. [Answer evaluation](/docs/evaluate/answer-evaluation#human-review-criteria) defines the review criteria.
 
-## Case examples
+## Findings
 
 ### A primary hit with incomplete source coverage
 

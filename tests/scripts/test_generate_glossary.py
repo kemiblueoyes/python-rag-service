@@ -45,6 +45,7 @@ terms:
     assert "last_modified: 2026-09-23" in result
     assert "id: Gloss" in result
     assert "content_type: general_reference" in result
+    assert "lifecycle_status: published" in result
     assert "max-toc-depth: 3" in result
 
     assert result.index("### Hybrid search") < result.index(

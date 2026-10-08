@@ -366,7 +366,7 @@ def render_glossary(
             "project-specific terms used throughout the "
             "documentation."
         ),
-        "lifecycle_status: draft",
+        "lifecycle_status: published",
         "topics: [topic-terminology]",
         "max-toc-depth: 3",
         f"last_modified: {last_modified}",
