@@ -143,7 +143,7 @@ jobs:
             echo '::error::Add the FERN_TOKEN repository secret before publishing.'
             exit 1
           fi
-          fern generate --docs --instance python-rag-service.docs.buildwithfern.com
+          fern generate --docs --instance https://python-rag-service.docs.buildwithfern.com
 
   check-published-links:
     name: Check published documentation links
