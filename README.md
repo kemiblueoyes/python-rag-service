@@ -214,7 +214,7 @@ If retrieval, the language model, the context budget, or citation validation fai
 }
 ```
 
-Both endpoints require an `X-API-Key` header. A missing or wrong key returns `401` with `authentication_failed`. The API refuses to start when `RAG_API_KEY` is blank. If a request is handled while that key is unset, both endpoints return `503` with `authentication_unavailable`.
+Both endpoints require an `X-API-Key` header. A missing or wrong key returns `401` with `authentication_failed`. The API refuses to start when `RAG_API_KEY` is blank. If a request is handled while that key is unset, both endpoints return `503` with `authentication_unavailable`. A malformed environment value or `.env` line also stops the process. That diagnostic names the setting and the correction, and it does not print the supplied value.
 
 See `docs/design/003-api-design.md` for the current API contract.
 
@@ -420,6 +420,8 @@ RERANKING_MODEL=rerank-2.5
 ```
 
 `EMBEDDING_DIMENSION` must match the configured model's output. The default `voyage-4-lite` configuration produces 1,024-number vectors. The Qdrant adapter creates the collection and its required payload indexes when needed.
+
+`QDRANT_URL` must be an HTTP or HTTPS URL with a host, such as `http://localhost:6333` or a hosted Qdrant URL. Include a port from 1 through 65535 when the server does not use the default port. Startup checks that syntax locally and does not print the URL.
 
 `LEXICAL_CORPUS_PATH` identifies the chunk corpus used for BM25 retrieval. The standard WordPress indexing workflow writes that corpus to `data/wordpress-chunks.json`.
 

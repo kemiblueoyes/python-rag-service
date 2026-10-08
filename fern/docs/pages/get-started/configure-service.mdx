@@ -21,6 +21,8 @@ This page fills the values that are still empty and the ones that depend on your
 When the API process starts, it checks these local settings and the chunk file. It doesn't call Voyage, OpenAI, Qdrant, or WordPress during that check.
 `GET /health` reports that the process is running after startup succeeds. A successful start doesn't show that those services are reachable.
 
+The process reads `.env` before that check. A value of the wrong type, an unsupported provider, or an unreadable `.env` line stops the process. The message names the setting, or the `.env` line, and the correction. It doesn't include the supplied value.
+
 Indexing and search also need `RAG_API_KEY`. See [Authentication](/docs/get-started/authentication) for how to set that key.
 For every setting's type, default, and accepted values, see [Configuration reference](/docs/reference/configuration-reference).
 
@@ -61,6 +63,8 @@ For every setting's type, default, and accepted values, see [Configuration refer
     QDRANT_URL=https://your-cluster.cloud.qdrant.io
     QDRANT_API_KEY=your-qdrant-api-key
     ```
+
+    `QDRANT_URL` has to be an `http` or `https` URL with a host. Add a port from 1 through 65535 when the server doesn't use the default port. `localhost`, an IP address, or a hosted name is valid. Startup checks that syntax locally. It doesn't resolve the host or contact Qdrant, and the log doesn't include the URL.
 
     Qdrant Cloud requires an API key. A self-hosted remote instance requires one when
     API-key authentication is enabled on that server. Qdrant has to be reachable before indexing.

@@ -4,11 +4,14 @@ These checks read settings and the local chunk file. They do not call
 Voyage, OpenAI, Qdrant, or WordPress, and they do not run at import time.
 """
 
+import ipaddress
 import json
 import logging
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from pydantic import SecretStr, ValidationError
 
@@ -20,6 +23,13 @@ logger = logging.getLogger(__name__)
 _SUPPORTED_EMBEDDING_PROVIDERS = frozenset({"voyage"})
 _SUPPORTED_RERANKING_PROVIDERS = frozenset({"voyage"})
 _SUPPORTED_VECTOR_DATABASES = frozenset({"qdrant"})
+_QDRANT_SCHEMES = frozenset({"http", "https"})
+_QDRANT_URL_MESSAGE = (
+    "Set this value to an HTTP or HTTPS URL with a host "
+    "and an optional port from 1 through 65535."
+)
+_HOST_LABEL = re.compile(r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$")
+_DOTTED_QUAD = re.compile(r"^\d+(?:\.\d+){3}$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,6 +130,10 @@ def _collect_failures(current: Settings) -> list[ConfigurationFailure]:
             "QDRANT_URL",
             "Set this value to a non-empty URL.",
         )
+    else:
+        url_message = _qdrant_url_message(current.qdrant_url)
+        if url_message is not None:
+            _add(failures, "QDRANT_URL", url_message)
 
     if _is_blank(current.qdrant_collection):
         _add(
@@ -264,6 +278,53 @@ def _add(
     message: str,
 ) -> None:
     failures.append(ConfigurationFailure(setting, message))
+
+
+def _qdrant_url_message(value: str) -> str | None:
+    """Return a fixed diagnostic when a Qdrant URL is syntactically invalid.
+
+    Parsing uses the standard library only. It does not resolve DNS or
+    open a connection, and the diagnostic does not include the URL.
+    """
+
+    if any(character.isspace() for character in value):
+        return _QDRANT_URL_MESSAGE
+
+    try:
+        parsed = urlsplit(value)
+        hostname = parsed.hostname
+        port = parsed.port
+    except (UnicodeError, ValueError):
+        return _QDRANT_URL_MESSAGE
+
+    if parsed.scheme.lower() not in _QDRANT_SCHEMES:
+        return _QDRANT_URL_MESSAGE
+    if hostname is None or not _valid_qdrant_host(hostname):
+        return _QDRANT_URL_MESSAGE
+    if port is not None and not 1 <= port <= 65535:
+        return _QDRANT_URL_MESSAGE
+    return None
+
+
+def _valid_qdrant_host(hostname: str) -> bool:
+    if _DOTTED_QUAD.fullmatch(hostname):
+        try:
+            ipaddress.IPv4Address(hostname)
+        except ValueError:
+            return False
+        return True
+
+    try:
+        ipaddress.ip_address(hostname)
+    except ValueError:
+        pass
+    else:
+        return True
+
+    name = hostname[:-1] if hostname.endswith(".") else hostname
+    if not name or len(name) > 253:
+        return False
+    return all(_HOST_LABEL.fullmatch(label) for label in name.split("."))
 
 
 def _is_blank(value: str | None) -> bool:

@@ -15,7 +15,10 @@ from rag_service.api.dependencies import (
     get_answer_generator,
     get_retrieval_service,
 )
-from rag_service.api.startup import StartupConfigurationError
+from rag_service.api.startup import (
+    StartupConfigurationError,
+    validate_api_configuration,
+)
 from rag_service.config import settings
 from rag_service.models.chunk import DocumentChunk
 from rag_service.retrieval import RetrievalService
@@ -489,6 +492,91 @@ def test_startup_validation_makes_no_external_calls(
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "localhost:6333",
+        "ftp://localhost:6333",
+        "http://",
+        "http:///missing-host",
+        "http://localhost:abc",
+        "http://localhost:70000",
+        "http://localhost:0",
+        "http://256.1.1.1:6333",
+        "http://bad host:6333",
+        " http://localhost:6333",
+        f"http://localhost:{CANARY}",
+    ],
+)
+def test_startup_rejects_malformed_qdrant_urls(
+    url: str,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    _prepare(monkeypatch, tmp_path, qdrant_url=url)
+    _block_network(monkeypatch)
+
+    with caplog.at_level(logging.ERROR):
+        error = _startup_error()
+
+    _assert_safe_failure(caplog, error, {"QDRANT_URL"})
+    message = _last_message(caplog)
+    assert "HTTP or HTTPS URL" in message
+    assert url not in message
+    assert url not in str(error)
+    assert CANARY not in message
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://localhost:6333",
+        "http://127.0.0.1:6333",
+        "http://[::1]:6333",
+        "HTTP://localhost:6333",
+        "https://your-cluster.cloud.qdrant.io",
+        "https://your-cluster.cloud.qdrant.io:6333",
+    ],
+)
+def test_startup_accepts_local_and_hosted_qdrant_urls(
+    url: str,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _prepare(monkeypatch, tmp_path, qdrant_url=url)
+    _block_network(monkeypatch)
+
+    with (
+        patch(
+            "rag_service.vectorstores.qdrant.QdrantClient",
+            side_effect=AssertionError("Qdrant client constructed"),
+        ),
+        patch(
+            "rag_service.generation.providers.openai.OpenAI",
+            side_effect=AssertionError("OpenAI client constructed"),
+        ),
+        patch(
+            "voyageai.client.Client",
+            side_effect=AssertionError("Voyage client constructed"),
+        ),
+        patch(
+            "rag_service.connectors.wordpress.client.WordPressClient",
+            side_effect=AssertionError("WordPress client constructed"),
+        ),
+    ):
+        validate_api_configuration(settings)
+
+
+def _block_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    def reject_network(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("startup validation opened a network connection")
+
+    monkeypatch.setattr(socket, "create_connection", reject_network)
+    monkeypatch.setattr(socket, "getaddrinfo", reject_network)
+    monkeypatch.setattr(socket.socket, "connect", reject_network)
 
 
 def test_openapi_does_not_require_credentials_or_corpus(

@@ -1,8 +1,13 @@
+import logging
+import re
+from dataclasses import dataclass
+from io import StringIO
 from pathlib import Path
-from typing import Literal
+from typing import Literal, NoReturn, get_args
 
-from pydantic import SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv.parser import parse_stream
+from pydantic import SecretStr, ValidationError
+from pydantic_settings import BaseSettings, SettingsConfigDict, SettingsError
 
 
 class Settings(BaseSettings):
@@ -35,9 +40,7 @@ class Settings(BaseSettings):
     qdrant_collection: str = "rag_chunks"
 
     # Retrieval
-    lexical_corpus_path: Path = Path(
-        "data/wordpress-chunks.json"
-    )
+    lexical_corpus_path: Path = Path("data/wordpress-chunks.json")
 
     retrieval_vector_candidate_depth: int = 20
     retrieval_lexical_candidate_depth: int = 20
@@ -71,4 +74,212 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+logger = logging.getLogger(__name__)
+
+_SETTINGS_ERROR_FIELD = re.compile(
+    r'error (?:parsing|getting) value for field "([^"]+)"'
+)
+_BOOL_ERROR_TYPES = frozenset({"bool_parsing", "bool_type"})
+_INT_ERROR_TYPES = frozenset({"int_parsing", "int_type", "int_from_float"})
+_FLOAT_ERROR_TYPES = frozenset({"float_parsing", "float_type", "float_from_int"})
+
+
+@dataclass(frozen=True, slots=True)
+class SettingsLoadFailure:
+    """One setting or file that could not be loaded."""
+
+    setting: str
+    message: str
+
+
+class SettingsLoadError(RuntimeError):
+    """Raised when environment values or `.env` cannot be loaded safely."""
+
+    def __init__(self, failures: tuple[SettingsLoadFailure, ...]) -> None:
+        self.failures = failures
+        summary = "; ".join(
+            f"{failure.setting}: {failure.message}" for failure in failures
+        )
+        super().__init__(summary)
+
+
+def load_settings() -> Settings:
+    """Load settings from the environment and `.env`.
+
+    A malformed value or an unreadable `.env` line raises SettingsLoadError.
+    The error names the setting and the correction. It omits supplied values,
+    settings dictionaries, raw parser exceptions, and exception chains.
+    Missing optional values keep their defaults so imports and OpenAPI
+    generation still work. Invalid values are not replaced with defaults.
+    """
+
+    file_failures = _dotenv_failures()
+    if file_failures:
+        _reject_settings(file_failures)
+
+    try:
+        return Settings()
+    except ValidationError as exc:
+        _reject_settings(_validation_failures(exc))
+    except SettingsError as exc:
+        _reject_settings(_settings_error_failures(exc))
+
+
+def _reject_settings(failures: list[SettingsLoadFailure]) -> NoReturn:
+    for failure in failures:
+        logger.error(
+            "operation=settings reason=invalid_configuration setting=%s: %s",
+            failure.setting,
+            failure.message,
+            extra={
+                "operation": "settings",
+                "reason": "invalid_configuration",
+                "setting": failure.setting,
+            },
+        )
+    raise SettingsLoadError(tuple(failures)) from None
+
+
+def _dotenv_failures() -> list[SettingsLoadFailure]:
+    failures: list[SettingsLoadFailure] = []
+    for path in _env_files():
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeError:
+            failures.append(
+                SettingsLoadFailure(
+                    ".env",
+                    "Save this file as UTF-8 text.",
+                )
+            )
+            continue
+        except OSError:
+            failures.append(
+                SettingsLoadFailure(
+                    ".env",
+                    "Make this file readable.",
+                )
+            )
+            continue
+
+        try:
+            bindings = list(parse_stream(StringIO(text)))
+        except Exception:
+            failures.append(
+                SettingsLoadFailure(
+                    ".env",
+                    "Fix the unreadable statement. Use NAME=value.",
+                )
+            )
+            continue
+
+        for binding in bindings:
+            if binding.error:
+                failures.append(
+                    SettingsLoadFailure(
+                        ".env",
+                        "Fix the unreadable statement at line "
+                        f"{binding.original.line}. Use NAME=value.",
+                    )
+                )
+    return failures
+
+
+def _env_files() -> list[Path]:
+    configured = Settings.model_config.get("env_file")
+    if configured is None:
+        return []
+    if isinstance(configured, (str, Path)):
+        return [Path(configured)]
+    return [Path(item) for item in configured]
+
+
+def _validation_failures(exc: ValidationError) -> list[SettingsLoadFailure]:
+    failures: list[SettingsLoadFailure] = []
+    for error in exc.errors():
+        loc = error.get("loc", ())
+        field_name = next(
+            (part for part in loc if isinstance(part, str)),
+            None,
+        )
+        error_type = error.get("type")
+        kind = error_type if isinstance(error_type, str) else ""
+        failures.append(
+            SettingsLoadFailure(
+                _env_name(field_name),
+                _correction(field_name, kind),
+            )
+        )
+    if not failures:
+        failures.append(
+            SettingsLoadFailure(
+                "settings",
+                "Fix the invalid environment values.",
+            )
+        )
+    return failures
+
+
+def _settings_error_failures(exc: SettingsError) -> list[SettingsLoadFailure]:
+    match = _SETTINGS_ERROR_FIELD.search(str(exc))
+    field_name = match.group(1) if match else None
+    if field_name == "wordpress_collections":
+        message = "Set this value to a JSON array of strings."
+    elif field_name is None:
+        message = "Fix the invalid environment value or .env entry."
+    else:
+        message = _correction(field_name, "")
+    return [SettingsLoadFailure(_env_name(field_name), message)]
+
+
+def _correction(field_name: str | None, error_type: str) -> str:
+    if error_type in _BOOL_ERROR_TYPES:
+        return "Set this value to true or false."
+    if error_type in _INT_ERROR_TYPES:
+        return "Set this value to an integer."
+    if error_type in _FLOAT_ERROR_TYPES:
+        return "Set this value to a number."
+    if error_type == "literal_error":
+        options = _literal_options(field_name)
+        if options:
+            return f"Set this value to {_join_options(options)}."
+    if field_name == "wordpress_collections":
+        return "Set this value to a JSON array of strings."
+    return "Set this value to a valid value for this setting."
+
+
+def _literal_options(field_name: str | None) -> tuple[str, ...] | None:
+    if field_name is None or field_name not in Settings.model_fields:
+        return None
+    annotation = Settings.model_fields[field_name].annotation
+    if annotation is None or get_args(annotation) == ():
+        return None
+    origin = getattr(annotation, "__origin__", None)
+    if origin is not Literal:
+        return None
+    args = get_args(annotation)
+    if not all(isinstance(arg, str) for arg in args):
+        return None
+    return args
+
+
+def _join_options(options: tuple[str, ...]) -> str:
+    if len(options) == 1:
+        return options[0]
+    if len(options) == 2:
+        return f"{options[0]} or {options[1]}"
+    return ", ".join(options[:-1]) + f", or {options[-1]}"
+
+
+def _env_name(field_name: str | None) -> str:
+    if field_name is None or field_name not in Settings.model_fields:
+        return "settings"
+    field = Settings.model_fields[field_name]
+    if isinstance(field.alias, str):
+        return field.alias
+    return field_name.upper()
+
+
+settings = load_settings()

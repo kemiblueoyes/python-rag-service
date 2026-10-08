@@ -50,7 +50,7 @@ and the API key when the instance requires one.
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
 | `VECTOR_DATABASE` | string | No | `qdrant` | `qdrant` | Selects the vector database. `qdrant` is the only supported value. |
-| `QDRANT_URL` | string | No | `http://localhost:6333` | A Qdrant URL | Sets the URL of the Qdrant instance. Change the default when Qdrant runs somewhere other than `http://localhost:6333`. |
+| `QDRANT_URL` | string | No | `http://localhost:6333` | An `http` or `https` URL with a host. A port, when present, is an integer from 1 through 65535. | Sets the URL of the Qdrant instance. `localhost`, an IP address, and a hosted name are valid, such as `http://localhost:6333` or `https://your-cluster.cloud.qdrant.io`. Startup checks that syntax locally. It doesn't resolve the host or contact Qdrant, and the log doesn't include the URL. |
 | `QDRANT_API_KEY` | string | No, unless the Qdrant instance requires an API key | none | A Qdrant API key, or empty | Authenticates requests to Qdrant. Leave unset for an unauthenticated local instance. Set it when you enable API-key authentication locally or connect to a remote instance that requires a key.|
 | `QDRANT_COLLECTION` | string | No | `rag_chunks` | A collection name | Names the Qdrant collection that stores indexed chunks and their vectors. The service creates the collection. |
 
@@ -117,12 +117,18 @@ The WordPress client calls the Python service from PHP. Define these constants i
 
 ## Constraints and notes
 
+- The process reads environment variables and `.env` before it accepts traffic.
+A value of the wrong type, an unsupported provider, or an unreadable `.env` line stops the process.
+The diagnostic names the setting, or the `.env` line when the process can't read that line, and it states the correction.
+It doesn't include the supplied value, the settings dictionary, or the parser exception.
+Missing credentials and a missing chunk file don't prevent importing the application or generating OpenAPI.
+Those gaps fail the later startup check. Invalid values aren't replaced with defaults.
 - When the API process starts, it checks local settings and the chunk file at `LEXICAL_CORPUS_PATH`.
 The check covers `RAG_API_KEY`, `VOYAGE_API_KEY`, and the supported providers.
 It also covers model names, `QDRANT_URL`, `QDRANT_COLLECTION`, and the numeric retrieval limits.
 When answer generation is on, it checks the OpenAI key and the token budgets too.
 A failing check names the setting or file to correct.
-The log doesn't include setting values, credentials, or chunk text.
+The log doesn't include setting values, credentials, chunk text, or the supplied `QDRANT_URL`.
 - That startup check doesn't call Voyage, OpenAI, Qdrant, or WordPress. A process that stays up has
 valid local configuration. It doesn't show that those services are reachable. `GET /health` reports
 that the process is running.
