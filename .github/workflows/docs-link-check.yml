@@ -3,6 +3,9 @@ name: Documentation link check
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      FERN_TOKEN:
+        required: true
   schedule:
     - cron: "0 15 * * 1" # Run every Monday at 3pm UTC
 
@@ -32,6 +35,8 @@ jobs:
           npm install -g "fern-api@${FERN_VERSION}"
 
       - name: Check published documentation links
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
         run: >
           fern docs link check
           --url https://python-rag-service.docs.buildwithfern.com

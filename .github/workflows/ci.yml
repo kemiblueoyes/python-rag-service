@@ -150,3 +150,5 @@ jobs:
     needs: publish-docs
     if: needs.publish-docs.outputs.published == 'true'
     uses: ./.github/workflows/docs-link-check.yml
+    secrets:
+      FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
