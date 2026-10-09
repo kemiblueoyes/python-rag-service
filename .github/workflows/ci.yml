@@ -62,12 +62,15 @@ jobs:
           FERN_VERSION=$(node -p "require('./fern/fern.config.json').version")
           npm install -g "fern-api@${FERN_VERSION}"
 
-      # Install markdownlint-cli2 from package-lock.json
+      # Install markdownlint and jsdom from package-lock.json
       - name: Install documentation lint dependencies
         run: npm ci
 
       - name: Run WordPress browser link tests
         run: node --test clients/wordpress/python-rag-service-client/tests/rag-search.test.js
+
+      - name: Run documentation lint tests
+        run: node --test scripts/lint-docs.test.mjs
 
       # Lint / static checks with Ruff
       - name: Run Ruff

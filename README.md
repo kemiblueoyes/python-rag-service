@@ -902,6 +902,12 @@ Run MyPy:
 uv run mypy
 ```
 
+Lint the documentation pages and templates:
+
+```bash
+npm run lint:docs
+```
+
 Audit the locked dependencies:
 
 ```bash
