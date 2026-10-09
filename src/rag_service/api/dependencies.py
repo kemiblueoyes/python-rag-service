@@ -1,6 +1,5 @@
 import threading
 from collections.abc import Callable, Sequence
-from functools import lru_cache
 from typing import cast
 
 from rag_service.client_lifecycle import close_client
@@ -59,10 +58,59 @@ class _LazyRetrievalService:
             service.close()
 
 
-@lru_cache(maxsize=1)
+class _SingletonCache[T]:
+    """Publish one value for concurrent callers.
+
+    ``functools.lru_cache`` can run its function once per thread when
+    those threads miss at the same time, and each caller keeps the
+    object that call returned. A lock around construction does not fix
+    that: the waiting caller must read the cache again before it
+    creates anything.
+    """
+
+    def __init__(self, factory: Callable[[], T]) -> None:
+        self._factory = factory
+        self._lock = threading.Lock()
+        self._value: T | None = None
+
+    def __call__(self) -> T:
+        cached = self._value
+        if cached is not None:
+            return cached
+        with self._lock:
+            cached = self._value
+            if cached is not None:
+                return cached
+            created = self._factory()
+            self._value = created
+            return created
+
+    def cache_clear(self) -> None:
+        with self._lock:
+            self._value = None
+
+    def pop(self) -> T | None:
+        """Remove the cached value without creating a replacement."""
+
+        with self._lock:
+            cached = self._value
+            self._value = None
+            return cached
+
+
+def _new_retrieval_service() -> RetrievalService:
+    return cast(RetrievalService, _LazyRetrievalService())
+
+
+_retrieval_cache = _SingletonCache(_new_retrieval_service)
+
+
 def get_retrieval_service() -> RetrievalService:
     """Return the configured retrieval service used by API endpoints."""
-    return cast(RetrievalService, _LazyRetrievalService())
+    return _retrieval_cache()
+
+
+get_retrieval_service.cache_clear = _retrieval_cache.cache_clear  # type: ignore[attr-defined]
 
 
 class _GenerationDisabled:
@@ -117,31 +165,31 @@ class _LazyAnswerGenerator:
             generator.close()
 
 
-@lru_cache(maxsize=1)
-def get_answer_generator() -> AnswerGenerator:
-    """Return the configured answer generator used by API endpoints."""
+def _new_answer_generator() -> AnswerGenerator:
     if not settings.generation_enabled:
         return cast(AnswerGenerator, _GenerationDisabled())
-
     return cast(AnswerGenerator, _LazyAnswerGenerator())
+
+
+_answer_cache = _SingletonCache(_new_answer_generator)
+
+
+def get_answer_generator() -> AnswerGenerator:
+    """Return the configured answer generator used by API endpoints."""
+    return _answer_cache()
+
+
+get_answer_generator.cache_clear = _answer_cache.cache_clear  # type: ignore[attr-defined]
 
 
 def shutdown_api_dependencies() -> None:
     """Close cached API clients and drop them from the process cache."""
 
-    _close_cached(get_retrieval_service)
-    _close_cached(get_answer_generator)
+    _close_cached(_retrieval_cache)
+    _close_cached(_answer_cache)
 
 
-def _close_cached(getter: Callable[[], object]) -> None:
-    info = getattr(getter, "cache_info", None)
-    clear = getattr(getter, "cache_clear", None)
-    if not callable(info) or not callable(clear):
-        return
-    if info().currsize == 0:
-        return
-    resource = getter()
-    try:
+def _close_cached[T](cache: _SingletonCache[T]) -> None:
+    resource = cache.pop()
+    if resource is not None:
         close_client(resource, operation="shutdown")
-    finally:
-        clear()

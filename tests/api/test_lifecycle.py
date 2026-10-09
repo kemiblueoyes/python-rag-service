@@ -1,6 +1,6 @@
 import json
 import threading
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -11,6 +11,8 @@ from pydantic import SecretStr
 
 from rag_service.api.app import app
 from rag_service.api.dependencies import (
+    _answer_cache,
+    _retrieval_cache,
     get_answer_generator,
     get_retrieval_service,
     shutdown_api_dependencies,
@@ -72,8 +74,9 @@ class _GateLock:
 
     def wait_for_waiter(self) -> None:
         with self._cv:
-            while self.waiters < 1:
-                self._cv.wait()
+            arrived = self._cv.wait_for(lambda: self.waiters >= 1, timeout=2)
+        if not arrived:
+            raise AssertionError("second caller did not wait on the lock")
 
 
 def _chunk() -> DocumentChunk:
@@ -430,3 +433,314 @@ def test_shutdown_closes_owned_clients_and_restart_builds_new_ones(
     assert qdrant_clients[0].query_points.call_count == first_searches
     assert qdrant_clients[1].query_points.call_count == 1
     qdrant_clients[1].close.assert_called_once()
+
+
+def _concurrent_cache_miss(
+    cache: Any,
+    getter: Callable[[], object],
+) -> object:
+    """Call getter from two threads while its cache is empty."""
+
+    builds = 0
+    original_factory = cache._factory
+    original_lock = cache._lock
+    gate = _GateLock()
+
+    def counting_factory() -> object:
+        nonlocal builds
+        builds += 1
+        return original_factory()
+
+    cache._factory = counting_factory
+    cache._lock = gate
+    found: list[object | None] = [None, None]
+    errors: list[BaseException] = []
+    second_started = False
+    first = threading.Thread(target=_invoke, args=(0, getter, found, errors))
+    second = threading.Thread(target=_invoke, args=(1, getter, found, errors))
+    try:
+        first.start()
+        assert gate.entered.wait(timeout=2)
+        second.start()
+        second_started = True
+        gate.wait_for_waiter()
+        assert builds == 0
+        assert found == [None, None]
+        gate.release_first.set()
+        first.join(timeout=2)
+        second.join(timeout=2)
+    finally:
+        gate.release_first.set()
+        first.join(timeout=2)
+        if second_started:
+            second.join(timeout=2)
+        cache._lock = original_lock
+        cache._factory = original_factory
+
+    assert not first.is_alive()
+    assert not second.is_alive()
+    assert errors == []
+    assert builds == 1
+    left, right = found
+    assert left is not None
+    assert left is right
+    return left
+
+
+def _invoke(
+    index: int,
+    getter: Callable[[], object],
+    found: list[object | None],
+    errors: list[BaseException],
+) -> None:
+    try:
+        found[index] = getter()
+    except BaseException as exc:
+        errors.append(exc)
+
+
+def test_concurrent_getter_miss_shares_one_retrieval_wrapper(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Any,
+) -> None:
+    _prepare(monkeypatch, tmp_path)
+    get_retrieval_service.cache_clear()
+    wrapper = _concurrent_cache_miss(_retrieval_cache, get_retrieval_service)
+
+    voyage_clients: list[MagicMock] = []
+    qdrant_clients: list[MagicMock] = []
+    bm25_builds = 0
+    real_init = Bm25Retriever.__init__
+
+    def counting_init(self: Bm25Retriever, chunks: list[DocumentChunk]) -> None:
+        nonlocal bm25_builds
+        bm25_builds += 1
+        real_init(self, chunks)
+
+    def voyage_factory(*_args: object, **kwargs: object) -> MagicMock:
+        assert kwargs["timeout"] == 11.5
+        assert kwargs["max_retries"] == 2
+        client = _sdk_client()
+        voyage_clients.append(client)
+        return client
+
+    def qdrant_factory(*_args: object, **kwargs: object) -> MagicMock:
+        assert kwargs["timeout"] == 7
+        client = _sdk_client()
+        qdrant_clients.append(client)
+        return client
+
+    monkeypatch.setattr(Bm25Retriever, "__init__", counting_init)
+    gate = _GateLock()
+    wrapper._lock = gate  # type: ignore[attr-defined]
+    errors: list[BaseException] = []
+
+    request = RetrievalRequest(query="keyword", limit=5)
+
+    def retrieve() -> None:
+        try:
+            wrapper.retrieve(request)  # type: ignore[attr-defined]
+        except BaseException as exc:
+            errors.append(exc)
+
+    with (
+        patch("voyageai.client.Client", side_effect=voyage_factory),
+        patch(
+            "rag_service.vectorstores.qdrant.QdrantClient",
+            side_effect=qdrant_factory,
+        ),
+    ):
+        first = threading.Thread(target=retrieve)
+        second = threading.Thread(target=retrieve)
+        second_started = False
+        try:
+            first.start()
+            assert gate.entered.wait(timeout=2)
+            second.start()
+            second_started = True
+            gate.wait_for_waiter()
+            assert voyage_clients == []
+            assert qdrant_clients == []
+            assert bm25_builds == 0
+            gate.release_first.set()
+            first.join(timeout=2)
+            second.join(timeout=2)
+        finally:
+            gate.release_first.set()
+            first.join(timeout=2)
+            if second_started:
+                second.join(timeout=2)
+        assert not first.is_alive()
+        assert not second.is_alive()
+        assert errors == []
+        assert len(voyage_clients) == 2
+        assert len(qdrant_clients) == 1
+        assert bm25_builds == 1
+
+        service = wrapper._service  # type: ignore[attr-defined]
+        barrier = threading.Barrier(2)
+        overlapped: list[int] = []
+
+        def overlapping(_request: RetrievalRequest) -> list[object]:
+            barrier.wait(timeout=2)
+            overlapped.append(1)
+            return []
+
+        service.retrieve = overlapping
+        again = [threading.Thread(target=retrieve) for _ in range(2)]
+        for thread in again:
+            thread.start()
+        for thread in again:
+            thread.join(timeout=2)
+        assert not any(thread.is_alive() for thread in again)
+        assert overlapped == [1, 1]
+        assert bm25_builds == 1
+
+        shutdown_api_dependencies()
+        qdrant_clients[0].close.assert_called_once()
+        for client in voyage_clients:
+            client.close.assert_not_called()
+        assert len(qdrant_clients) == 1
+
+        fresh = get_retrieval_service()
+        assert fresh is not wrapper
+        fresh.retrieve(request)
+        assert len(qdrant_clients) == 2
+        assert len(voyage_clients) == 4
+        assert bm25_builds == 2
+        assert qdrant_clients[0].close.call_count == 1
+        shutdown_api_dependencies()
+        qdrant_clients[1].close.assert_called_once()
+        assert qdrant_clients[0].close.call_count == 1
+
+
+def test_concurrent_getter_miss_shares_one_answer_wrapper(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Any,
+) -> None:
+    _prepare(monkeypatch, tmp_path)
+    get_answer_generator.cache_clear()
+    wrapper = _concurrent_cache_miss(_answer_cache, get_answer_generator)
+
+    openai_calls: list[dict[str, object]] = []
+    client_gate = _GateLock()
+    creates = 0
+    real_create = __import__(
+        "rag_service.generation.factory",
+        fromlist=["create_answer_generator"],
+    ).create_answer_generator
+
+    def wrapped(current: object) -> object:
+        nonlocal creates
+        creates += 1
+        generator = real_create(current)
+        generator._language_model._client_lock = client_gate
+        return generator
+
+    monkeypatch.setattr(
+        "rag_service.api.dependencies.create_answer_generator",
+        wrapped,
+    )
+    errors: list[BaseException] = []
+
+    def generate() -> None:
+        try:
+            wrapper.generate(  # type: ignore[attr-defined]
+                question="What is lifecycle?",
+                results=[],
+            )
+        except BaseException as exc:
+            errors.append(exc)
+
+    with patch(
+        "rag_service.generation.providers.openai.OpenAI",
+        side_effect=lambda **kwargs: openai_calls.append(kwargs) or MagicMock(),
+    ):
+        first = threading.Thread(target=generate)
+        second = threading.Thread(target=generate)
+        second_started = False
+        try:
+            first.start()
+            assert client_gate.entered.wait(timeout=2)
+            second.start()
+            second_started = True
+            client_gate.wait_for_waiter()
+            assert openai_calls == []
+            assert creates == 1
+            client_gate.release_first.set()
+            first.join(timeout=2)
+            second.join(timeout=2)
+        finally:
+            client_gate.release_first.set()
+            first.join(timeout=2)
+            if second_started:
+                second.join(timeout=2)
+        assert not first.is_alive()
+        assert not second.is_alive()
+        assert all("closed" not in str(exc) for exc in errors)
+        assert creates == 1
+        assert len(openai_calls) == 1
+        assert openai_calls[0]["timeout"] == 44.0
+        assert openai_calls[0]["max_retries"] == 1
+        assert openai_calls[0]["api_key"] == "openai-test-key"
+
+        generator = wrapper._generator  # type: ignore[attr-defined]
+        language_model = generator._language_model
+        opened = language_model._client
+        barrier = threading.Barrier(2)
+        overlapped: list[int] = []
+
+        def overlapping(**_kwargs: object) -> object:
+            barrier.wait(timeout=2)
+            overlapped.append(1)
+            return object()
+
+        generator.generate = overlapping
+        again = [threading.Thread(target=generate) for _ in range(2)]
+        for thread in again:
+            thread.start()
+        for thread in again:
+            thread.join(timeout=2)
+        assert not any(thread.is_alive() for thread in again)
+        assert overlapped == [1, 1]
+        assert len(openai_calls) == 1
+
+        shutdown_api_dependencies()
+        opened.close.assert_called_once()
+        assert creates == 1
+
+        fresh = get_answer_generator()
+        assert fresh is not wrapper
+        try:
+            fresh.generate(question="What is lifecycle?", results=[])
+        except Exception as exc:
+            assert "closed" not in str(exc)
+        assert creates == 2
+        assert len(openai_calls) == 2
+        opened.close.assert_called_once()
+        fresh_model = fresh._generator._language_model  # type: ignore[attr-defined]
+        second_client = fresh_model._client
+        assert second_client is not opened
+        shutdown_api_dependencies()
+        second_client.close.assert_called_once()
+        opened.close.assert_called_once()
+
+
+def test_concurrent_getter_miss_shares_one_disabled_generator(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Any,
+) -> None:
+    _prepare(
+        monkeypatch,
+        tmp_path,
+        generation_enabled=False,
+        openai_api_key=None,
+    )
+    get_answer_generator.cache_clear()
+    with patch("rag_service.generation.providers.openai.OpenAI") as openai:
+        wrapper = _concurrent_cache_miss(_answer_cache, get_answer_generator)
+        openai.assert_not_called()
+        shutdown_api_dependencies()
+        fresh = get_answer_generator()
+        assert fresh is not wrapper
+        openai.assert_not_called()
