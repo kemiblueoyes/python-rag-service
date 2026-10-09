@@ -221,3 +221,6 @@ TODO.md
 
 # Node
 node_modules/
+
+# SQLite files created by the WordPress plugin tests
+clients/wordpress/python-rag-service-client/tests/tmp/

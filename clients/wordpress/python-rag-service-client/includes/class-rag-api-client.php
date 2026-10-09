@@ -95,38 +95,49 @@ class RAG_Service_API_Client {
 		$response = wp_remote_post(
 			$this->base_url . $endpoint,
 			array(
-				'timeout' => 15,
-				'headers' => array(
+				'timeout'     => 15,
+				'redirection' => 0,
+				'sslverify'   => true,
+				'headers'     => array(
 					'Content-Type' => 'application/json',
-                    'X-API-Key'    => $this->api_key,
+					'X-API-Key'    => $this->api_key,
 				),
-				'body' => wp_json_encode( $body ),
+				'body'        => wp_json_encode( $body ),
 			)
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$status_code = wp_remote_retrieve_response_code( $response );
-		$response_body = wp_remote_retrieve_body( $response );
-		$data = json_decode( $response_body, true );
-
-		if ( ! is_array( $data ) ) {
 			return new WP_Error(
-				'rag_service_invalid_response',
-				'The RAG service returned an invalid response.'
+				'rag_service_transport_failed',
+				'The RAG service request failed.'
 			);
 		}
 
-		if ( $status_code < 200 || $status_code >= 300 ) {
+		$status_code = (int) wp_remote_retrieve_response_code( $response );
+		if ( $status_code >= 300 && $status_code < 400 ) {
 			return new WP_Error(
-				'rag_service_api_error',
-				'The RAG service returned an error.',
-				array(
-					'status' => $status_code,
-					'response' => $data,
-				)
+				'rag_service_redirected',
+				'The RAG service request failed.'
+			);
+		}
+		if ( 413 === $status_code ) {
+			return new WP_Error(
+				'rag_service_upstream_too_large',
+				'The RAG service request failed.'
+			);
+		}
+		if ( 422 === $status_code ) {
+			return new WP_Error(
+				'rag_service_upstream_rejected',
+				'The RAG service request failed.'
+			);
+		}
+
+		$data = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $data ) || $status_code < 200 || $status_code >= 300 ) {
+			return new WP_Error(
+				'rag_service_upstream_failed',
+				'The RAG service request failed.'
 			);
 		}
 

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Python RAG Service Client
  * Description: WordPress reference client for the Python RAG Service.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: Kemi Oyesiku
  */
 
@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-rag-rate-limiter.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-rag-api-client.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-rag-rest-controller.php';
 
@@ -18,7 +19,10 @@ function rag_service_register_rest_routes() {
 	$controller->register_routes();
 }
 
+register_activation_hook( __FILE__, 'rag_service_install_rate_limit_storage' );
+add_action( 'plugins_loaded', 'rag_service_maybe_install_rate_limit_storage' );
 add_action( 'rest_api_init', 'rag_service_register_rest_routes' );
+add_filter( 'rest_post_dispatch', 'rag_service_send_retry_after' );
 
 /**
  * Render the RAG search and answer interface.

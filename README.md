@@ -291,7 +291,16 @@ define(
 
 The WordPress proxy sends the key to the Python service in the `X-API-Key` header. Search and Answer requests fail if either constant is missing or if `RAG_SERVICE_API_KEY` doesn't exactly match `RAG_API_KEY`.
 
-After changing the reference client, deploy the complete updated `clients/wordpress/python-rag-service-client` plugin directory to the WordPress site's `wp-content/plugins` directory. Updating the Python service alone doesn't update the live WordPress proxy or UI.
+Optional `wp-config.php` constants limit how many requests the proxy forwards. The defaults are 30 Search requests and 10 Ask requests per minute, shared by every visitor on that route:
+
+```php
+define( 'RAG_SERVICE_SEARCH_REQUESTS_PER_MINUTE', 30 );
+define( 'RAG_SERVICE_ANSWER_REQUESTS_PER_MINUTE', 10 );
+```
+
+Each value has to be a positive integer. An invalid value stops that route from calling Python. The counter is a row in the WordPress database, not a separate service. It doesn't limit other clients that call the Python API directly, and it isn't a spending cap or a complete denial-of-service defense. The proxy also rejects an empty query and a query longer than 2,000 Unicode code points before it forwards the request. It doesn't follow redirects from `RAG_SERVICE_API_BASE_URL`.
+
+After changing the reference client, deploy the complete updated `clients/wordpress/python-rag-service-client` plugin directory to the WordPress site's `wp-content/plugins` directory. Leave an already-active plugin active. The next request creates the `wp_rag_service_rate_limits` table (the prefix follows the site). Updating the Python service alone doesn't update the live WordPress proxy or UI.
 
 The client currently supports:
 
