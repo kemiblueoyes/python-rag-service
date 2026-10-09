@@ -902,6 +902,14 @@ Run MyPy:
 uv run mypy
 ```
 
+Audit the locked dependencies:
+
+```bash
+bash scripts/audit-locked-dependencies.sh
+```
+
+The script installs the locked `audit` dependency group, which pins `pip-audit` 2.10.1. It then exports the locked Python runtime, development, and audit-tool packages from `uv.lock` and checks those exact versions. The local project is left out of the package list, and its third-party dependencies stay in. The script also audits every package recorded in `package-lock.json`, including development dependencies. It reads the lockfiles and doesn't ask the installer to select newer versions. A confirmed advisory fails the command. An unavailable advisory service or an incomplete scan fails the command as well.
+
 ## Project structure
 
 ```text

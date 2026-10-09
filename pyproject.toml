@@ -49,12 +49,24 @@ indent-style = "space"
 [dependency-groups]
 dev = [
     "bm25s>=0.3.11",
-    "httpx2>=2.9.0",
+    "httpx2>=2.13.1",
     "mypy>=2.3.0",
     "pytest>=9.1.1",
     "pyyaml>=6.0.3",
     "ruff>=0.15.22",
     "types-pyyaml>=6.0.12.20260906",
+]
+
+audit = [
+    "pip-audit==2.10.1",
+]
+
+[tool.uv]
+constraint-dependencies = [
+    "httpcore2>=2.13.1",
+    "httpx2>=2.13.1",
+    "multidict>=6.9.1,<7",
+    "urllib3>=2.8.0",
 ]
 
 [tool.mypy]

@@ -7,7 +7,8 @@
 # - Checks code with Ruff
 # - Runs your tests
 # - Validates documentation
-# - Publishes documentation on main, then checks live links
+# - Audits locked Python and npm dependencies
+# - Publishes documentation on main after the test and audit jobs, then checks live links
 
 name: CI
 
@@ -138,9 +139,30 @@ jobs:
       - name: Run production MySQL rate-limit tests
         run: php clients/wordpress/python-rag-service-client/tests/run-mysql-tests.php
 
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Audit locked dependencies
+        run: bash scripts/audit-locked-dependencies.sh
+
   publish-docs:
     name: Publish Fern documentation
-    needs: [test, wordpress-rate-limit]
+    needs: [test, wordpress-rate-limit, dependency-audit]
     if: >-
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
