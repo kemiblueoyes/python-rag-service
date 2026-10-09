@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Python RAG Service Client
  * Description: WordPress reference client for the Python RAG Service.
- * Version: 0.2.1
+ * Version: 0.2.2
  * Author: Kemi Oyesiku
  */
 

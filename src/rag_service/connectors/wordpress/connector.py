@@ -6,6 +6,7 @@ from rag_service.models.canonical_document import CanonicalDocument
 from .client import WordPressClient
 from .mapper import WordPressMetadataMapping, map_wordpress_post
 from .models import WordPressPost
+from .urls import is_absolute_http_url
 
 WordPressDocumentEnricher = Callable[
     [list[WordPressPost], list[CanonicalDocument]],
@@ -76,4 +77,5 @@ def _enrich_page_relationships(
             parent = pages[page.parent]
 
             document.metadata["parent_title"] = parent.title.rendered
-            document.metadata["parent_url"] = parent.link
+            if is_absolute_http_url(parent.link):
+                document.metadata["parent_url"] = parent.link

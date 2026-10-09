@@ -80,6 +80,113 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * Return an absolute http or https URL, or null.
+ *
+ * Uses the browser URL parser. Rejects other schemes, malformed values,
+ * relative URLs, whitespace, and embedded credentials.
+ *
+ * @param {string} value Candidate URL.
+ * @returns {string|null} Normalized URL safe to assign to href.
+ */
+function safeDocumentUrl(value) {
+	if (typeof value !== 'string' || value.length === 0) {
+		return null;
+	}
+
+	for (const character of value) {
+		if (character <= ' ' || /\s/u.test(character)) {
+			return null;
+		}
+	}
+
+	let parsed;
+
+	try {
+		parsed = new URL(value);
+	} catch (error) {
+		return null;
+	}
+
+	if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+		return null;
+	}
+
+	const schemeSeparator = value.indexOf('://');
+	const authority = schemeSeparator === -1
+		? ''
+		: value.slice(schemeSeparator + 3).split(/[/?#]/)[0];
+
+	if (
+		parsed.username !== '' ||
+		parsed.password !== '' ||
+		authority.includes('@')
+	) {
+		return null;
+	}
+
+	if (parsed.host === '') {
+		return null;
+	}
+
+	return parsed.href;
+}
+
+/**
+ * Return a document URL with a heading fragment.
+ *
+ * The fragment is applied only after the base URL is valid.
+ *
+ * @param {string} value Candidate document URL.
+ * @param {string} anchor Heading fragment without a leading hash.
+ * @returns {string|null} Normalized URL, or null when the base is rejected.
+ */
+function safeDocumentHref(value, anchor) {
+	const base = safeDocumentUrl(value);
+
+	if (!base) {
+		return null;
+	}
+
+	if (!anchor) {
+		return base;
+	}
+
+	const parsed = new URL(base);
+	parsed.hash = String(anchor);
+
+	if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+		return null;
+	}
+
+	if (parsed.username !== '' || parsed.password !== '') {
+		return null;
+	}
+
+	return parsed.href;
+}
+
+/**
+ * Append a new-tab link, or the same text when the URL is rejected.
+ *
+ * @param {HTMLElement} parent Destination element.
+ * @param {string} text Visible text.
+ * @param {string|null} href Validated URL.
+ */
+function appendDocumentLink(parent, text, href) {
+	if (!href) {
+		parent.appendChild(document.createTextNode(text));
+		return;
+	}
+
+	const link = document.createElement('a');
+	link.href = href;
+	link.target = '_blank';
+	link.rel = 'noopener noreferrer';
+	link.textContent = text;
+	parent.appendChild(link);
+}
+
+/**
  * Shorten an excerpt without cutting a word in half.
  *
  * @param {string} text Excerpt text.
@@ -135,14 +242,7 @@ function renderResults(results, container, status) {
 		article.className = 'rag-service-result';
 
 		const title = document.createElement('h3');
-
-        const link = document.createElement('a');
-        link.href = result.url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = result.title;
-
-		title.appendChild(link);
+		appendDocumentLink(title, result.title, safeDocumentUrl(result.url));
 		article.appendChild(title);
 
         if (result.heading_path && result.heading_path.length) {
@@ -160,16 +260,11 @@ function renderResults(results, container, status) {
                     index === result.heading_path.length - 1;
         
                 if (isDeepestHeading && result.anchor) {
-                    const headingLink = document.createElement('a');
-
-                    headingLink.href =
-                        `${result.url.replace(/#.*$/, '')}#${result.anchor}`;
-                    
-                    headingLink.target = '_blank';
-                    headingLink.rel = 'noopener noreferrer';
-                    headingLink.textContent = headingText;
-        
-                    heading.appendChild(headingLink);
+                    appendDocumentLink(
+                        heading,
+                        headingText,
+                        safeDocumentHref(result.url, result.anchor)
+                    );
                 } else {
                     heading.appendChild(
                         document.createTextNode(headingText)
@@ -236,20 +331,27 @@ function appendInlineFormatting(
 			);
 
 			if (source) {
+				const citationHref = safeDocumentHref(
+					source.url,
+					source.anchor
+				);
+
+				if (!citationHref) {
+					container.appendChild(
+						document.createTextNode(part)
+					);
+					return;
+				}
+
 				const citationLink =
 					document.createElement('a');
 
 				citationLink.className =
 					'rag-service-citation';
-
-				citationLink.href = source.anchor
-					? `${source.url.replace(/#.*$/, '')}#${source.anchor}`
-					: source.url;
-
+				citationLink.href = citationHref;
 				citationLink.target = '_blank';
 				citationLink.rel =
 					'noopener noreferrer';
-
 				citationLink.textContent = part;
 
 				container.appendChild(citationLink);
@@ -379,14 +481,12 @@ function renderAnswer(data, container, status) {
 			const citation = document.createElement('strong');
 			citation.textContent = `[${source.citation_id}] `;
 
-			const link = document.createElement('a');
-			link.href = source.url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.textContent = source.title;
-
 			item.appendChild(citation);
-			item.appendChild(link);
+			appendDocumentLink(
+				item,
+				source.title,
+				safeDocumentUrl(source.url)
+			);
 
             if (
                 source.heading_path &&
@@ -407,16 +507,11 @@ function renderAnswer(data, container, status) {
                         index === source.heading_path.length - 1;
             
                     if (isDeepestHeading && source.anchor) {
-                        const headingLink = document.createElement('a');
-            
-                        headingLink.href =
-                            `${source.url.replace(/#.*$/, '')}#${source.anchor}`;
-            
-                        headingLink.target = '_blank';
-                        headingLink.rel = 'noopener noreferrer';
-                        headingLink.textContent = headingText;
-            
-                        item.appendChild(headingLink);
+                        appendDocumentLink(
+                            item,
+                            headingText,
+                            safeDocumentHref(source.url, source.anchor)
+                        );
                     } else {
                         item.appendChild(
                             document.createTextNode(headingText)

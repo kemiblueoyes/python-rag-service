@@ -5,6 +5,7 @@ from typing import Any, Literal
 from rag_service.models.canonical_document import CanonicalDocument
 
 from .models import WordPressPost
+from .urls import is_absolute_http_url, log_rejected_source_url
 
 
 @dataclass(frozen=True)
@@ -145,12 +146,17 @@ def map_wordpress_post(
     metadata.update(_extract_custom_metadata(post, metadata_mappings))
 
     has_body_content = bool(post.content.rendered.strip())
+    source_url_is_valid = is_absolute_http_url(post.link)
+    if post.status == "publish" and not source_url_is_valid:
+        log_rejected_source_url(post.id)
 
     document_role: Literal["content", "landing", "archive"] = (
         "landing" if post.type == "page" and not has_body_content else "content"
     )
 
-    indexable = post.status == "publish" and has_body_content
+    indexable = (
+        post.status == "publish" and has_body_content and source_url_is_valid
+    )
 
     return CanonicalDocument(
         document_id=f"wordpress:{post.type}:{post.id}",

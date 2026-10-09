@@ -3,6 +3,7 @@ from collections import defaultdict
 from rag_service.connectors.wordpress.connector import WordPressConnectorProfile
 from rag_service.connectors.wordpress.mapper import WordPressMetadataMapping
 from rag_service.connectors.wordpress.models import WordPressPost
+from rag_service.connectors.wordpress.urls import is_absolute_http_url
 from rag_service.models.canonical_document import CanonicalDocument
 
 AUDIENCE_LABELS = {
@@ -54,7 +55,8 @@ def enrich_doc_landscape_series(
             document.metadata["series_description"] = page.acf.get(
                 "aeo_page_description"
             ) or document.metadata.get("description")
-            document.metadata["series_url"] = page.link
+            if is_absolute_http_url(page.link):
+                document.metadata["series_url"] = page.link
 
     for page_id in pages:
         series_root_id = _find_series_root(page_id, pages, series_roots)
@@ -72,7 +74,8 @@ def enrich_doc_landscape_series(
         document.metadata["series_name"] = (
             series_root.acf.get("aeo_page_name") or series_root.title.rendered
         )
-        document.metadata["series_url"] = series_root.link
+        if is_absolute_http_url(series_root.link):
+            document.metadata["series_url"] = series_root.link
 
 
 def _find_series_root(

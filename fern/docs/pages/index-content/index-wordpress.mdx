@@ -10,7 +10,7 @@ components: [component-wordpress-connector, component-indexing-pipeline]
 prerequisites: [ConfSrv]
 next_steps: [Auth]
 related_pages: [IndxPipe, RIndxUpdt, TutIndx]
-last_modified: 2026-10-08
+last_modified: 2026-10-09
 audience: [primary, secondary]
 ---
 
@@ -97,7 +97,10 @@ collections. Check `WORDPRESS_BASE_URL` and `WORDPRESS_COLLECTIONS` on
 
 The indexing pipeline creates chunks only for documents where `indexable` is true and
 `document_role` is `content`. A published record with an empty body is saved as a canonical
-document and produces no chunks.
+document and produces no chunks. A published record whose source URL isn't an absolute `http` or
+`https` URL without a username or password is saved the same way and produces no chunks. The
+command logs that record's WordPress ID and doesn't print the URL. The check runs when documents
+are ingested again. It leaves records already stored in the live index in place.
 
 A page with an empty body is stored with `document_role` set to `landing`. One document
 can also produce several chunks, so `M` doesn't have to equal `N`.

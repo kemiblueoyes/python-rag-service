@@ -211,6 +211,26 @@ the proxy. Those routes share the site-wide limits in **Choose how many requests
 The API key stays in `wp-config.php`.
 </Note>
 
+## Source links
+
+The browser accepts an absolute `http` or `https` URL with a host and no username or password.
+Uppercase and lowercase scheme names are both accepted. It rejects other schemes, including
+`javascript:` and `data:`, along with malformed URLs, relative URLs, URLs that contain whitespace,
+and URLs that embed credentials.
+
+A rejected URL stays on the page as the title, heading, citation, or source name. That text isn't a
+link. One rejected URL doesn't stop the other results or the rest of the answer from rendering.
+Titles, excerpts, headings, and answer text stay text. Links that open a new tab keep
+`rel="noopener noreferrer"`.
+
+The browser applies this check to results already stored in the index, including a URL that was
+indexed before this check existed. Indexing applies the same rule when WordPress records are
+ingested again. A published record with body text whose source URL fails the check is saved as a
+canonical document and produces no chunks. The indexing log includes the WordPress record ID and
+doesn't include the URL. Deploying the updated browser script doesn't require you to delete or
+rebuild the live index. Ingest the documents again when you want the indexing check to apply to
+records fetched on that run.
+
 ## Deploy plugin updates
 
 After you change the reference client, copy the complete
@@ -230,6 +250,9 @@ On a site where the plugin is already active:
    `wp-config.php` only when you want a limit other than 30 or 10.
 4. Confirm `RAG_SERVICE_API_BASE_URL` is the API origin. The updated plugin doesn't follow a
    redirect from that origin.
+5. Reload the page that contains `[python_rag_service]` so the browser loads the updated
+   `assets/rag-search.js`. The plugin versions that file from its modification time. You don't
+   have to delete or rebuild the live index for the browser source-link check.
 
 When the service origin or API key changes, update `RAG_SERVICE_API_BASE_URL` or
 `RAG_SERVICE_API_KEY` in `wp-config.php`. The plugin reads those constants on each request. It
