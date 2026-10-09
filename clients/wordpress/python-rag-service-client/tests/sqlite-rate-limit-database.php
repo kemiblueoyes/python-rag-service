@@ -2,9 +2,10 @@
 /**
  * SQLite storage for the plugin rate limiter.
  *
- * This is the test double's shared database. WordPress uses
- * RAG_Service_Wpdb_Rate_Limit_Database and MySQL. Both reserve with one
- * conditional upsert: insert 1, or increment only while the row is under the limit.
+ * This is the test double's shared database. It follows the same minute
+ * rules as the MySQL limiter: one row per route, the minute only moves
+ * forward, and a full minute is rejected. It does not execute the production
+ * MySQL statement. MySQL coverage lives in run-mysql-tests.php.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -43,7 +44,8 @@ class Rag_Sqlite_Rate_Limit_Database implements RAG_Service_Rate_Limit_Database 
 				route TEXT NOT NULL,
 				window_start INTEGER NOT NULL,
 				request_count INTEGER NOT NULL,
-				PRIMARY KEY (route, window_start)
+				admit_flag INTEGER NOT NULL,
+				PRIMARY KEY (route)
 			)'
 		);
 	}
@@ -51,30 +53,50 @@ class Rag_Sqlite_Rate_Limit_Database implements RAG_Service_Rate_Limit_Database 
 	/**
 	 * Reserve one request.
 	 *
-	 * `changes()` is connection-local, so a concurrent writer doesn't overwrite it.
+	 * `RETURNING` belongs to this statement, so another connection can't overwrite it.
 	 *
 	 * @param string $route        Route name.
 	 * @param int    $window_start Window start.
 	 * @param int    $limit        Maximum admitted requests.
-	 * @return int|null
+	 * @return bool|null
 	 */
-	public function reserve( string $route, int $window_start, int $limit ): ?int {
+	public function reserve( string $route, int $window_start, int $limit ): ?bool {
 		try {
 			$statement = $this->pdo->prepare(
-				'INSERT INTO rag_service_rate_limits (route, window_start, request_count)
-				 VALUES (:route, :window_start, 1)
-				 ON CONFLICT(route, window_start) DO UPDATE
-				 SET request_count = request_count + 1
-				 WHERE request_count < :limit'
+				'INSERT INTO rag_service_rate_limits (route, window_start, request_count, admit_flag)
+				 VALUES (:route, :window_start, 1, 1)
+				 ON CONFLICT(route) DO UPDATE SET
+				 admit_flag = CASE
+				   WHEN rag_service_rate_limits.window_start < excluded.window_start THEN 1
+				   WHEN rag_service_rate_limits.window_start > excluded.window_start THEN 0
+				   WHEN rag_service_rate_limits.request_count < :under_limit THEN 1
+				   ELSE 0
+				 END,
+				 request_count = CASE
+				   WHEN rag_service_rate_limits.window_start < excluded.window_start THEN 1
+				   WHEN rag_service_rate_limits.window_start > excluded.window_start THEN rag_service_rate_limits.request_count
+				   WHEN rag_service_rate_limits.request_count < :under_limit_count THEN rag_service_rate_limits.request_count + 1
+				   ELSE rag_service_rate_limits.request_count
+				 END,
+				 window_start = CASE
+				   WHEN rag_service_rate_limits.window_start < excluded.window_start THEN excluded.window_start
+				   ELSE rag_service_rate_limits.window_start
+				 END
+				 RETURNING admit_flag'
 			);
 			$statement->execute(
 				array(
-					':route'        => $route,
-					':window_start' => $window_start,
-					':limit'        => $limit,
+					':route'             => $route,
+					':window_start'      => $window_start,
+					':under_limit'       => $limit,
+					':under_limit_count' => $limit,
 				)
 			);
-			return (int) $this->pdo->query( 'SELECT changes()' )->fetchColumn();
+			$flag = $statement->fetchColumn();
+			if ( false === $flag ) {
+				return null;
+			}
+			return 1 === (int) $flag;
 		} catch ( PDOException $exception ) {
 			return null;
 		}
@@ -86,14 +108,9 @@ class Rag_Sqlite_Rate_Limit_Database implements RAG_Service_Rate_Limit_Database 
 	 * @param int $window_start Current window start.
 	 */
 	public function delete_windows_before( int $window_start ): void {
-		try {
-			$statement = $this->pdo->prepare(
-				'DELETE FROM rag_service_rate_limits WHERE window_start < :window_start'
-			);
-			$statement->execute( array( ':window_start' => $window_start ) );
-		} catch ( PDOException $exception ) {
-			return;
-		}
+		unset( $window_start );
+		// One row per route cannot be an older sibling of itself. The production
+		// MySQL cleanup is a self-join and is covered by run-mysql-tests.php.
 	}
 
 	/**

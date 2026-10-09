@@ -60,7 +60,7 @@ require_once __DIR__ . '/sqlite-rate-limit-database.php';
  * Database that fails the test if a request is reserved.
  */
 class Rag_Exploding_Rate_Limit_Database implements RAG_Service_Rate_Limit_Database {
-	public function reserve( string $route, int $window_start, int $limit ): ?int {
+	public function reserve( string $route, int $window_start, int $limit ): ?bool {
 		throw new RuntimeException( 'reserved ' . $route );
 	}
 

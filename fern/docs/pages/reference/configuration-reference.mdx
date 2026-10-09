@@ -206,10 +206,12 @@ unquoted integer of 1 or greater. Zero, a negative number, a decimal, or a quote
 invalid. The route with the invalid value returns HTTP 503 and the plugin doesn't call Python.
 The other route keeps its own limit.
 
-The counters are stored in `{prefix}rag_service_rate_limits` in the WordPress database. Each
-admission is one conditional upsert, shared by concurrent PHP workers. The window is one minute.
-A new minute can admit a full allowance immediately, so traffic across that boundary can reach
-twice the configured limit. See
+Each route has one row in `{prefix}rag_service_rate_limits` in the WordPress database. The stored
+minute only moves forward. A reservation for an earlier minute is rejected, including after cleanup
+on either route. Admission uses the stored count, so a connection that reports an unchanged row as
+a match still rejects a full minute. The plugin doesn't change that connection's flags. Concurrent
+PHP workers share the row. The window is one minute. A new minute can admit a full allowance
+immediately, so traffic across that boundary can reach twice the configured limit. See
 [Integrate with WordPress](/docs/integrate/integrate-with-wordpress) for storage setup on an
 already-active plugin, the visitor error messages, and what these limits don't cover.
 

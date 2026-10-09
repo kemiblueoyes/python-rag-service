@@ -93,9 +93,51 @@ jobs:
             uv run python -m rag_service.commands.documentation.validate_docs
           fi
 
+  wordpress-rate-limit:
+    name: WordPress MySQL rate limit
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rag_test_password
+          MYSQL_DATABASE: rag_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -prag_test_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      RAG_TEST_MYSQL_HOST: 127.0.0.1
+      RAG_TEST_MYSQL_PORT: "3306"
+      RAG_TEST_MYSQL_USER: root
+      RAG_TEST_MYSQL_PASSWORD: rag_test_password
+      RAG_TEST_MYSQL_DATABASE: rag_test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mysqli, pdo_sqlite, mbstring
+          coverage: none
+
+      - name: Check PHP syntax
+        run: find clients/wordpress/python-rag-service-client -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Run WordPress stub and SQLite tests
+        run: php clients/wordpress/python-rag-service-client/tests/run-tests.php
+
+      - name: Run production MySQL rate-limit tests
+        run: php clients/wordpress/python-rag-service-client/tests/run-mysql-tests.php
+
   publish-docs:
     name: Publish Fern documentation
-    needs: test
+    needs: [test, wordpress-rate-limit]
     if: >-
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')

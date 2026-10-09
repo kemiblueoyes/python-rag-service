@@ -111,18 +111,22 @@ value stops Search from calling Python and returns HTTP 503 with
 same way and leaves Search unchanged.
 
 The counters live in the WordPress database, in `{prefix}rag_service_rate_limits`. On a site whose
-table prefix is `wp_`, that table is `wp_rag_service_rate_limits`. The plugin creates it with
-`dbDelta` when you activate the plugin. If the plugin is already active when you copy these files
-in, the next request creates the table when the `rag_service_rate_limit_schema` option isn't `1`.
-No Redis server or other new service is required. Each forwarded request is one conditional
-insert that increments the row only while the count is under the limit, so concurrent PHP workers
-share the same counter.
+table prefix is `wp_`, that table is `wp_rag_service_rate_limits`. Each route has one row. The
+stored minute only moves forward. A reservation that still names an earlier minute is rejected,
+including after the same route moves its row forward and after the other route runs cleanup. That
+reservation doesn't open a counter for the earlier minute.
 
-The window is a fixed minute. A new minute starts a new counter, and the plugin deletes older
-windows. Traffic at the end of one minute and the start of the next can use both allowances, so a
-short period can reach twice the limit. The limit counts an attempt after the plugin reserves a
-slot, including an attempt that Python then fails. Empty and overlong queries are rejected before
-a slot is reserved.
+The plugin creates the table with `dbDelta` when you activate the plugin. If the plugin is already
+active when you copy these files in, the next request replaces the table when the
+`rag_service_rate_limit_schema` option isn't `2`. Replacing the table clears the counts already
+stored. No Redis server or other new service is required. Admission uses the stored count, so a
+connection that reports an unchanged row as a match still rejects a full minute. The plugin
+doesn't change that connection's flags. Concurrent PHP workers share the same counter.
+
+The window is a fixed minute. A new minute starts the counter at one. Traffic at the end of one
+minute and the start of the next can use both allowances, so a short period can reach twice the
+limit. The limit counts an attempt after the plugin reserves a slot, including an attempt that
+Python then fails. Empty and overlong queries are rejected before a slot is reserved.
 
 This limit protects the volume of Search and Ask requests the WordPress proxy sends. It doesn't
 apply to another client that calls the Python RAG service directly. It isn't a spending cap for
@@ -218,9 +222,10 @@ On a site where the plugin is already active:
 
 1. Copy the plugin directory over `wp-content/plugins/python-rag-service-client`. Leave the plugin
    active. You don't have to deactivate it.
-2. Load any page, or call either REST route. The plugin creates `{prefix}rag_service_rate_limits`
-   when `rag_service_rate_limit_schema` isn't `1`. If that table can't be created, Search and Ask
-   return HTTP 503 and the plugin doesn't call Python.
+2. Load any page, or call either REST route. The plugin replaces `{prefix}rag_service_rate_limits`
+   when `rag_service_rate_limit_schema` isn't `2`. Replacing the table clears the counts already
+   stored. If that table can't be created, Search and Ask return HTTP 503 and the plugin doesn't
+   call Python.
 3. Add `RAG_SERVICE_SEARCH_REQUESTS_PER_MINUTE` or `RAG_SERVICE_ANSWER_REQUESTS_PER_MINUTE` in
    `wp-config.php` only when you want a limit other than 30 or 10.
 4. Confirm `RAG_SERVICE_API_BASE_URL` is the API origin. The updated plugin doesn't follow a

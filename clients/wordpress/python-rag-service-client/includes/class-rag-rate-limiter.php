@@ -2,9 +2,11 @@
 /**
  * Site-wide fixed-window limits for the public Search and Ask routes.
  *
- * Admission is one INSERT ... ON DUPLICATE KEY UPDATE statement in the
- * WordPress database. Concurrent PHP workers share that row. The plugin
- * doesn't keep the counter in a transient or in process memory.
+ * Each route has one row in the WordPress database. The stored minute only
+ * moves forward, so a delayed worker can't recreate an exhausted minute after
+ * cleanup. Admission is decided inside that upsert, not from the affected-row
+ * count, so CLIENT_FOUND_ROWS can't turn a full window into a new admission.
+ * The plugin doesn't change the shared connection's client flags.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,20 +21,26 @@ interface RAG_Service_Rate_Limit_Database {
 	/**
 	 * Reserve one request in the window.
 	 *
-	 * A positive result means the request was admitted. Zero means the
-	 * window is already full. Null means storage failed.
+	 * True means the request was admitted. False means it was rejected.
+	 * Null means storage failed.
+	 *
+	 * A rejected reservation includes a full window and a minute older than
+	 * the minute already stored for the route.
 	 *
 	 * @param string $route         Route name, `search` or `answer`.
 	 * @param int    $window_start  Unix time at the start of the minute.
 	 * @param int    $limit         Maximum admitted requests in the window.
-	 * @return int|null
+	 * @return bool|null
 	 */
-	public function reserve( string $route, int $window_start, int $limit ): ?int;
+	public function reserve( string $route, int $window_start, int $limit ): ?bool;
 
 	/**
-	 * Drop windows that are no longer current.
+	 * Drop a route's older row only when that route already has a newer one.
 	 *
-	 * @param int $window_start Unix time at the start of the current minute.
+	 * The current row for a route is its watermark. Cleanup must not delete
+	 * it, or a delayed worker could insert the exhausted minute again.
+	 *
+	 * @param int $window_start Unix time at the start of the caller's minute.
 	 */
 	public function delete_windows_before( int $window_start ): void;
 }
@@ -45,31 +53,50 @@ class RAG_Service_Wpdb_Rate_Limit_Database implements RAG_Service_Rate_Limit_Dat
 	/**
 	 * Reserve one request with a single conditional upsert.
 	 *
+	 * The session variable is connection-local. It is set before the upsert
+	 * so a new row stays admitted, then overwritten by the update when the
+	 * row already exists. The affected-row count is ignored.
+	 *
+	 * `request_count` is assigned before `window_start`. MySQL uses the
+	 * updated value of an earlier assignment, and the count decision has to
+	 * see the minute that was stored before this statement.
+	 *
 	 * @param string $route        Route name.
 	 * @param int    $window_start Window start.
 	 * @param int    $limit        Maximum admitted requests.
-	 * @return int|null
+	 * @return bool|null
 	 */
-	public function reserve( string $route, int $window_start, int $limit ): ?int {
+	public function reserve( string $route, int $window_start, int $limit ): ?bool {
 		global $wpdb;
 
 		$table = $this->table_name();
-		if ( '' === $table || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'prepare' ) ) {
+		if ( '' === $table || ! is_object( $wpdb ) || ! method_exists( $wpdb, 'prepare' ) || ! method_exists( $wpdb, 'get_var' ) ) {
+			return null;
+		}
+
+		if ( false === $wpdb->query( 'SET @rag_service_rate_limit_admitted = 1' ) ) {
 			return null;
 		}
 
 		$prepared = $wpdb->prepare(
-			"INSERT INTO {$table} (route, window_start, request_count) VALUES (%s, %d, 1) ON DUPLICATE KEY UPDATE request_count = IF(request_count < %d, request_count + 1, request_count)",
+			"INSERT INTO {$table} (route, window_start, request_count) VALUES (%s, %d, 1) ON DUPLICATE KEY UPDATE request_count = IF(window_start < VALUES(window_start), IF(@rag_service_rate_limit_admitted := 1, 1, 1), IF(window_start > VALUES(window_start), IF(@rag_service_rate_limit_admitted := 0, request_count, request_count), IF(@rag_service_rate_limit_admitted := request_count < %d, request_count + 1, request_count))), window_start = IF(window_start < VALUES(window_start), VALUES(window_start), window_start)",
 			$route,
 			$window_start,
 			$limit
 		);
-		$result = $wpdb->query( $prepared );
-		if ( false === $result ) {
+		if ( false === $wpdb->query( $prepared ) ) {
 			return null;
 		}
 
-		return (int) $result;
+		$admitted = $wpdb->get_var( 'SELECT @rag_service_rate_limit_admitted' );
+		if ( '1' === (string) $admitted ) {
+			return true;
+		}
+		if ( '0' === (string) $admitted ) {
+			return false;
+		}
+
+		return null;
 	}
 
 	/**
@@ -87,7 +114,7 @@ class RAG_Service_Wpdb_Rate_Limit_Database implements RAG_Service_Rate_Limit_Dat
 
 		$wpdb->query(
 			$wpdb->prepare(
-				"DELETE FROM {$table} WHERE window_start < %d",
+				"DELETE old_rows FROM {$table} AS old_rows INNER JOIN {$table} AS current_rows ON old_rows.route = current_rows.route AND old_rows.window_start < current_rows.window_start WHERE old_rows.window_start < %d",
 				$window_start
 			)
 		);
@@ -158,8 +185,8 @@ class RAG_Service_Rate_Limiter {
 		}
 
 		$window_start = $now - ( $now % self::WINDOW_SECONDS );
-		$affected     = $this->database->reserve( $route, $window_start, $limit );
-		if ( null === $affected ) {
+		$admitted     = $this->database->reserve( $route, $window_start, $limit );
+		if ( null === $admitted ) {
 			return null;
 		}
 
@@ -171,7 +198,7 @@ class RAG_Service_Rate_Limiter {
 		}
 
 		return array(
-			'allowed'     => $affected > 0,
+			'allowed'     => $admitted,
 			'retry_after' => $retry_after,
 		);
 	}
@@ -259,7 +286,7 @@ function rag_service_rate_limit_schema_option(): string {
  * @return string
  */
 function rag_service_rate_limit_schema_version(): string {
-	return '1';
+	return '2';
 }
 
 /**
@@ -274,8 +301,8 @@ function rag_service_rate_limit_schema_sql( string $table_name, string $charset_
   route varchar(32) NOT NULL,
   window_start bigint(20) unsigned NOT NULL,
   request_count bigint(20) unsigned NOT NULL,
-  PRIMARY KEY  (route, window_start)
-) {$charset_collate};";
+  PRIMARY KEY  (route)
+) ENGINE=InnoDB {$charset_collate};";
 }
 
 /**
@@ -302,6 +329,11 @@ function rag_service_install_rate_limit_storage(): void {
 			return;
 		}
 		require_once $upgrade;
+	}
+
+	$installed = (string) get_option( rag_service_rate_limit_schema_option(), '' );
+	if ( rag_service_rate_limit_schema_version() !== $installed ) {
+		$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
 	}
 
 	dbDelta( rag_service_rate_limit_schema_sql( $table, $wpdb->get_charset_collate() ) );

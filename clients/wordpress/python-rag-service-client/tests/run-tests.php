@@ -6,6 +6,7 @@
  *
  * WordPress stub tests fake REST, HTTP, and wpdb. They don't execute MySQL.
  * SQLite tests call RAG_Service_Rate_Limiter against a real database file.
+ * They follow the same minute rules and don't execute the production MySQL statement.
  * The concurrent test starts multiple PHP processes against that same file.
  */
 
@@ -16,6 +17,7 @@ define( 'RAG_SERVICE_API_KEY', 'rag-test-key-do-not-leak' );
 
 require_once dirname( __DIR__ ) . '/python-rag-service-client.php';
 require_once __DIR__ . '/sqlite-rate-limit-database.php';
+require_once __DIR__ . '/stale-scenario.php';
 
 $rag_test_failures = array();
 $rag_test_checks   = 0;
@@ -179,8 +181,9 @@ function rag_settings_scenario( string $scenario ): string {
 }
 
 echo "WordPress stub tests fake REST, HTTP, and wpdb. They don't run MySQL.\n";
-echo "SQLite tests use a real database file and the plugin rate limiter.\n";
-echo "The concurrent test starts multiple PHP processes against that file.\n";
+echo "SQLite tests use a real database file and the same minute rules. They don't execute the production MySQL statement.\n";
+echo "The SQLite concurrent test starts multiple PHP processes against that file.\n";
+echo "Production MySQL coverage is run-mysql-tests.php, including CLIENT_FOUND_ROWS.\n";
 
 rag_group( '[wordpress-stubs] routes stay public and sanitize the query' );
 $controller = new RAG_Service_REST_Controller();
@@ -205,7 +208,8 @@ $sql = rag_service_rate_limit_schema_sql( 'wp_rag_service_rate_limits', 'DEFAULT
 rag_check( str_contains( $sql, 'route varchar(32) NOT NULL' ), 'schema has route' );
 rag_check( str_contains( $sql, 'window_start bigint(20) unsigned NOT NULL' ), 'schema has window_start' );
 rag_check( str_contains( $sql, 'request_count bigint(20) unsigned NOT NULL' ), 'schema has request_count' );
-rag_check( str_contains( $sql, 'PRIMARY KEY  (route, window_start)' ), 'schema primary key' );
+rag_check( str_contains( $sql, 'PRIMARY KEY  (route)' ), 'schema primary key is one row per route' );
+rag_check( str_contains( $sql, 'ENGINE=InnoDB' ), 'schema requests InnoDB' );
 
 class Rag_Stub_Wpdb {
 	public string $prefix = 'wp_';
@@ -213,6 +217,7 @@ class Rag_Stub_Wpdb {
 	public array $prepares = array();
 	public bool $fail_insert = false;
 	public int $insert_affected = 1;
+	public string $admitted_flag = '1';
 	public ?string $found_table = 'wp_rag_service_rate_limits';
 
 	public function get_charset_collate(): string {
@@ -241,6 +246,9 @@ class Rag_Stub_Wpdb {
 
 	public function get_var( string $sql ): ?string {
 		$this->queries[] = $sql;
+		if ( str_contains( $sql, '@rag_service_rate_limit_admitted' ) ) {
+			return $this->admitted_flag;
+		}
 		return $this->found_table;
 	}
 }
@@ -250,7 +258,8 @@ $wpdb = new Rag_Stub_Wpdb();
 rag_service_maybe_install_rate_limit_storage();
 rag_check( 1 === count( $GLOBALS['rag_test_dbdelta'] ), 'dbDelta ran' );
 rag_check( str_contains( $GLOBALS['rag_test_dbdelta'][0], 'wp_rag_service_rate_limits' ), 'dbDelta received the prefixed table' );
-rag_check( '1' === get_option( 'rag_service_rate_limit_schema' ), 'schema option is stored' );
+rag_check( '2' === get_option( 'rag_service_rate_limit_schema' ), 'schema option is stored' );
+rag_check( str_contains( implode( "\n", $wpdb->queries ), 'DROP TABLE IF EXISTS wp_rag_service_rate_limits' ), 'install replaces an older table' );
 $before = count( $GLOBALS['rag_test_dbdelta'] );
 rag_service_maybe_install_rate_limit_storage();
 rag_check( $before === count( $GLOBALS['rag_test_dbdelta'] ), 'a recorded schema skips table creation' );
@@ -265,27 +274,38 @@ $database = new RAG_Service_Wpdb_Rate_Limit_Database();
 $limiter  = new RAG_Service_Rate_Limiter( $database );
 $wpdb->queries = array();
 $wpdb->prepares = array();
-$wpdb->insert_affected = 2;
+$wpdb->insert_affected = 0;
+$wpdb->admitted_flag = '1';
 $decision = $limiter->reserve( 'search', 30, 1700000060 );
-rag_check( is_array( $decision ) && true === $decision['allowed'], 'MySQL affected-row 2 is admitted by the stub' );
+rag_check( is_array( $decision ) && true === $decision['allowed'], 'admission ignores an affected-row count of 0' );
 rag_check( 40 === $decision['retry_after'], 'retry_after at 1700000060 is 40 seconds' );
-rag_check( 2 === count( $wpdb->prepares ), 'reserve and expiry are two statements' );
+rag_check( 2 === count( $wpdb->prepares ), 'reserve and cleanup are two prepared statements' );
 $insert = $wpdb->prepares[0][0];
 rag_check( str_contains( $insert, 'ON DUPLICATE KEY UPDATE' ), 'reserve is an upsert' );
-rag_check( str_contains( $insert, 'IF(request_count < %d, request_count + 1, request_count)' ), 'upsert increments only under the limit' );
-rag_check( ! str_contains( $insert, 'SELECT' ), 'reserve has no SELECT' );
+rag_check( str_contains( $insert, '@rag_service_rate_limit_admitted' ), 'admission uses a session variable' );
+rag_check( str_contains( $insert, 'window_start > VALUES(window_start)' ), 'an older minute does not move the row backward' );
+rag_check( str_contains( $insert, 'window_start < VALUES(window_start)' ), 'a newer minute replaces the stored minute' );
+rag_check( str_contains( $insert, 'request_count < %d' ), 'a full minute does not increment' );
 rag_check( array( 'search', 1700000040, 30 ) === $wpdb->prepares[0][1], 'reserve binds route, window, and limit' );
-rag_check( str_contains( $wpdb->queries[1], 'DELETE FROM wp_rag_service_rate_limits WHERE window_start < %d' ), 'expired windows are deleted' );
+rag_check( str_contains( $wpdb->prepares[1][0], 'DELETE old_rows FROM wp_rag_service_rate_limits' ), 'cleanup only joins a route to its newer row' );
 
 $wpdb->queries = array();
-$wpdb->insert_affected = 0;
+$wpdb->insert_affected = 1;
+$wpdb->admitted_flag = '0';
 $full = $limiter->reserve( 'answer', 10, 1700000060 );
-rag_check( is_array( $full ) && false === $full['allowed'], 'MySQL affected-row 0 is exhausted by the stub' );
+rag_check( is_array( $full ) && false === $full['allowed'], 'a found-row no-op is not admission' );
+
+$wpdb->found_table = 'wp_rag_service_rate_limits';
+update_option( 'rag_service_rate_limit_schema', '1' );
+$wpdb->queries = array();
+rag_service_maybe_install_rate_limit_storage();
+rag_check( '2' === get_option( 'rag_service_rate_limit_schema' ), 'schema 1 upgrades to schema 2' );
+rag_check( str_contains( implode( "\n", $wpdb->queries ), 'DROP TABLE IF EXISTS wp_rag_service_rate_limits' ), 'schema 1 drops the composite-key table' );
 
 $wpdb->queries = array();
 $wpdb->fail_insert = true;
 rag_check( null === $limiter->reserve( 'search', 30, 1700000060 ), 'wpdb query failure is storage failure' );
-rag_check( 1 === count( $wpdb->queries ), 'storage failure stops after the failed insert' );
+rag_check( 2 === count( $wpdb->queries ), 'storage failure stops after the failed insert' );
 
 $wpdb->prefix = 'wp bad';
 rag_check( null === ( new RAG_Service_Wpdb_Rate_Limit_Database() )->reserve( 'search', 1700000040, 30 ), 'unsafe table prefix fails closed' );
@@ -391,10 +411,13 @@ $clock->now = 1700000100;
 $GLOBALS['rag_test_remote_posts'] = array();
 $reset = $controller->search( new WP_REST_Request( array( 'query' => 'visible-query' ) ) );
 rag_check( $reset instanceof WP_REST_Response, 'the next minute admits search again' );
-$rows = $database->rows();
-rag_check( 1 === count( $rows ), 'expired windows are removed' );
-rag_check( 'search' === $rows[0]['route'] && '1700000100' === (string) $rows[0]['window_start'], 'only the new search window remains' );
-rag_check( 1 === (int) $rows[0]['request_count'], 'the new window starts at one' );
+$rows = array();
+foreach ( $database->rows() as $row ) {
+	$rows[ $row['route'] ] = $row;
+}
+rag_check( '1700000100' === (string) $rows['search']['window_start'], 'search moves to the new minute' );
+rag_check( 1 === (int) $rows['search']['request_count'], 'the new minute starts at one' );
+rag_check( '1700000040' === (string) $rows['answer']['window_start'], 'ask keeps its row until ask moves forward' );
 rag_remove_sqlite( $database, $path );
 unset( $_SERVER['HTTP_X_FORWARDED_FOR'], $_SERVER['HTTP_CF_CONNECTING_IP'] );
 
@@ -560,6 +583,50 @@ $race_db = new Rag_Sqlite_Rate_Limit_Database( $race_path );
 $race_rows = $race_db->rows();
 rag_check( 1 === count( $race_rows ) && 10 === (int) $race_rows[0]['request_count'], 'shared row stopped at the limit' );
 rag_remove_sqlite( $race_db, $race_path );
+
+rag_group( '[sqlite-stale-worker] a paused old-minute worker stays rejected' );
+foreach ( array( 'search', 'answer' ) as $advancing_route ) {
+	$stale_path = rag_temp_path( 'rag-stale-' );
+	$stale_db   = new Rag_Sqlite_Rate_Limit_Database( $stale_path );
+	$stale_db->create_table();
+	$stale_limiter = new RAG_Service_Rate_Limiter( $stale_db );
+	$ready         = rag_temp_path( 'rag-ready-' );
+	unlink( $ready );
+	$release = $ready . '-release';
+	$errors  = rag_test_stale_window(
+		$stale_limiter,
+		function () use ( $stale_path, $ready, $release ) {
+			$pipes   = array();
+			$process = proc_open(
+				array( PHP_BINARY, __DIR__ . '/stale-worker.php', 'sqlite', $stale_path, 'search', '2', '1700000060', $ready, $release ),
+				array(
+					1 => array( 'pipe', 'w' ),
+					2 => array( 'pipe', 'w' ),
+				),
+				$pipes
+			);
+			return array( $process, $pipes, $ready, $release );
+		},
+		function () use ( $stale_db ) {
+			return $stale_db->rows();
+		},
+		$advancing_route,
+		1700000060,
+		1700000100,
+		2
+	);
+	foreach ( $errors as $error ) {
+		rag_check( false, $error );
+	}
+	rag_check( array() === $errors, "sqlite stale worker stayed exhausted after {$advancing_route} cleanup" );
+	rag_remove_sqlite( $stale_db, $stale_path );
+	if ( is_file( $ready ) ) {
+		unlink( $ready );
+	}
+	if ( is_file( $release ) ) {
+		unlink( $release );
+	}
+}
 
 echo $rag_test_checks . " checks, " . count( $rag_test_failures ) . " failed\n";
 exit( array() === $rag_test_failures ? 0 : 1 );
