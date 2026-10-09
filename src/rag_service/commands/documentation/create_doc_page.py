@@ -1,6 +1,7 @@
 """Create a new authored Fern documentation page.
 
-components, prerequisites, next_steps, and related_pages are omitted when the IA has no values for them.
+components, prerequisites, next_steps, and related_pages are omitted
+when the IA has no values for them.
 
 Example:
 

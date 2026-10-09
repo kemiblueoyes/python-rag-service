@@ -9,7 +9,7 @@ topics: [topic-evaluation]
 components: [component-evaluation-framework]
 next_steps: [RtrvlEv, AnsEv, RnEv, EvalRef]
 related_pages: [EvArch, RecEvRes, KnLmt]
-last_modified: 2026-10-07
+last_modified: 2026-10-09
 audience: [secondary]
 ---
 
@@ -26,144 +26,207 @@ This page explains what that evaluation covers and why those checks stay separat
 
 ## What the evaluation measures
 
-Evaluation compares the current index, retrieval pipeline, and answer generation with the expected results in the
-dataset. The evaluation framework doesn't cover API tests. Those tests check that the endpoints accept valid
-requests, return the documented response shapes, and report validation and service errors.
+- **Report metadata:** Each report records the dataset version, generation time, collection name, and selected model and retrieval settings.
+- **Factors that affect results:** Changes to the embedding model, reranking model, chunking strategy, retrieval settings, or generation prompt can change evaluation results.
+- **Test-suite checks:** The test suite loads the dataset and checks the scoring functions using fixture data.
+- **Live evaluation:** The evaluation commands run live retrieval and answer generation outside the regular test suite and CI.
 
-Each report records the dataset version, generation time, collection name, and selected model and retrieval settings.
-The embedding model, reranking model, chunking strategy, retrieval settings, and generation prompt can all change those results.
-The test suite loads the dataset and checks the scoring functions with fixture data. The evaluation commands run live retrieval
-and answer generation outside the regular test suite and CI. After a change that can affect retrieval or
-generation quality, run the evaluation again.
+Run the evaluation again after a change that can affect retrieval or answer quality.
 
 [Current evaluation results](/docs/evaluate/recorded-evaluation-results) records the latest completed run.
 
 ## The versioned evaluation dataset
 
-The evaluation dataset is the maintained collection of test cases. The project stores it at
-`evaluation/datasets/baseline.json`. The current dataset ID is `doc-landscape-baseline`, and the version is `1.5`.
-The dataset description identifies it as the human-labeled set for The Doc Landscape WordPress index. It contains 22
-cases.
+The evaluation dataset is the maintained collection of test cases. The project stores it at `evaluation/datasets/baseline.json`.
 
-Reports and the human review record the dataset version they used. Both runs in a comparison need the same
-dataset version.
+The current dataset ID is `doc-landscape-baseline`, and the version is `1.5`. It's the human-labeled set for The Doc Landscape
+WordPress index and contains 22 cases.
 
-Each test case has a unique ID, a category, and a query. It can include metadata filters and notes. Every case in
-the current dataset filters retrieval to `source: wordpress` and includes both a retrieval expectation and an
-answer expectation.
+Reports and the human review record the dataset version they used. Both runs in a comparison need the same dataset version.
+
+### Test-case fields
+
+Each test case has a unique ID, a category, and a query. It can also include metadata filters and notes.
+
+Every case in the current dataset filters retrieval to `source: wordpress` and includes both a retrieval expectation and
+an answer expectation.
+
+### Retrieval expectations
 
 The retrieval expectation lists relevant sources, nonrelevant sources, and the expected-empty flag.
 
-A relevant source is a chunk judged useful for the query. It records a document ID, a title, a heading path, and, in
-this dataset, a chunk ID. The role is `primary` or `supporting`. A primary source is the content the case treats as
-answer-bearing. A supporting source is relevant, and it doesn't have to carry the answer on its own. When a relevant
-source omits `role`, the dataset treats that source as primary. An answerable case includes at least one primary
-source.
+A **relevant source** is a chunk judged useful for the query. It records a document ID, a title, a heading path, and,
+in this dataset, a chunk ID. Its role is:
 
-A nonrelevant source is a chunk judged not useful for the query. It uses the same document, heading, and chunk
-fields. Retrieval evaluation treats a returned chunk on neither list as unjudged. The dataset rejects a source
-listed as both relevant and nonrelevant, and it rejects a repeated chunk inside either list.
+- **`primary`:** Content the case treats as answer-bearing.
+- **`supporting`:** Relevant content that doesn't have to carry the answer on its own.
 
-The answer expectation records whether the case should have sufficient evidence. When it should, the case also lists
-required points: the ideas a qualitative review looks for in the generated answer. The automated answer checks store
-those points with the result. Coverage of the points belongs to the qualitative review.
+When a relevant source omits `role`, the dataset treats it as primary. An answerable case includes at least one primary source.
 
-Loading the dataset enforces these rules. An expected-empty case has no relevant sources. A case that expects
-results includes at least one primary source. Case IDs are unique.
+A **nonrelevant source** is a chunk judged not useful for the query. It uses the same document, heading, and chunk fields.
+Retrieval evaluation treats a returned chunk on neither list as **unjudged**.
+
+### Answer expectations
+
+The answer expectation records whether the case should have sufficient evidence.
+
+When sufficient evidence is expected, the case also lists **required points**: ideas the qualitative review looks for in
+the generated answer. The automated answer checks store these points with the result. The qualitative review assesses
+whether the answer covers them.
+
+### Dataset validation
+
+Loading the dataset enforces these rules:
+
+- Case IDs must be unique.
+- An expected-empty case must have no relevant sources.
+- A case that expects results must include at least one primary source.
+- A source can't appear in both the relevant and nonrelevant lists.
+- A chunk can't appear more than once within either list.
 
 ## Answerable and expected-empty cases
 
-Each test case expects one of two retrieval outcomes.
+Each test case expects one of two retrieval outcomes: relevant chunks or no chunks.
 
-An answerable case expects the retrieval pipeline to return relevant chunks. `expect_empty` is false, and the case
-lists relevant sources. In the current dataset, these cases also expect sufficient evidence and include required
-points. The dataset contains 14 answerable cases.
+### Expected outcomes
 
-An expected-empty case expects the retrieval pipeline to return no chunks. `expect_empty` is true, and the
-relevant-source list is empty. The answer expectation sets sufficient evidence to false. The case can list
-nonrelevant sources for chunks that sit near the topic. The dataset contains 8 expected-empty cases. Their
-category is `unanswerable`.
+| Property | Answerable case | Expected-empty case |
+| --- | --- | --- |
+| Retrieval outcome | Relevant chunks. | No chunks. |
+| `expect_empty` | `false` | `true` |
+| Relevant sources | Includes at least one primary source. | Empty list. |
+| Answer expectation in the current dataset | Sufficient evidence, with required points for review. | Insufficient evidence. |
+| Number of cases in the current dataset | 14 | 8 |
 
-Expected-empty is the expected result stored on the test case. An unsupported query is a live question the indexed
-documentation can't adequately answer. The support gate returns no chunks when the top rerank score is below the
-configured support cutoff, or when the reranker returns no chunks. Expected-empty cases test whether this rule
-rejects questions the indexed documentation can't answer.
-[Retrieval pipeline](/docs/architecture/retrieval-pipeline) explains that decision.
+Expected-empty cases use the category `unanswerable`. They can list nonrelevant sources for chunks close to the query's topic.
 
-Some unanswerable queries sit far from the corpus, such as how long to roast a chicken. Others use the
-documentation's vocabulary when the indexed pages don't answer the question, such as choosing between Qdrant and
-Pinecone or fine-tuning an embedding model. Both kinds check that retrieval returns no chunks when the corpus
-doesn't support the question.
+### How expected-empty cases test the support gate
 
-The category names the behavior the case is there to watch:
+**Expected-empty** is the expected result recorded in a test case. An **unsupported query** is a live question the indexed documentation can't adequately answer.
+
+The support gate returns no chunks when:
+
+- The highest rerank score is below the configured support cutoff.
+- The reranker returns no chunks.
+
+Expected-empty cases test whether this rule rejects questions the indexed documentation can't answer. See
+[Retrieval pipeline](/docs/architecture/retrieval-pipeline) for how that decision works.
+
+These cases cover two kinds of questions:
+
+- **Questions unrelated to the indexed content:** For example, how long to roast a chicken.
+- **Questions related to the topic but unanswered by the indexed content:** For example, choosing between Qdrant and
+Pinecone or fine-tuning an embedding model.
+
+Both kinds check that retrieval returns no chunks when the indexed content doesn't support the question.
+
+### Test-case categories
+
+Each category identifies the behavior the case tests.
 
 | Category | Role in the current dataset |
 | --- | --- |
-| `exact_answer` | A question aimed at a specific documented point. This category includes 8 answerable cases. |
-| `synonym` | A meaning-based case. `synonym-001` asks how search can recognize two differently worded questions. Its primary sources are embeddings and semantic search chunks. |
-| `ambiguous` | A question open to more than one reading. `context-001` asks how important context is in documentation. |
-| `confusable` | A question with a nearby subject that's easy to mix up with the right one. `documentation-engineering-001` asks what a documentation engineer does. `cms-selection-001` asks how to choose a content management system (CMS) for documentation. |
-| `multi_section` | A question that depends on more than one primary section. `multi-section-001` names three retrieval-failure mechanisms and lists a primary source for each. |
-| `updated_content` | A question about revised documents in the current index. `updated-content-001` targets currently indexed content from a revised source document. |
-| `unanswerable` | An expected-empty case. The indexed documentation doesn't contain an answer. |
+| `exact_answer` | A question about a specific documented point. Includes 8 answerable cases. |
+| `synonym` | A question that tests meaning-based retrieval. `synonym-001` asks how search recognizes differently worded questions. Its primary sources cover embeddings and semantic search. |
+| `ambiguous` | A question open to more than one interpretation. `context-001` asks how important context is in documentation. |
+| `confusable` | A question with a nearby subject that could be mistaken for the intended one. `documentation-engineering-001` asks what a documentation engineer does. `cms-selection-001` asks how to choose a content management system (CMS) for documentation. |
+| `multi_section` | A question requiring more than one primary section. `multi-section-001` names three retrieval-failure mechanisms and lists a primary source for each. |
+| `updated_content` | A question about revised documents in the current index. `updated-content-001` targets indexed content from a revised source document. |
+| `unanswerable` | An expected-empty case where the indexed documentation doesn't contain an answer. |
 
 ## Retrieval evaluation and answer evaluation
 
-Retrieval evaluation and answer evaluation share the dataset and measure different failures.
+Retrieval evaluation and answer evaluation use the same dataset but check different failures.
 
-Retrieval evaluation runs the production retrieval pipeline for each case. It passes the case query, the case
-filters, and a limit of 5, then compares the retrieved chunks with the expected result. For an answerable case, it
-records whether primary sources appear in those five chunks, along with precision, recall, and reciprocal rank. The
-case passes when at least one primary source appears. A `multi_section` case passes when every primary source
-appears in that set. An expected-empty case passes when the pipeline returns no chunks.
+### Retrieval evaluation
 
-Answer evaluation runs that same retrieval step, then generates an answer from the retrieved chunks. The automated
-checks compare the model-reported evidence-sufficiency flag and the cited sources with the case’s expectations.
-The reported flag must match `expected_sufficient_evidence`. Citation behavior must match the case. When the case
-expects sufficient evidence, the answer cites at least one chunk. Every cited chunk is a relevant source for the case,
-and at least one cited chunk is a primary source. When the case expects insufficient evidence, the answer includes no
-citations. A structural pass requires both the sufficiency check and the citation check.
+Retrieval evaluation runs the production retrieval pipeline with each case's query, filters, and a result limit of 5. It compares the returned chunks with the expected result.
 
-During answer generation, citation validation checks that citation IDs refer to sources supplied to the model and that
-inline citations match the declared IDs. The application takes citation titles, headings, and URLs from those source objects.
-Evaluation additionally checks whether the cited chunks are relevant and primary sources according to the dataset.
+For answerable cases, it records primary-source coverage, precision, recall, and reciprocal rank.
 
-A missing chunk and a weak answer are different failures. Retrieved chunks can omit part of the expected retrieval
-result and contain enough evidence for a grounded answer. In the recorded dataset `1.5` run, retrieval for
-`multi-section-001` misses full primary-section coverage in the top five chunks. The generated answer for that
-case covers the required points.
-[Known limitations](/docs/reference/known-limitations) records that retrieval-coverage gap.
+| Case type | Passing condition |
+| --- | --- |
+| Answerable, other than `multi_section` | At least one primary source appears in the top five chunks. |
+| `multi_section` | Every primary source appears in the top five chunks. |
+| Expected-empty | The pipeline returns no chunks. |
 
-Valid retrieval and valid citations can accompany an answer that drifts off the question. An earlier generated
-answer for `context-001` used the retrieved evidence and discussed related AI-assistant material. The question asked
-about context in documentation. The grounded-answer prompt now instructs the model to ignore source material that's
-related to the topic and unnecessary for the question. That instruction is part of the prompt. It doesn't by itself
-decide what the model will write.
+### Answer evaluation
+
+Answer evaluation runs the same retrieval step, then generates an answer from the retrieved chunks. Automated checks compare the evidence-sufficiency flag and citations with the case's expectations.
+
+The reported flag must match `expected_sufficient_evidence`.
+
+| Expected evidence sufficiency | Required citation behavior |
+| --- | --- |
+| Sufficient | At least one chunk is cited. Every cited chunk is a relevant source, and at least one is a primary source. |
+| Insufficient | No citations are included. |
+
+A structural pass requires both the evidence-sufficiency check and the citation check to pass.
+
+### Citation validation and evaluation
+
+Citation checks happen at two stages:
+
+- **During answer generation:** Validation checks that citation IDs refer to sources supplied to the model and that inline
+  citations match the declared IDs. The application takes citation titles, headings, and URLs from those source objects.
+- **During evaluation:** Additional checks determine whether the cited chunks are relevant and primary sources according to the dataset.
+
+### Why the evaluations stay separate
+
+A retrieval gap and a weak answer are different failures. The returned chunks can miss part of the expected retrieval result
+while still providing enough evidence for an answer.
+
+In the recorded dataset `1.5` run, `multi-section-001` doesn't retrieve every primary section in the top five chunks. Its
+generated answer nevertheless covers the required points. See [Known limitations](/docs/reference/known-limitations) for that
+retrieval-coverage gap.
+
+Successful retrieval and valid citations also don't establish that an answer stays focused on the question.
+
+An earlier answer for `context-001` used the retrieved evidence but included related AI-assistant material. The question asked
+about context in documentation. The grounded-answer prompt now instructs the model to ignore material that's related to the topic
+but unnecessary for the question. That instruction guides generation; it doesn't determine exactly what the model will write.
 
 ## Automated checks and human review
 
-Retrieval metrics and answer-structure checks run automatically. They score ranked chunks, evidence sufficiency, and
-citation behavior against the dataset. Human review assesses whether the answer’s claims are supported, its required
-points are covered, and its content stays focused on the question. That review asks whether the answer covers the
-required points, avoids unsupported claims, and stays on the question.
+Evaluation combines two kinds of checks:
 
-Reviewers score each answerable case on four dimensions, from 0 to 2:
+- **Automated checks:** Score ranked chunks, evidence sufficiency, and citation behavior against the dataset.
+- **Human review:** Assess whether an answer's claims are supported, its required points are covered, and its content
+  stays focused on the question.
 
-- **Support / faithfulness**: whether meaningful claims match the retrieved evidence
-- **Required-point completeness**: whether the answer covers the case's required points
-- **Unsupported details**: whether the answer adds claims the retrieved evidence doesn't support
-- **Focus / relevance**: whether the answer stays on the question
+### Human-review dimensions
 
-A strict pass requires a score of 2 on every dimension. The project stores those scores in
-`data/evaluation/answer_qualitative_review.json`. The review file records the dataset ID, dataset version,
-answer-run time, and generation model. The report command checks those values against the answer run. It also
-checks that the reviewed cases match the cases that expect sufficient evidence. In the current dataset, those
-are the 14 answerable cases.
+Reviewers score each answerable case from **0 to 2** on four dimensions:
 
-Evaluation runs write JSON and Markdown reports under `data/evaluation/`. Those files are local artifacts. Git
-ignores `/data/`, which keeps those reports out of the repository.
-[Evaluation architecture](/docs/architecture/evaluation-architecture) describes how the dataset, commands, and
-artifacts fit together.
+| Dimension | What the reviewer checks |
+| --- | --- |
+| Support / faithfulness | Whether meaningful claims match the retrieved evidence. |
+| Required-point completeness | Whether the answer covers the case's required points. |
+| Unsupported details | Whether the answer adds claims the retrieved evidence doesn't support. |
+| Focus / relevance | Whether the answer stays on the question. |
+
+A strict pass requires a score of **2 on every dimension**.
+
+### Review-file validation
+
+The project stores review scores in `data/evaluation/answer_qualitative_review.json`. The file also records:
+
+- Dataset ID.
+- Dataset version.
+- Answer-run time.
+- Generation model.
+
+The report command checks that these values match the answer run. It also checks that the reviewed cases match the cases
+expecting sufficient evidence: the 14 answerable cases in the current dataset.
+
+### Generated reports
+
+Evaluation runs write JSON and Markdown reports under `data/evaluation/`.
+
+These are local files. Git ignores `/data/`, so the reports aren't included in the repository.
+
+See [Evaluation architecture](/docs/architecture/evaluation-architecture) for how the dataset, commands, and generated
+files fit together.
 
 ## Next steps
 
