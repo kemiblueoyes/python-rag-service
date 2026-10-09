@@ -194,6 +194,25 @@ def expected_registry() -> str:
         )
     )
 
+def update_registry() -> bool:
+    """Update page-registry.yml and return whether it changed."""
+    expected = expected_registry()
+
+    previous = (
+        REGISTRY_PATH.read_text(encoding="utf-8")
+        if REGISTRY_PATH.is_file()
+        else None
+    )
+
+    if previous == expected:
+        return False
+
+    REGISTRY_PATH.write_text(
+        expected,
+        encoding="utf-8",
+    )
+
+    return True
 
 def main() -> int:
     parser = argparse.ArgumentParser(
@@ -239,20 +258,11 @@ def main() -> int:
         print("Page registry is current.")
         return 0
 
-    previous = (
-        REGISTRY_PATH.read_text(encoding="utf-8")
-        if REGISTRY_PATH.is_file()
-        else None
-    )
+    changed = update_registry()
 
-    if previous == expected:
+    if not changed:
         print("Page registry is already current.")
         return 0
-
-    REGISTRY_PATH.write_text(
-        expected,
-        encoding="utf-8",
-    )
 
     print(
         "Updated "

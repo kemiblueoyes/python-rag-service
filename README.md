@@ -170,7 +170,9 @@ Example successful response:
 
 A valid query if the reranked result set doesn't pass the configured retrieval support gate, the endpoint returns `200 OK` with an empty `results` array.
 
-Invalid requests return `422 Unprocessable Content` using the standard error format. The service trims leading and trailing whitespace from `query` and each filter value, then counts Unicode code points. A query can contain 1 to 2,000 characters. A filter value can contain 1 to 256 characters. A filter list can contain 1 to 50 values. Search `limit` is an integer from 1 to 20 and defaults to 5. A request body larger than 65,536 bytes (64 KiB) returns `413` with `request_too_large` and the message `The request body is too large.` The service counts the bytes it receives, including a chunked body and a body sent without `Content-Length`, and it does this before JSON parsing. These limits aren't a rate limit and don't cap provider spending.
+Invalid requests return `422 Unprocessable Content` using the standard error format. The service trims leading and trailing whitespace from `query` and each filter value, then counts Unicode code points. A query can contain 1 to 2,000 characters. A filter value can contain 1 to 256 characters. A filter list can contain 1 to 50 values. Search `limit` is an integer from 1 to 20 and defaults to 5. 
+
+A request body larger than 65,536 bytes (64 KiB) returns `413` with `request_too_large` and the message `The request body is too large.` The service counts the bytes it receives, including a chunked body and a body sent without `Content-Length`, and it does this before JSON parsing. These limits aren't a rate limit and don't cap provider spending.
 
 ```json
 {
@@ -376,6 +378,7 @@ Voyage, Qdrant, and OpenAI calls use finite timeouts, in seconds:
 doesn't bound the whole search or answer request. `VOYAGE_MAX_RETRIES` and
 `OPENAI_MAX_RETRIES` default to 0. Raising either limit sends that provider
 request again after a retryable failure, which adds latency and provider cost.
+
 Qdrant search and upsert calls aren't retried. Invalid timeout or retry values
 stop settings load. The diagnostic names the setting and the accepted range,
 and it doesn't print the supplied value.
@@ -601,7 +604,9 @@ A factory creates the retrieval service so both public API endpoints use the sam
 
 The retrieval service rejects requests with a blank query, a limit below 1, an unsupported filter, or an invalid filter value before retrieval completes.
 
-The support gate addresses a specific retrieval problem. A vector or lexical search will normally return the closest available content even when the corpus doesn't actually answer the user's question. Evaluation showed that neither raw vector similarity nor lexical matching alone provided a safe global cutoff. The current hybrid-and-reranking pipeline uses the top rerank score to decide whether the corpus provides enough retrieval support to return results.
+The support gate addresses a specific retrieval problem. A vector or lexical search will normally return the closest available content even when the corpus doesn't actually answer the user's question. Evaluation showed that neither raw vector similarity nor lexical matching alone provided a safe global cutoff. 
+
+The current hybrid-and-reranking pipeline uses the top rerank score to decide whether the corpus provides enough retrieval support to return results.
 
 ### Live retrieval-service smoke test
 
@@ -802,7 +807,9 @@ data/evaluation/retrieval_baseline.md
 
 The retrieval evaluator measures primary-source hits, precision, recall, reciprocal rank, expected-empty behavior, and overall case success.
 
-In the recorded dataset `1.5` evaluation baseline, the production pipeline rejected all 8 expected-empty cases. The remaining known retrieval limitation was `multi-section-001`, a compound query where the top-five result set did not satisfy the benchmark's full primary-section coverage requirement. The remaining known retrieval limitation is `multi-section-001`, a compound query where the top-five result set doesn't satisfy the benchmark's full primary-section coverage requirement.
+In the recorded dataset `1.5` evaluation baseline, the production pipeline rejected all 8 expected-empty cases. The remaining known retrieval limitation was `multi-section-001`, a compound query where the top-five result set did not satisfy the benchmark's full primary-section coverage requirement. 
+
+The remaining known retrieval limitation is `multi-section-001`, a compound query where the top-five result set doesn't satisfy the benchmark's full primary-section coverage requirement.
 
 ### Answer evaluation
 
@@ -860,7 +867,9 @@ data/evaluation/answer_qualitative_review.md
 
 In the recorded dataset `1.5` qualitative review, all 14 answerable cases received a strict pass, with an average score of `2.00 / 2` on all four dimensions.
 
-The evaluation process also produced a prompt improvement. An earlier answer to `context-001` used the provided evidence but wandered into related AI-assistant material that wasn't needed to answer the question. The grounded-answer prompt now explicitly instructs the model to ignore source material that's related to the topic but unnecessary for the user's question.
+The evaluation process also produced a prompt improvement. An earlier answer to `context-001` used the provided evidence but wandered into related AI-assistant material that wasn't needed to answer the question. 
+
+The grounded-answer prompt now explicitly instructs the model to ignore source material that's related to the topic but unnecessary for the user's question.
 
 For the detailed investigation that led from semantic-only retrieval to the current hybrid + reranking + support-gate design: 
 - `docs/evaluation/retrieval-failure-analysis.md`: Investigation of retrieval failures and the experiments that led to the current pipeline
@@ -974,8 +983,12 @@ Documentation for the Python RAG Service is currently being built. The public pa
 - `page-registry.yml` is the generated canonical page list.
 - Templates show the expected structure for each content type.
 
-`src/rag_service/commands/documentation/` checks the pages against that contract.
+`src/rag_service/commands/documentation/` creates authored pages and checks them against that contract.
 
+- `create_doc_page` writes a draft MDX page under `fern/docs/pages` from the page ID, title, description, content type, topics, and audience, then updates `doc-infrastructure/page-registry.yml`.
+  - Components, prerequisites, next steps, and related pages are included when supplied.
+  - The path must be a new lowercase kebab-case `.mdx` file inside `fern/docs/pages`, and the page ID must be unused.
+  - The content type, topics, components, and audience must match the content model. API reference pages come from the OpenAPI specification.
 - `validate_docs` runs:
   - the page registry
   - frontmatter
@@ -1017,8 +1030,9 @@ Fern's `draft` field unless it is absent or explicitly `false`.
 
 Keep unfinished or archived content outside `fern/docs/pages` and remove its
 navigation entries and links before publishing. The glossary generator owns the
-generated glossary page's published status. Templates and reusable snippets do
-not receive page-level frontmatter or content-type structure checks.
+generated glossary page's published status. 
+
+Templates and reusable snippets do not receive page-level frontmatter or content-type structure checks.
 
 The `CI` workflow uses production validation on `main` and regular validation
 on other branches and pull requests.
@@ -1028,8 +1042,10 @@ on other branches and pull requests.
 On pushes to `main`, the `CI` workflow runs tests and production documentation
 validation, publishes that same commit to
 <https://python-rag-service.docs.buildwithfern.com/>, and checks the live links.
+
 Every successful push to `main` republishes the documentation, including pushes
 that only change code.
+
 Before enabling publication, create a Fern token for the `doc-landscape`
 organization with `fern token` and add it to GitHub Actions as the repository
 secret `FERN_TOKEN` under **Settings > Secrets and variables > Actions**.

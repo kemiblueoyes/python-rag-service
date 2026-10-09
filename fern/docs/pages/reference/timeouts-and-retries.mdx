@@ -1,0 +1,92 @@
+---
+id: TmeOutRtr
+title: Timeouts and retries
+subtitle: Look up provider timeouts and retries for search and answer requests.
+description: Look up provider timeout settings, retry counts and conditions, and their effects on request duration, cost, and API error responses.
+content_type: general_reference
+lifecycle_status: published
+topics: [topic-api, topic-provider-configuration, topic-error-handling]
+components: [component-retrieval-service, component-answer-generation-service, component-vector-database, component-embedding-provider, component-language-model-provider]
+related_pages: [CnfgRef, Errs, RtrvPipe, AnsGenCit]
+audience: [primary, secondary]
+last_modified: 2026-10-09
+---
+
+## Timeouts and retries
+
+Timeouts control how long individual provider calls can wait. They **don't set an overall deadline** for `POST /v1/search`
+or `POST /v1/answer`.
+
+By default, the service doesn't retry failed Voyage, Qdrant, or OpenAI calls.
+
+### Timeout settings
+
+All timeout values use seconds.
+
+| Setting | Default | Applies to |
+| --- | --- | --- |
+| `VOYAGE_TIMEOUT_SECONDS` | `60` | Each embedding or reranking attempt. |
+| `QDRANT_TIMEOUT_SECONDS` | `5` | Each search, collection, or upsert call to Qdrant. |
+| `OPENAI_TIMEOUT_SECONDS` | `120` | Each answer-generation attempt. |
+
+A timeout applies separately to the connection and response stages of a call, rather than limiting its total duration:
+
+- **Voyage:** Separate connection and read timeouts.
+- **Qdrant:** Separate connection, read, write, and connection-pool wait timeouts for REST calls. For gRPC calls, the
+  value sets the call deadline.
+- **OpenAI:** Separate connection, read, write, and connection-pool wait timeouts.
+
+The connection-pool wait is the time spent waiting for an available connection.
+
+This behavior applies to voyageai 0.5.0, qdrant-client 1.19.0, and openai 3.1.0.
+
+### Retry settings
+
+Both retry settings accept integers from `0` through `2`, but the clients interpret them differently.
+
+| Configured value | `VOYAGE_MAX_RETRIES`: total attempts | `OPENAI_MAX_RETRIES`: total attempts |
+| --- | --- | --- |
+| `0` (default) | 1 | 1 |
+| `1` | 1 | 2 |
+| `2` | 2 | 3 |
+
+In voyageai 0.5.0, `VOYAGE_MAX_RETRIES` controls total attempts, with both `0` and `1` producing one attempt. In openai 3.1.0,
+`OPENAI_MAX_RETRIES` controls extra retries after the first attempt.
+
+| Client | Failures that trigger a retry when enabled | Waiting between attempts |
+| --- | --- | --- |
+| Voyage | Rate-limit errors, service-unavailable errors, and timeouts. Authentication failures, invalid requests, and programming errors aren't retried. | Increasing delays with a random variation, starting at 1 second and capped at 16 seconds. |
+| OpenAI | Timeouts, connection errors, and HTTP 408, 409, 429, and 500 or higher. Other 4xx responses aren't retried. | The SDK waits before sending the request again. |
+| Qdrant | The service doesn't configure retries for the methods it uses. | No retry loop is added by the service. |
+
+### Effect on request duration and cost
+
+A search request can call Voyage for query embedding, Qdrant for retrieval, and Voyage again for reranking.
+An answer request adds an OpenAI call after retrieval.
+
+- Each call uses its own timeout.
+- Each retry starts a new attempt with the same timeout.
+- Waiting between attempts adds to the request duration.
+- Retries resend requests and can increase provider cost and rate-limit usage.
+- Query embedding and reranking are separate Voyage requests, so both can retry during one search.
+
+The service doesn't add another retry loop around these clients.
+
+### Error responses
+
+| Failure | Response |
+| --- | --- |
+| Provider timeout during search | HTTP 503 with `retrieval_unavailable`. |
+| Provider timeout during an answer request | HTTP 503 with `answer_unavailable`. |
+| Configuration failure or programming error during request handling | HTTP 500. |
+
+### Configuration validation
+
+Invalid timeout or retry values stop settings load before the API startup check:
+
+- Voyage and OpenAI timeouts must be finite numbers greater than `0`.
+- The Qdrant timeout must be a whole number of at least `1`.
+- Retry values must be integers from `0` through `2`.
+
+The diagnostic names the setting and its accepted range without printing the supplied value. Startup doesn't
+contact Voyage, OpenAI, Qdrant, or WordPress to test these settings.

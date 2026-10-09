@@ -1,0 +1,8 @@
+### 413 `request_too_large`
+
+`{{endpoint}}` returns `413` with `request_too_large` when the received body is larger than that.
+Shorten the JSON body to 65,536 bytes (64 KiB) or less.
+
+The service counts those bytes before it parses JSON, including a chunked body and a body without
+`Content-Length`. This status doesn't limit how often you can call the route, and it doesn't cap
+provider spending.

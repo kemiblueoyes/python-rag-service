@@ -109,6 +109,9 @@ pages:
   - id: SysArch
     content_type: explanation
 
+  - id: TmeOutRtr
+    content_type: general_reference
+
   - id: TutIndx
     content_type: tutorial
 

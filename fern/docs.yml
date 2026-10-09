@@ -127,6 +127,8 @@ navigation:
             path: docs/pages/reference/known-limitations.mdx
           - page: Configuration reference
             path: docs/pages/reference/configuration-reference.mdx
+          - page: Timeouts and retries
+            path: docs/pages/reference/timeouts-and-retries.mdx
           - page: Evaluation framework reference
             path: docs/pages/reference/evaluation-framework-reference.mdx
           - page: Glossary

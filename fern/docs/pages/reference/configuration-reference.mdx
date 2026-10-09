@@ -8,7 +8,7 @@ lifecycle_status: published
 topics: [topic-configuration]
 components: [component-wordpress-connector, component-retrieval-service, component-vector-database, component-embedding-provider, component-language-model-provider]
 next_steps: [IndxWP]
-related_pages: [ConfSrv, Auth, RtrvPipe, IntWP]
+related_pages: [ConfSrv, Auth, RtrvPipe, TmeOutRtr, IntWP]
 last_modified: 2026-10-09
 audience: [primary, secondary]
 ---
@@ -128,58 +128,9 @@ choose the model, the reasoning effort, the context and output limits, and the A
 
 ## Timeouts and retries
 
-The timeout settings use seconds. A nonfinite value, zero, or a negative number stops settings load.
-The diagnostic names the setting and the accepted range. It doesn't print the supplied value.
-A retry value outside 0 through 2 stops settings load the same way.
+Timeout settings apply to individual provider calls, not to the full search or answer request. By default, failed calls aren't retried.
 
-The service passes `VOYAGE_TIMEOUT_SECONDS` to the Voyage client. voyageai 0.5.0 applies that number
-separately to the connect timeout and the read timeout for one HTTP attempt. Without a timeout, the
-SDK uses 600 seconds. A value of 0 would also fall through to that 600-second default, so this service
-rejects 0.
-
-The service passes `QDRANT_TIMEOUT_SECONDS` to the Qdrant client. qdrant-client 1.19.0 uses that whole
-number of seconds as the REST HTTP timeout and the gRPC deadline. The HTTP client applies the same
-number separately to connect, read, write, and acquiring a connection from the pool. Without this
-argument, the SDK uses 5 seconds. This service passes 5 by default. Search calls `query_points`, and
-indexing calls collection and upsert methods. Each of those calls gets this timeout. The client
-doesn't take a general retry count for them. `upload_points` and `upload_collection` can retry a
-failed batch, with a default of 3 retries, but this service doesn't call those methods and doesn't
-add its own retry loop.
-
-The service passes `OPENAI_TIMEOUT_SECONDS` to the OpenAI client. openai 3.1.0 gives that number to its
-HTTP client, which applies it separately to connect, read, write, and acquiring a connection from the
-pool on each attempt. The SDK default is 5 seconds to connect and 600 seconds for the other phases.
-This service replaces that pair with one finite value. The default is 120 seconds.
-
-These timeouts don't set a deadline for `POST /v1/search` or `POST /v1/answer`. Search can call Voyage,
-then Qdrant, then Voyage again for reranking. Answer adds the OpenAI request after retrieval. Each call
-uses its own timeout. A retry starts another attempt with the same timeout. Time spent waiting between
-attempts isn't part of the timeout.
-
-`VOYAGE_MAX_RETRIES` is the Voyage client's `max_retries` argument. voyageai 0.5.0 passes it to
-`stop_after_attempt`. On version 0.5.0, 0 and 1 both make one request. 2 makes two attempts, which is
-one retry after the first failure. The client retries rate-limit errors, service-unavailable errors,
-and timeouts. It doesn't retry authentication failures, invalid requests, or programming errors.
-Between attempts it waits with exponential jitter, starting at 1 second and capped at 16 seconds.
-That wait can make the call longer than the timeout alone. Each retry sends the embedding or reranking
-request again.
-
-`OPENAI_MAX_RETRIES` counts extra retries, not total attempts. openai 3.1.0 makes `max_retries + 1`
-attempts. 0 is one attempt, 1 is two attempts, and 2 is three attempts. The SDK default is 2. This
-service sets 0 unless you change it. The client retries timeouts, connection errors, and HTTP 408,
-409, 429, and 500 or higher. It doesn't retry other 4xx responses. Each retry waits and sends the
-request again, which can spend tokens and rate-limit budget.
-
-This service doesn't wrap those clients in another retry loop. With the defaults, a failed Voyage,
-Qdrant, or OpenAI call isn't sent again. Raising a retry limit adds latency and provider cost for that
-call. A search can pay that cost twice if you let both the query embedding and the later rerank call
-retry. Those are separate requests.
-
-A provider timeout returns 503 `retrieval_unavailable` from search and 503 `answer_unavailable` from
-answer. Configuration failures and programming errors keep their 500 responses.
-
-Startup doesn't call Voyage, OpenAI, Qdrant, or WordPress to test these limits. An invalid value fails
-when settings load, before the API startup check.
+See [Timeouts and retries](/docs/reference/timeouts-and-retries) for timeout behavior, retry counts, effects on request duration and cost, and error responses.
 
 ## WordPress client
 
@@ -194,36 +145,73 @@ The WordPress client calls the Python service from PHP. Define these constants i
 
 ## Constraints and notes
 
-- The process reads environment variables and `.env` before it accepts traffic.
+### Settings load
+
+The process reads environment variables and `.env` before it accepts traffic.
 A value of the wrong type, an unsupported provider, or an unreadable `.env` line stops the process.
 The diagnostic names the setting, or the `.env` line when the process can't read that line, and it states the correction.
 It doesn't include the supplied value, the settings dictionary, or the parser exception.
 Missing credentials and a missing chunk file don't prevent importing the application or generating OpenAPI.
 Those gaps fail the later startup check. Invalid values aren't replaced with defaults.
-- When the API process starts, it checks local settings and the chunk file at `LEXICAL_CORPUS_PATH`.
+
+### Startup check
+
+When the API process starts, it checks local settings and the chunk file at `LEXICAL_CORPUS_PATH`.
 The check covers `RAG_API_KEY`, `VOYAGE_API_KEY`, and the supported providers.
+
 It also covers model names, `QDRANT_URL`, `QDRANT_COLLECTION`, and the numeric retrieval limits.
-When answer generation is on, it checks the OpenAI key and the token budgets too.
-A failing check names the setting or file to correct.
-The log doesn't include setting values, credentials, chunk text, or the supplied `QDRANT_URL`.
-- That startup check doesn't call Voyage, OpenAI, Qdrant, or WordPress. A process that stays up has
+When answer generation is on, it checks the OpenAI key and the token budgets too. A failing check names
+the setting or file to correct. The log doesn't include setting values, credentials, chunk text, or the
+supplied `QDRANT_URL`.
+
+### Provider reachability
+
+That startup check doesn't call Voyage, OpenAI, Qdrant, or WordPress. A process that stays up has
 valid local configuration. It doesn't show that those services are reachable. `GET /health` reports
 that the process is running.
-- `QDRANT_API_KEY` can be empty for a local Qdrant instance that doesn't require a key. Startup
+
+### Empty optional values
+
+`QDRANT_API_KEY` can be empty for a local Qdrant instance that doesn't require a key. Startup
 doesn't require it. Indexing requires `WORDPRESS_BASE_URL`. The API can start and serve an existing
 index when that value is empty.
-- `GENERATION_ENABLED` defaults to `true`. Set it to `false` for search without answer generation.
+
+### Search without answer generation
+
+`GENERATION_ENABLED` defaults to `true`. Set it to `false` for search without answer generation.
 The API can then start without `OPENAI_API_KEY`. An authenticated, valid `POST /v1/answer` returns
 `503` with `answer_unavailable`, and the API log uses `reason=generation_disabled`.
-- `EMBEDDING_DIMENSION` has to match the configured embedding model's output. Qdrant stores vectors at
+
+### Embedding dimension
+
+`EMBEDDING_DIMENSION` has to match the configured embedding model's output. Qdrant stores vectors at
 that size. After changing the embedding model, embedding dimension, chunking rules, or chunk payload
 structure, run a full index rebuild. See [Index WordPress content](/docs/index-content/index-wordpress-content).
-- `RETRIEVAL_SUPPORT_CUTOFF` applies to the highest rerank score for the query, not to each result.
+
+### Support cutoff
+
+`RETRIEVAL_SUPPORT_CUTOFF` applies to the highest rerank score for the query, not to each result.
 Re-evaluate it when the indexed content, embedding model, reranking model, or chunking rules change.
-- `RAG_SERVICE_API_KEY` and `RAG_API_KEY` are the same secret in two places.
+
+### Matching API keys
+
+`RAG_SERVICE_API_KEY` and `RAG_API_KEY` are the same secret in two places.
 The WordPress client doesn't copy one value to the other.
-- `RAG_SERVICE_SEARCH_REQUESTS_PER_MINUTE` defaults to 30, and `RAG_SERVICE_ANSWER_REQUESTS_PER_MINUTE` defaults to 10. Leave a constant undefined to keep its default. A defined value has to be an unquoted integer of 1 or greater. Zero, a negative number, a decimal, or a quoted string is invalid. That route then returns HTTP 503 and the plugin doesn't call Python. The other route keeps its own limit.
-- The counters are rows in `{prefix}rag_service_rate_limits` in the WordPress database. Each admission is one conditional insert, shared by concurrent PHP workers. The window is one minute. A new minute can admit a full allowance immediately, so traffic across that boundary can reach twice the configured limit. See [Integrate with WordPress](/docs/integrate/integrate-with-wordpress) for storage setup on an already-active plugin, the visitor error messages, and what these limits don't cover.
+
+### WordPress request limits
+
+`RAG_SERVICE_SEARCH_REQUESTS_PER_MINUTE` defaults to 30. `RAG_SERVICE_ANSWER_REQUESTS_PER_MINUTE`
+defaults to 10. Leave the constant undefined to use that default. A defined value has to be an
+unquoted integer of 1 or greater. Zero, a negative number, a decimal, or a quoted string is
+invalid. The route with the invalid value returns HTTP 503 and the plugin doesn't call Python.
+The other route keeps its own limit.
+
+The counters are stored in `{prefix}rag_service_rate_limits` in the WordPress database. Each
+admission is one conditional upsert, shared by concurrent PHP workers. The window is one minute.
+A new minute can admit a full allowance immediately, so traffic across that boundary can reach
+twice the configured limit. See
+[Integrate with WordPress](/docs/integrate/integrate-with-wordpress) for storage setup on an
+already-active plugin, the visitor error messages, and what these limits don't cover.
 
 ## Next steps
 
@@ -234,3 +222,4 @@ The WordPress client doesn't copy one value to the other.
 - **[Configure the service](/docs/get-started/configure-the-service)**: Set Voyage, Qdrant, OpenAI, WordPress, and retrieval values in `.env`.
 - **[Authentication](/docs/get-started/authentication)**: Set `RAG_API_KEY` and send it in the `X-API-Key` header.
 - **[Retrieval pipeline](/docs/architecture/retrieval-pipeline)**: See how candidate depth, RRF, reranking, and the support gate work together.
+- **[Integrate with WordPress](/docs/integrate/integrate-with-wordpress)**: Install the reference client, set its PHP constants, and deploy the plugin.

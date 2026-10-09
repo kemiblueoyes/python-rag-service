@@ -10,7 +10,7 @@ components: [component-answer-generation-service, component-public-api]
 prerequisites: [ConfSrv, IndxWP, Auth]
 next_steps: [IntApp]
 related_pages: [AnsAPI, AnsGenCit, SrchDoc]
-last_modified: 2026-10-08
+last_modified: 2026-10-09
 audience: [primary]
 ---
 
@@ -192,12 +192,7 @@ Your client can show the answer with its sources when `sufficient_evidence` is `
 
 <Markdown src="/docs/snippets/authentication-unavailable.mdx" endpoint="POST /v1/answer" />
 
-### 413 `request_too_large`
-
-Shorten the JSON body to 65,536 bytes (64 KiB) or less.
-`POST /v1/answer` returns `413` with `request_too_large` when the received body is larger than that.
-The service counts those bytes before it parses JSON. This status doesn't limit how often you can
-call the route, and it doesn't cap provider spending.
+<Markdown src="/docs/snippets/request-too-large.mdx" endpoint="POST /v1/answer" />
 
 ### 422 `validation_error`
 
@@ -216,8 +211,10 @@ Set `GENERATION_ENABLED` to `true`, set `OPENAI_API_KEY`, and restart the API.
 
 When answer generation is on, startup requires a non-empty `OPENAI_API_KEY`.
 After startup, a temporary retrieval or language-model failure, context assembly, or citation checking can still produce this error.
+
 `OPENAI_TIMEOUT_SECONDS` bounds each OpenAI attempt. It doesn't set a deadline for the whole answer request.
 The default `OPENAI_MAX_RETRIES` is 0, so a timed-out generation call isn't sent again unless you raise that limit.
+
 A missing `OPENAI_API_KEY` at request time returns `500` with `configuration_error` instead.
 Restart the API after you change `.env`, then retry the request.
 
