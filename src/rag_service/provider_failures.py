@@ -6,12 +6,14 @@ codes are configuration problems. Unrecognized exceptions are left alone
 so programming errors are not reported as temporarily unavailable.
 """
 
+import httpcore
 import httpx
 from openai import (
     APIConnectionError,
     APIResponseValidationError,
     APIStatusError,
 )
+from qdrant_client.common.client_exceptions import ResourceExhaustedResponse
 from qdrant_client.http.exceptions import (
     ResponseHandlingException,
     UnexpectedResponse,
@@ -61,8 +63,12 @@ _TEMPORARY_RETRIEVAL_ERRORS = (
     VoyageServerError,
     VoyageServiceUnavailableError,
     VoyageTryAgain,
-    ResponseHandlingException,
+    ResourceExhaustedResponse,
     httpx.TransportError,
+    httpcore.NetworkError,
+    httpcore.TimeoutException,
+    httpcore.ProtocolError,
+    httpcore.ProxyError,
 )
 _CONFIGURATION_RETRIEVAL_ERRORS = (
     VoyageAuthenticationError,
@@ -99,6 +105,11 @@ def _generation_configuration() -> ServiceConfigurationError:
 def retrieval_exception_for(exc: BaseException) -> Exception | None:
     """Return a safe retrieval exception, or None to propagate exc."""
 
+    if isinstance(exc, ResponseHandlingException):
+        source = exc.source
+        if source is exc:
+            return None
+        return retrieval_exception_for(source)
     if isinstance(exc, _TEMPORARY_RETRIEVAL_ERRORS):
         return RetrievalUnavailableError("Retrieval could not be completed.")
     if isinstance(exc, _CONFIGURATION_RETRIEVAL_ERRORS):

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from concurrent.futures import CancelledError as FutureCancelledError
 
@@ -283,6 +284,30 @@ async def configuration_exception_handler(
     return _error_json(500, "configuration_error", CONFIGURATION_ERROR_MESSAGE)
 
 
+def _propagates_outside_request(exc: BaseException) -> bool:
+    """Return whether exc is cancellation or process shutdown.
+
+    Exception groups are inspected member by member. A group of ordinary
+    programming errors does not propagate. A group propagates when any
+    nested member is cancellation or shutdown.
+    """
+
+    if isinstance(
+        exc,
+        (
+            asyncio.CancelledError,
+            KeyboardInterrupt,
+            SystemExit,
+            GeneratorExit,
+            FutureCancelledError,
+        ),
+    ):
+        return True
+    if isinstance(exc, BaseExceptionGroup):
+        return any(_propagates_outside_request(item) for item in exc.exceptions)
+    return False
+
+
 def _unexpected_error_response() -> JSONResponse:
     _log_diagnostic(
         "request",
@@ -309,9 +334,7 @@ class UnexpectedErrorMiddleware:
         try:
             await self.app(scope, receive, send)
         except Exception as exc:
-            # asyncio.CancelledError is a BaseException and is not caught here.
-            # concurrent.futures.CancelledError is an Exception on Python 3.14.
-            if isinstance(exc, (BaseExceptionGroup, FutureCancelledError)):
+            if _propagates_outside_request(exc):
                 raise
             response = _unexpected_error_response()
             await response(scope, receive, send)

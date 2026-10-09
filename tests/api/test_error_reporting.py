@@ -10,7 +10,11 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import Headers
 from openai import APIConnectionError, AuthenticationError
-from qdrant_client.http.exceptions import UnexpectedResponse
+from qdrant_client.common.client_exceptions import ResourceExhaustedResponse
+from qdrant_client.http.exceptions import (
+    ResponseHandlingException,
+    UnexpectedResponse,
+)
 from voyageai.error import APIConnectionError as VoyageConnectionError
 from voyageai.error import AuthenticationError as VoyageAuthenticationError
 
@@ -47,6 +51,19 @@ def _retrieval_service(failure: BaseException) -> RetrievalService:
     )
 
 
+def _qdrant_retrieval(failure: BaseException) -> RetrievalService:
+    embedding = MagicMock()
+    embedding.embed_query.return_value = [0.1, 0.2]
+    vector_store = MagicMock()
+    vector_store.search.side_effect = failure
+    return RetrievalService(
+        embedding_provider=embedding,
+        vector_store=vector_store,
+        lexical_retriever=MagicMock(),
+        reranker=MagicMock(),
+    )
+
+
 def _assert_safe(
     response: httpx.Response,
     caplog: pytest.LogCaptureFixture,
@@ -54,18 +71,20 @@ def _assert_safe(
     *,
     reason: str,
 ) -> None:
+    captured = capsys.readouterr()
     assert CANARY not in response.text
     assert "test-api-key" not in response.text
     assert CANARY not in caplog.text
-    assert CANARY not in capsys.readouterr().err
+    assert CANARY not in captured.err
+    assert CANARY not in captured.out
+    assert all(record.exc_info is None for record in caplog.records)
+    assert all(record.stack_info is None for record in caplog.records)
     matches = [
         record
         for record in caplog.records
         if getattr(record, "reason", None) == reason
     ]
     assert len(matches) == 1
-    assert matches[0].exc_info is None
-    assert matches[0].stack_info is None
     assert CANARY not in repr(matches[0].__dict__)
 
 
@@ -364,3 +383,144 @@ def test_cancellation_is_not_converted_to_an_error_response(
             json={"query": "What is RAG?"},
             headers=api_key_headers,
         )
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        ExceptionGroup(CANARY, [ValueError(CANARY), RuntimeError(CANARY)]),
+        ExceptionGroup(
+            CANARY,
+            [ExceptionGroup(CANARY, [RuntimeError(CANARY)])],
+        ),
+    ],
+)
+def test_exception_groups_return_internal_error(
+    failure: ExceptionGroup[Exception],
+    api_key_headers: dict[str, str],
+    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    retrieval = MagicMock(spec=RetrievalService)
+    retrieval.retrieve.side_effect = failure
+    app.dependency_overrides[get_retrieval_service] = lambda: retrieval
+
+    with caplog.at_level(logging.DEBUG):
+        response = TestClient(app).post(
+            "/v1/search",
+            json={"query": CANARY},
+            headers=api_key_headers,
+        )
+
+    assert response.status_code == 500
+    assert response.json() == {
+        "error": {
+            "code": "internal_error",
+            "message": "The service couldn't complete the request.",
+            "details": [],
+        }
+    }
+    _assert_safe(response, caplog, capsys, reason="unexpected_failure")
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        BaseExceptionGroup(CANARY, [asyncio.CancelledError()]),
+        ExceptionGroup(CANARY, [CancelledError()]),
+    ],
+)
+def test_grouped_cancellation_is_not_converted(
+    failure: BaseExceptionGroup,
+    api_key_headers: dict[str, str],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    retrieval = MagicMock(spec=RetrievalService)
+    retrieval.retrieve.side_effect = failure
+    app.dependency_overrides[get_retrieval_service] = lambda: retrieval
+
+    with (
+        caplog.at_level(logging.DEBUG),
+        pytest.raises((CancelledError, BaseExceptionGroup)),
+    ):
+        TestClient(app).post(
+            "/v1/search",
+            json={"query": "What is RAG?"},
+            headers=api_key_headers,
+        )
+
+    assert not [
+        record
+        for record in caplog.records
+        if getattr(record, "reason", None) == "unexpected_failure"
+    ]
+
+
+def test_grouped_shutdown_is_not_converted(
+    api_key_headers: dict[str, str],
+) -> None:
+    retrieval = MagicMock(spec=RetrievalService)
+    retrieval.retrieve.side_effect = BaseExceptionGroup(
+        "shutdown",
+        [KeyboardInterrupt()],
+    )
+    app.dependency_overrides[get_retrieval_service] = lambda: retrieval
+
+    with pytest.raises(BaseExceptionGroup):
+        TestClient(app).post(
+            "/v1/search",
+            json={"query": "What is RAG?"},
+            headers=api_key_headers,
+        )
+
+
+@pytest.mark.parametrize("path", ["/v1/search", "/v1/answer"])
+@pytest.mark.parametrize(
+    ("failure", "temporary"),
+    [
+        (ResourceExhaustedResponse(CANARY, 1), True),
+        (ResponseHandlingException(httpx.ConnectError(CANARY)), True),
+        (ResponseHandlingException(httpx.ReadTimeout(CANARY)), True),
+        (ResponseHandlingException(ValueError(CANARY)), False),
+        (ResponseHandlingException(RuntimeError(CANARY)), False),
+    ],
+)
+def test_qdrant_failures_are_classified_for_search_and_answer(
+    path: str,
+    failure: BaseException,
+    temporary: bool,
+    api_key_headers: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(settings, "generation_enabled", True)
+    app.dependency_overrides[get_retrieval_service] = lambda: _qdrant_retrieval(
+        failure
+    )
+    if temporary and path == "/v1/search":
+        status, code, reason = (
+            503,
+            "retrieval_unavailable",
+            "retrieval_dependency_failed",
+        )
+    elif temporary:
+        status, code, reason = (
+            503,
+            "answer_unavailable",
+            "retrieval_dependency_failed",
+        )
+    else:
+        status, code, reason = (500, "internal_error", "unexpected_failure")
+
+    with caplog.at_level(logging.DEBUG):
+        response = TestClient(app).post(
+            path,
+            json={"query": CANARY},
+            headers=api_key_headers,
+        )
+
+    assert response.status_code == status
+    assert response.json()["error"]["code"] == code
+    assert response.json()["error"]["details"] == []
+    _assert_safe(response, caplog, capsys, reason=reason)
