@@ -34,3 +34,6 @@ exceptions:
   - ISO
   - PASS
   - FAIL
+  - INFO
+  - DEBUG
+  - ERROR

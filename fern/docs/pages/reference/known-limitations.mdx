@@ -65,7 +65,7 @@ See [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) for the measurem
 
 ### Answer context has a fixed retrieval depth and token budget
 
-The answer endpoint retrieves up to five chunks; clients can't increase that limit. The context assembler keeps whole chunks in rank order
+The answer endpoint retrieves up to five chunks. Clients can't increase that limit. The context assembler keeps whole chunks in rank order
 and stops when the next chunk exceeds the token budget. This can leave useful evidence out of the model's context.
 
 If the first chunk exceeds the budget, the request fails with `answer_unavailable`. Increasing the configured budget can address that constraint,

@@ -1,6 +1,8 @@
 import logging
 from unittest.mock import Mock
 
+import pytest
+
 from rag_service.connectors.wordpress.connector import WordPressConnector
 from rag_service.connectors.wordpress.mapper import map_wordpress_post
 from rag_service.connectors.wordpress.models import WordPressPost
@@ -71,7 +73,7 @@ def test_indexes_http_and_https_source_urls() -> None:
 
 
 def test_rejected_source_urls_produce_no_chunks(
-    caplog: logging.LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     with caplog.at_level(logging.WARNING):
         documents = [
@@ -93,7 +95,7 @@ def test_rejected_source_urls_produce_no_chunks(
 
 
 def test_one_rejected_url_leaves_the_other_document_indexed(
-    caplog: logging.LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     with caplog.at_level(logging.WARNING):
         documents = [
@@ -115,7 +117,7 @@ def test_one_rejected_url_leaves_the_other_document_indexed(
 
 
 def test_rejected_parent_and_series_urls_are_not_stored_on_chunks(
-    caplog: logging.LogCaptureFixture,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     parent = wordpress_post(
         20,
