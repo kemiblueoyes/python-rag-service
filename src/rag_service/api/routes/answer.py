@@ -8,6 +8,7 @@ from rag_service.api.dependencies import (
     get_retrieval_service,
 )
 from rag_service.api.errors import AnswerUnavailableError
+from rag_service.api.limits import REQUEST_TOO_LARGE_RESPONSE
 from rag_service.api.models import (
     AnswerRequest,
     AnswerResponse,
@@ -162,6 +163,20 @@ ANSWER_UNAVAILABLE_RESPONSE = {
                         "authentication_failed": {
                             "summary": "Authentication failed",
                             "value": AUTHENTICATION_FAILED_RESPONSE,
+                        }
+                    }
+                }
+            },
+        },
+        413: {
+            "model": ErrorResponse,
+            "description": "The request body is too large.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "request_too_large": {
+                            "summary": "Request too large",
+                            "value": REQUEST_TOO_LARGE_RESPONSE,
                         }
                     }
                 }

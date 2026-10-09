@@ -57,9 +57,11 @@ The example uses `http://127.0.0.1:8000`. Replace that origin with an address yo
 `/v1/search` and `/v1/answer` on the individual requests.
 
 `POST /v1/search` and `POST /v1/answer` both require a JSON body with `query`. The service trims
-leading and trailing whitespace and rejects an empty query. See
-[Search documentation](/docs/search-and-answer/search-documentation) for search filters and
-`limit`. The default search limit is 5. `POST /v1/answer` rejects a body that includes `limit`.
+leading and trailing whitespace, then accepts 1 to 2,000 characters. It counts Unicode code points.
+See [Search documentation](/docs/search-and-answer/search-documentation) for search filters and
+`limit`. `limit` is an integer from 1 to 20, and the default is 5. `POST /v1/answer` rejects a body
+that includes `limit`. A body larger than 65,536 bytes (64 KiB) returns HTTP 413. See
+[Errors](/reference/errors). These limits don't cap request rate or provider spending.
 
 Set a timeout for the outbound request. Answer requests also wait for the language model, so choose a value that accommodates
 the response times you observe. This example uses 60 seconds for blocking network operations. Coordinate it with any timeout on

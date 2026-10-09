@@ -1,18 +1,118 @@
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstraints
+from pydantic.json_schema import WithJsonSchema
+from pydantic_core import PydanticCustomError
 
-NonEmptyString = Annotated[
+from rag_service.api.limits import (
+    FILTER_LIST_MAX_ENTRIES,
+    FILTER_VALUE_MAX_CHARACTERS,
+    QUERY_MAX_CHARACTERS,
+    SEARCH_LIMIT_DEFAULT,
+    SEARCH_LIMIT_MAX,
+    SEARCH_LIMIT_MIN,
+)
+
+QueryString = Annotated[
     str,
-    StringConstraints(strip_whitespace=True, min_length=1),
+    StringConstraints(
+        strip_whitespace=True,
+        min_length=1,
+        max_length=QUERY_MAX_CHARACTERS,
+    ),
 ]
 
-NonEmptyStringList = Annotated[
-    list[NonEmptyString],
-    Field(min_length=1),
+
+def _filter_string_error(kind: str, message: str) -> PydanticCustomError:
+    return PydanticCustomError(kind, message)
+
+
+def _normalize_filter_string(value: object) -> str:
+    if not isinstance(value, str):
+        raise _filter_string_error(
+            "string_type",
+            "Input should be a valid string",
+        )
+    trimmed = value.strip()
+    if not trimmed:
+        raise _filter_string_error(
+            "string_too_short",
+            "String should have at least 1 character",
+        )
+    if len(trimmed) > FILTER_VALUE_MAX_CHARACTERS:
+        raise PydanticCustomError(
+            "string_too_long",
+            "String should have at most {max_length} characters",
+            {"max_length": FILTER_VALUE_MAX_CHARACTERS},
+        )
+    return trimmed
+
+
+def _normalize_filter_value(value: object) -> str | list[str]:
+    """Trim filter text and apply the public length limits.
+
+    A union of constrained types reports each alternative in the error
+    path. Callers should see the filter field, such as ``filters.source``.
+    """
+
+    if isinstance(value, str):
+        return _normalize_filter_string(value)
+    if isinstance(value, list):
+        if not value:
+            raise PydanticCustomError(
+                "too_short",
+                "List should have at least {min_length} item after validation, not 0",
+                {"min_length": 1},
+            )
+        if len(value) > FILTER_LIST_MAX_ENTRIES:
+            raise PydanticCustomError(
+                "too_long",
+                "List should have at most {max_length} items after validation, "
+                "not {actual_length}",
+                {
+                    "max_length": FILTER_LIST_MAX_ENTRIES,
+                    "actual_length": len(value),
+                },
+            )
+        return [_normalize_filter_string(item) for item in value]
+    raise _filter_string_error(
+        "string_type",
+        "Input should be a valid string",
+    )
+
+
+FilterValue = Annotated[
+    str | list[str],
+    BeforeValidator(_normalize_filter_value),
+    WithJsonSchema(
+        {
+            "anyOf": [
+                {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": FILTER_VALUE_MAX_CHARACTERS,
+                },
+                {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": FILTER_LIST_MAX_ENTRIES,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": FILTER_VALUE_MAX_CHARACTERS,
+                    },
+                },
+            ]
+        }
+    ),
 ]
 
-FilterValue = NonEmptyString | NonEmptyStringList
+_FILTERS_DESCRIPTION = (
+    "Optional metadata filters applied during retrieval. "
+    "The service trims each value, then accepts 1 to "
+    f"{FILTER_VALUE_MAX_CHARACTERS} characters. "
+    f"A list accepts 1 to {FILTER_LIST_MAX_ENTRIES} values."
+)
 
 
 class SearchFilters(BaseModel):
@@ -67,19 +167,28 @@ class SearchRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query: NonEmptyString = Field(
-        description="Natural-language search query.",
+    query: QueryString = Field(
+        description=(
+            "Natural-language search query. The service trims leading and "
+            f"trailing whitespace, then accepts 1 to {QUERY_MAX_CHARACTERS} "
+            "characters."
+        ),
         examples=["How does metadata improve retrieval?"],
     )
     filters: SearchFilters | None = Field(
         default=None,
-        description="Optional metadata filters applied during retrieval.",
+        description=_FILTERS_DESCRIPTION,
     )
     limit: int = Field(
-        default=5,
-        ge=1,
-        description="Maximum number of search results to retrieve.",
-        examples=[5],
+        default=SEARCH_LIMIT_DEFAULT,
+        ge=SEARCH_LIMIT_MIN,
+        le=SEARCH_LIMIT_MAX,
+        description=(
+            "Maximum number of search results to retrieve. "
+            f"Use an integer from {SEARCH_LIMIT_MIN} to {SEARCH_LIMIT_MAX}. "
+            f"The default is {SEARCH_LIMIT_DEFAULT}."
+        ),
+        examples=[SEARCH_LIMIT_DEFAULT],
     )
 
 
@@ -129,15 +238,19 @@ class AnswerRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query: NonEmptyString = Field(
-        description="Natural-language question to answer.",
+    query: QueryString = Field(
+        description=(
+            "Natural-language question to answer. The service trims leading "
+            "and trailing whitespace, then accepts 1 to "
+            f"{QUERY_MAX_CHARACTERS} characters."
+        ),
         examples=[
             "Why does inconsistent terminology cause retrieval failures?"
         ],
     )
     filters: SearchFilters | None = Field(
         default=None,
-        description="Optional metadata filters applied during retrieval.",
+        description=_FILTERS_DESCRIPTION,
     )
 
 

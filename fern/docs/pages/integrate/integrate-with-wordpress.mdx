@@ -9,7 +9,7 @@ topics: [topic-integration, topic-api, topic-authentication]
 components: [component-wordpress-client, component-public-api]
 prerequisites: [Auth, IndxWP]
 related_pages: [IntApp, Errs, SrchDoc, GenAns]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary]
 ---
 
@@ -147,7 +147,9 @@ the proxy. The API key stays in `wp-config.php`.
 
 The form doesn't submit an empty query. The REST routes also reject an empty query before they
 call the Python RAG service. Search returns HTTP 400 with `A search query is required.` Ask
-returns HTTP 400 with `A question is required.`
+returns HTTP 400 with `A question is required.` The Python service then applies the query length
+and body size limits in [Errors](/reference/errors). Those limits don't cap how often a visitor
+can search or ask.
 
 ## Deploy plugin updates
 

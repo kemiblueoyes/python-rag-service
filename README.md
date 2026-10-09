@@ -170,7 +170,7 @@ Example successful response:
 
 A valid query if the reranked result set doesn't pass the configured retrieval support gate, the endpoint returns `200 OK` with an empty `results` array.
 
-Invalid requests return `422 Unprocessable Content` using the standard error format:
+Invalid requests return `422 Unprocessable Content` using the standard error format. The service trims leading and trailing whitespace from `query` and each filter value, then counts Unicode code points. A query can contain 1 to 2,000 characters. A filter value can contain 1 to 256 characters. A filter list can contain 1 to 50 values. Search `limit` is an integer from 1 to 20 and defaults to 5. A request body larger than 65,536 bytes (64 KiB) returns `413` with `request_too_large` and the message `The request body is too large.` The service counts the bytes it receives, including a chunked body and a body sent without `Content-Length`, and it does this before JSON parsing. These limits aren't a rate limit and don't cap provider spending.
 
 ```json
 {
@@ -200,7 +200,7 @@ A known configuration problem found while handling the request returns `500` wit
 
 ### `POST /v1/answer`
 
-The answer endpoint accepts a natural-language query and optional metadata filters. It does not accept a `limit` field. Extra fields, including `limit`, are rejected with `422 Unprocessable Content` and the `validation_error` response shown above.
+The answer endpoint accepts a natural-language query and optional metadata filters. It uses the same query and filter limits as search. It does not accept a `limit` field. Extra fields, including `limit`, are rejected with `422 Unprocessable Content` and the `validation_error` response from search. An oversized body returns the same `413` response as search.
 
 The route always retrieves 5 chunks through the same hybrid retrieval pipeline as search, then runs grounded answer generation and citation validation.
 

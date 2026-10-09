@@ -9,7 +9,7 @@ topics: [topic-api]
 components: [component-public-api]
 next_steps: [SrchAPI, AnsAPI, HlthAPI]
 related_pages: [SrchAnsOvrvw, Auth, Errs, IntApp]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary, secondary]
 ---
 
@@ -59,8 +59,13 @@ OpenAPI description, `info.version` is `0.1.0`.
 HTTP 200 can also contain an empty search result or an answer with `sufficient_evidence` set to false.
 These are completed requests, not API errors.
 
-Both request schemas require `query`. The service trims leading and trailing whitespace and
-rejects an empty query. Both schemas reject fields they don't define.
+Both request schemas require `query`. The service trims leading and trailing whitespace, then
+accepts 1 to 2,000 characters. It measures that length in Unicode code points. Each filter value
+accepts 1 to 256 characters after trimming, and a filter list accepts 1 to 50 values. Search
+`limit` accepts an integer from 1 to 20. The default is 5. Both schemas reject fields they don't
+define. A body larger than 65,536 bytes (64 KiB) returns HTTP 413 with `request_too_large` before
+JSON parsing. See [Errors](/reference/errors). These limits don't restrict request rate, and they
+don't cap provider spending.
 
 `GET /health` takes no request body and returns `{"status": "ok"}` when the service process responds.
 It doesn't check retrieval, answer generation, or connections to Qdrant, Voyage, or OpenAI.

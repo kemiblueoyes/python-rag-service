@@ -44,6 +44,7 @@ Both routes can return `configuration_error` or `internal_error` for HTTP 500.
 | Status | `code` | `message` | Routes |
 | --- | --- | --- | --- |
 | 401 | `authentication_failed` | A valid API key is required. | `POST /v1/search`, `POST /v1/answer` |
+| 413 | `request_too_large` | The request body is too large. | `POST /v1/search`, `POST /v1/answer` |
 | 422 | `validation_error` | Request validation failed. | `POST /v1/search`, `POST /v1/answer` |
 | 503 | `authentication_unavailable` | API authentication is temporarily unavailable. | `POST /v1/search`, `POST /v1/answer` |
 | 503 | `retrieval_unavailable` | Search is temporarily unavailable. | `POST /v1/search` |
@@ -58,11 +59,15 @@ OpenAPI example for HTTP 503 is `answer_unavailable`. A missing `RAG_API_KEY` st
 ## Validation errors
 
 `validation_error` means the JSON body doesn't match that route's schema. `error.details` lists
-each problem. The service trims `query` and then rejects an empty string. It also rejects a field
-the schema doesn't define.
+each problem. The service trims leading and trailing whitespace from `query` and from each filter
+value, then measures the trimmed text in Unicode code points. `é` counts as one character. A letter
+plus a combining mark counts as two. Spaces around a value don't count toward the maximum. A value
+that's only whitespace is empty after trimming, so validation rejects it. The service also rejects
+a field the schema doesn't define.
 
-On `POST /v1/search`, `limit` has to be an integer of at least 1. A smaller value is a validation
-error:
+A trimmed `query` contains 1 to 2,000 characters. A trimmed filter value contains 1 to 256
+characters. A filter list contains 1 to 50 values. On `POST /v1/search`, `limit` is an integer from
+1 to 20. The default is 5. A value outside that range is a validation error:
 
 ```json
 {
@@ -100,6 +105,19 @@ An unknown filter name uses a dotted `field`, such as `filters.site_id`. Support
 are `document_id`, `source`, `source_id`, and `content_type`. See
 [Search indexed docs](api:POST/reference/search) for the search schema and
 [Generate grounded answer](api:POST/reference/answer) for the answer schema.
+
+## Request body too large
+
+`request_too_large` is HTTP 413 from `POST /v1/search` and `POST /v1/answer`. The service counted
+more than 65,536 bytes (64 KiB) of request body. The message is `The request body is too large.`
+`details` is empty.
+
+The service counts the bytes it receives before it parses JSON. Omitting `Content-Length`, sending
+a header that doesn't match the body, or splitting the body into chunks uses that same count. An
+oversized body doesn't start retrieval or answer generation.
+
+A body of 65,536 bytes can still fail the field checks in **Validation errors**. These limits don't restrict how many
+requests a client can send, and they don't cap spending on Voyage, Qdrant, or OpenAI.
 
 ## Authentication errors
 
@@ -184,7 +202,7 @@ the reason.
 `rag_service` loggers. It doesn't change Uvicorn's logs. It doesn't enable debug logging for
 provider SDKs or HTTP clients. See [Configuration reference](/docs/reference/configuration-reference).
 
-The HTTP 401 and 422 handlers don't write these diagnostic failure logs.
+The HTTP 401, 413, and 422 responses don't write these diagnostic failure logs.
 
 A client that can't connect receives no API response. The codes on this page are the responses the
 service returns after it accepts the request.

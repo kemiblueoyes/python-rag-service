@@ -82,6 +82,20 @@ paths:
                       code: authentication_failed
                       message: A valid API key is required.
                       details: []
+        '413':
+          description: The request body is too large.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                request_too_large:
+                  summary: Request too large
+                  value:
+                    error:
+                      code: request_too_large
+                      message: The request body is too large.
+                      details: []
         '422':
           description: Request validation failed.
           content:
@@ -211,6 +225,20 @@ paths:
                       code: authentication_failed
                       message: A valid API key is required.
                       details: []
+        '413':
+          description: The request body is too large.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                request_too_large:
+                  summary: Request too large
+                  value:
+                    error:
+                      code: request_too_large
+                      message: The request body is too large.
+                      details: []
         '422':
           description: Request validation failed.
           content:
@@ -284,16 +312,20 @@ components:
       properties:
         query:
           type: string
+          maxLength: 2000
           minLength: 1
           title: Query
-          description: Natural-language question to answer.
+          description: Natural-language question to answer. The service trims leading
+            and trailing whitespace, then accepts 1 to 2000 characters.
           examples:
           - Why does inconsistent terminology cause retrieval failures?
         filters:
           anyOf:
           - $ref: '#/components/schemas/SearchFilters'
           - type: 'null'
-          description: Optional metadata filters applied during retrieval.
+          description: Optional metadata filters applied during retrieval. The service
+            trims each value, then accepts 1 to 256 characters. A list accepts 1 to
+            50 values.
       additionalProperties: false
       type: object
       required:
@@ -449,11 +481,14 @@ components:
         document_id:
           anyOf:
           - type: string
+            maxLength: 256
             minLength: 1
           - items:
               type: string
+              maxLength: 256
               minLength: 1
             type: array
+            maxItems: 50
             minItems: 1
           - type: 'null'
           title: Document Id
@@ -468,11 +503,14 @@ components:
         source:
           anyOf:
           - type: string
+            maxLength: 256
             minLength: 1
           - items:
               type: string
+              maxLength: 256
               minLength: 1
             type: array
+            maxItems: 50
             minItems: 1
           - type: 'null'
           title: Source
@@ -485,11 +523,14 @@ components:
         source_id:
           anyOf:
           - type: string
+            maxLength: 256
             minLength: 1
           - items:
               type: string
+              maxLength: 256
               minLength: 1
             type: array
+            maxItems: 50
             minItems: 1
           - type: 'null'
           title: Source Id
@@ -503,11 +544,14 @@ components:
         content_type:
           anyOf:
           - type: string
+            maxLength: 256
             minLength: 1
           - items:
               type: string
+              maxLength: 256
               minLength: 1
             type: array
+            maxItems: 50
             minItems: 1
           - type: 'null'
           title: Content Type
@@ -525,21 +569,27 @@ components:
       properties:
         query:
           type: string
+          maxLength: 2000
           minLength: 1
           title: Query
-          description: Natural-language search query.
+          description: Natural-language search query. The service trims leading and
+            trailing whitespace, then accepts 1 to 2000 characters.
           examples:
           - How does metadata improve retrieval?
         filters:
           anyOf:
           - $ref: '#/components/schemas/SearchFilters'
           - type: 'null'
-          description: Optional metadata filters applied during retrieval.
+          description: Optional metadata filters applied during retrieval. The service
+            trims each value, then accepts 1 to 256 characters. A list accepts 1 to
+            50 values.
         limit:
           type: integer
+          maximum: 20.0
           minimum: 1.0
           title: Limit
-          description: Maximum number of search results to retrieve.
+          description: Maximum number of search results to retrieve. Use an integer
+            from 1 to 20. The default is 5.
           default: 5
           examples:
           - 5

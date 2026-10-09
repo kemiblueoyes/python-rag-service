@@ -128,8 +128,12 @@ with urlopen(request) as response:
 </CodeBlocks>
 
 To match either pages or posts, set `content_type` to `["page", "post"]`.
-An unknown filter name, an empty filter value, a `limit` below `1`, or an unexpected field returns `422` with `validation_error`.
-See [Search API](api:POST/reference/search) for the request schema.
+The service trims `query` and each filter value, then counts Unicode code points. A query can contain
+1 to 2,000 characters. A filter value can contain 1 to 256 characters. A filter list can contain 1 to
+50 values. `limit` is an integer from 1 to 20, and the default is 5. An unknown filter name, an empty
+filter value, a value outside those limits, or an unexpected field returns `422` with `validation_error`.
+A body larger than 65,536 bytes (64 KiB) returns `413` with `request_too_large` before JSON parsing.
+See [Search API](api:POST/reference/search) for the request schema and [Errors](/reference/errors) for both responses.
 
 ## Use the search results
 
@@ -185,10 +189,20 @@ Your client can show the ranked chunks, or an empty state when `results` is empt
 
 <Markdown src="/docs/snippets/authentication-failed.mdx" endpoint="POST /v1/search" />
 
+### 413 `request_too_large`
+
+Shorten the JSON body to 65,536 bytes (64 KiB) or less.
+`POST /v1/search` returns `413` with `request_too_large` when the received body is larger than that.
+The service counts those bytes before it parses JSON, including a chunked body and a body without
+`Content-Length`. This status doesn't limit how often you can call the route, and it doesn't cap
+provider spending.
+
 ### 422 `validation_error`
 
-Check the query, the supported filters, and `limit`.
+Check the query length, the supported filters, and `limit`.
 `POST /v1/search` returns `422` with `validation_error` when the request doesn't match the schema.
+A query can contain 1 to 2,000 characters after trimming. See [Errors](/reference/errors) for how
+that length is measured.
 
 <Markdown src="/docs/snippets/authentication-unavailable.mdx" endpoint="POST /v1/search" />
 

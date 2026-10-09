@@ -9,7 +9,7 @@ topics: [topic-retrieval, topic-answer-generation, topic-api]
 components: [component-retrieval-service, component-answer-generation-service, component-public-api]
 next_steps: [SrchDoc, GenAns]
 related_pages: [SrchAPI, AnsAPI, RtrvPipe, AnsGenCit]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [primary, secondary]
 ---
 
@@ -37,7 +37,7 @@ the available evidence was sufficient through `sufficient_evidence`; when it's `
 
 ### Search
 
-`POST /v1/search` returns the query and a ranked list of search results. You can set `limit` on the request. The default is 5.
+`POST /v1/search` returns the query and a ranked list of search results. You can set `limit` on the request to an integer from 1 to 20. The default is 5.
 Each result includes an `excerpt` containing the retrieved chunk text, along with the document title, heading path, source URL, and rerank score.
 You can pass optional metadata filters to narrow which chunks retrieval considers. `POST /v1/answer` accepts the same filters.
 

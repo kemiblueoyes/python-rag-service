@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, Depends
 
 from rag_service.api.auth import require_api_key
 from rag_service.api.dependencies import get_retrieval_service
+from rag_service.api.limits import REQUEST_TOO_LARGE_RESPONSE
 from rag_service.api.models import (
     ErrorResponse,
     SearchRequest,
@@ -133,6 +134,20 @@ SEARCH_UNAVAILABLE_RESPONSE = {
                         "authentication_failed": {
                             "summary": "Authentication failed",
                             "value": AUTHENTICATION_FAILED_RESPONSE,
+                        }
+                    }
+                }
+            },
+        },
+        413: {
+            "model": ErrorResponse,
+            "description": "The request body is too large.",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "request_too_large": {
+                            "summary": "Request too large",
+                            "value": REQUEST_TOO_LARGE_RESPONSE,
                         }
                     }
                 }

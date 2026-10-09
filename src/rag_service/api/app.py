@@ -11,6 +11,7 @@ from rag_service.api.auth import (
     APIAuthenticationConfigurationError,
     InvalidAPIKeyError,
 )
+from rag_service.api.body_limit import RequestBodyLimitMiddleware
 from rag_service.api.dependencies import shutdown_api_dependencies
 from rag_service.api.errors import (
     AnswerUnavailableError,
@@ -108,4 +109,7 @@ app.add_exception_handler(
 # FastAPI sends an Exception handler to ServerErrorMiddleware, which
 # re-raises after the response. Uvicorn would then print the original
 # exception. This middleware returns the safe response and stops there.
+# The body limit sits inside it so cancellation still propagates and an
+# unexpected failure still becomes the fixed internal_error response.
+app.add_middleware(RequestBodyLimitMiddleware)
 app.add_middleware(UnexpectedErrorMiddleware)

@@ -118,7 +118,11 @@ with urlopen(request) as response:
 
 </CodeBlocks>
 
-An unknown filter name, an empty filter value, or an unexpected field returns `422` with `validation_error`.
+The service trims `query` and each filter value, then counts Unicode code points. A query can contain
+1 to 2,000 characters. A filter value can contain 1 to 256 characters. A filter list can contain 1 to
+50 values. An unknown filter name, an empty filter value, a value outside those limits, or an
+unexpected field returns `422` with `validation_error`. A body larger than 65,536 bytes (64 KiB)
+returns `413` with `request_too_large` before JSON parsing. See [Errors](/reference/errors).
 
 ## Use a grounded answer
 
@@ -187,6 +191,19 @@ Your client can show the answer with its sources when `sufficient_evidence` is `
 <Markdown src="/docs/snippets/authentication-failed.mdx" endpoint="POST /v1/answer" />
 
 <Markdown src="/docs/snippets/authentication-unavailable.mdx" endpoint="POST /v1/answer" />
+
+### 413 `request_too_large`
+
+Shorten the JSON body to 65,536 bytes (64 KiB) or less.
+`POST /v1/answer` returns `413` with `request_too_large` when the received body is larger than that.
+The service counts those bytes before it parses JSON. This status doesn't limit how often you can
+call the route, and it doesn't cap provider spending.
+
+### 422 `validation_error`
+
+Check the query length and the supported filters.
+`POST /v1/answer` returns `422` with `validation_error` when the request doesn't match the schema.
+A query can contain 1 to 2,000 characters after trimming. The route still rejects `limit`.
 
 ### 503 `answer_unavailable`
 
