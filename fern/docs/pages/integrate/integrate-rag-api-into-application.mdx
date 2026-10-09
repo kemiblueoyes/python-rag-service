@@ -63,7 +63,9 @@ leading and trailing whitespace and rejects an empty query. See
 
 Set a timeout for the outbound request. Answer requests also wait for the language model, so choose a value that accommodates
 the response times you observe. This example uses 60 seconds for blocking network operations. Coordinate it with any timeout on
-your application server or hosting platform.
+your application server or hosting platform. That client timeout is separate from the service's Voyage, Qdrant, and OpenAI
+timeouts. Those bound each provider call, not the whole search or answer request. See
+[Configuration reference](/docs/reference/configuration-reference).
 
 ```python
 import json

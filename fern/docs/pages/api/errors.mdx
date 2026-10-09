@@ -120,7 +120,8 @@ See [Authentication](/docs/get-started/authentication) to set the key and send t
 
 `retrieval_unavailable` is HTTP 503 from `POST /v1/search` when a retrieval provider is
 temporarily unavailable. That includes connection failures, timeouts, rate limits, and provider
-server errors. The message is `Search is temporarily unavailable.` `details` is empty. The
+server errors. `VOYAGE_TIMEOUT_SECONDS` and `QDRANT_TIMEOUT_SECONDS` bound each of those calls.
+They don't set a deadline for the whole search. The message is `Search is temporarily unavailable.` `details` is empty. The
 response doesn't include the underlying exception. The service logs `operation=retrieval` and
 `reason=retrieval_dependency_failed`.
 
@@ -140,7 +141,7 @@ The route returns this code when:
 
 - `GENERATION_ENABLED` is `false`. The service logs `operation=generation` and `reason=generation_disabled`. It doesn't build the answer generator or call providers.
 - Retrieval hits a temporary provider failure.
-- The language-model request hits a connection failure, timeout, rate limit, or provider server error.
+- The language-model request hits a connection failure, timeout, rate limit, or provider server error. `OPENAI_TIMEOUT_SECONDS` bounds each OpenAI attempt. It doesn't set a deadline for the whole answer request.
 - The language model refuses the request or returns no usable structured answer.
 - The formatted context for the highest-ranked chunk exceeds the configured token budget.
 - Citation validation fails.

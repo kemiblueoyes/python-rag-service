@@ -1,5 +1,7 @@
+import logging
 from unittest.mock import MagicMock
 
+import pytest
 from pytest import MonkeyPatch
 
 from rag_service.config import Settings
@@ -80,3 +82,50 @@ def test_create_retrieval_service_builds_configured_dependencies(
         rrf_k=55,
         support_cutoff=0.75,
     )
+
+
+def test_failed_initialization_closes_created_clients_without_logging_exception_text(
+    monkeypatch: MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    canary = "sk-secret-cleanup"
+    embedding_provider = MagicMock()
+    vector_store = MagicMock()
+    vector_store.close.side_effect = ValueError(canary)
+
+    monkeypatch.setattr(
+        "rag_service.retrieval.factory.create_embedding_provider",
+        MagicMock(return_value=embedding_provider),
+    )
+    monkeypatch.setattr(
+        "rag_service.retrieval.factory.create_vector_store",
+        MagicMock(return_value=vector_store),
+    )
+    monkeypatch.setattr(
+        "rag_service.retrieval.factory.create_lexical_retriever",
+        MagicMock(side_effect=RuntimeError("index failed")),
+    )
+    reranker_factory = MagicMock()
+    monkeypatch.setattr(
+        "rag_service.retrieval.factory.create_reranker",
+        reranker_factory,
+    )
+
+    with caplog.at_level(logging.DEBUG):
+        with pytest.raises(RuntimeError, match="index failed"):
+            create_retrieval_service(Settings(_env_file=None))
+
+    embedding_provider.close.assert_called_once()
+    vector_store.close.assert_called_once()
+    reranker_factory.assert_not_called()
+    cleanup = [
+        record
+        for record in caplog.records
+        if record.name == "rag_service.client_lifecycle"
+    ]
+    assert len(cleanup) == 1
+    assert cleanup[0].operation == "retrieval"
+    assert cleanup[0].reason == "cleanup_failed"
+    assert cleanup[0].exc_info is None
+    assert canary not in caplog.text
+    assert canary not in repr(cleanup[0].__dict__)

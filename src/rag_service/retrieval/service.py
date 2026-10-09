@@ -1,3 +1,4 @@
+from rag_service.client_lifecycle import close_client
 from rag_service.embeddings.base import EmbeddingProvider
 from rag_service.errors import ServiceConfigurationError
 from rag_service.lexical.base import LexicalRetriever
@@ -70,6 +71,17 @@ class RetrievalService:
         self._fused_candidate_depth = fused_candidate_depth
         self._rrf_k = rrf_k
         self._support_cutoff = support_cutoff
+
+    def close(self) -> None:
+        """Close provider clients owned by this retrieval service."""
+
+        for resource in (
+            self._embedding_provider,
+            self._vector_store,
+            self._lexical_retriever,
+            self._reranker,
+        ):
+            close_client(resource, operation="shutdown")
 
     def retrieve(
         self,

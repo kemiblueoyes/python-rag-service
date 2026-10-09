@@ -83,6 +83,8 @@ def test_create_answer_generator_builds_configured_dependencies(
     language_model_factory.assert_called_once_with(
         api_key="test-key",
         model="gpt-5.6-terra",
+        timeout=settings.openai_timeout_seconds,
+        max_retries=settings.openai_max_retries,
         reasoning_effort="low",
         max_output_tokens=1_000,
     )

@@ -1,6 +1,7 @@
 import re
 from collections.abc import Sequence
 
+from rag_service.client_lifecycle import close_client
 from rag_service.generation.citation_validator import (
     CitationValidator,
 )
@@ -74,6 +75,11 @@ class AnswerGenerator:
         self._prompt_builder = prompt_builder
         self._language_model = language_model
         self._citation_validator = citation_validator
+
+    def close(self) -> None:
+        """Close the language-model client when this generator owns it."""
+
+        close_client(self._language_model, operation="shutdown")
 
     def generate(
         self,

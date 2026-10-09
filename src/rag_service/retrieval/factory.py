@@ -1,3 +1,4 @@
+from rag_service.client_lifecycle import close_client
 from rag_service.config import Settings
 from rag_service.embeddings import (
     create_embedding_provider,
@@ -35,28 +36,36 @@ def create_retrieval_service(
 
 
 def _build_retrieval_service(settings: Settings) -> RetrievalService:
-    return RetrievalService(
-        embedding_provider=(
-            create_embedding_provider(settings)
-        ),
-        vector_store=create_vector_store(
-            settings
-        ),
-        lexical_retriever=(
-            create_lexical_retriever(settings)
-        ),
-        reranker=create_reranker(settings),
-        vector_candidate_depth=(
-            settings.retrieval_vector_candidate_depth
-        ),
-        lexical_candidate_depth=(
-            settings.retrieval_lexical_candidate_depth
-        ),
-        fused_candidate_depth=(
-            settings.retrieval_fused_candidate_depth
-        ),
-        rrf_k=settings.retrieval_rrf_k,
-        support_cutoff=(
-            settings.retrieval_support_cutoff
-        ),
-    )
+    created: list[object] = []
+    try:
+        embedding_provider = create_embedding_provider(settings)
+        created.append(embedding_provider)
+        vector_store = create_vector_store(settings)
+        created.append(vector_store)
+        lexical_retriever = create_lexical_retriever(settings)
+        created.append(lexical_retriever)
+        reranker = create_reranker(settings)
+        created.append(reranker)
+        return RetrievalService(
+            embedding_provider=embedding_provider,
+            vector_store=vector_store,
+            lexical_retriever=lexical_retriever,
+            reranker=reranker,
+            vector_candidate_depth=(
+                settings.retrieval_vector_candidate_depth
+            ),
+            lexical_candidate_depth=(
+                settings.retrieval_lexical_candidate_depth
+            ),
+            fused_candidate_depth=(
+                settings.retrieval_fused_candidate_depth
+            ),
+            rrf_k=settings.retrieval_rrf_k,
+            support_cutoff=(
+                settings.retrieval_support_cutoff
+            ),
+        )
+    except Exception:
+        for resource in reversed(created):
+            close_client(resource, operation="retrieval")
+        raise

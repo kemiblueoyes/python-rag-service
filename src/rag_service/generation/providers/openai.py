@@ -1,4 +1,5 @@
 import os
+import threading
 from typing import Literal
 
 import tiktoken
@@ -88,6 +89,8 @@ class OpenAILanguageModel:
         model: str,
         client: OpenAI | None = None,
         api_key: str | None = None,
+        timeout: float = 120.0,
+        max_retries: int = 0,
         reasoning_effort: ReasoningEffort = "low",
         max_output_tokens: int = 1_000,
     ) -> None:
@@ -108,15 +111,40 @@ class OpenAILanguageModel:
             )
 
         self._client = client
+        self._owns_client = client is None
+        self._closed = False
+        self._client_lock = threading.Lock()
         self._api_key = api_key
+        self._timeout = timeout
+        self._max_retries = max_retries
         self._model = model
         self._reasoning_effort = reasoning_effort
         self._max_output_tokens = max_output_tokens
 
+    def close(self) -> None:
+        """Close an OpenAI client this adapter constructed."""
+
+        with self._client_lock:
+            if not self._owns_client:
+                return
+            client = self._client
+            self._client = None
+            self._owns_client = False
+            self._closed = True
+        if client is not None:
+            client.close()
+
     def _require_client(self) -> OpenAI:
         """Create the OpenAI client on first use."""
 
-        if self._client is None:
+        if self._client is not None:
+            return self._client
+
+        with self._client_lock:
+            if self._client is not None:
+                return self._client
+            if self._closed:
+                raise RuntimeError("The language model client is closed.")
             # Preserve the SDK's environment fallback and injected-client support.
             api_key = self._api_key
             if api_key is None:
@@ -125,9 +153,12 @@ class OpenAILanguageModel:
                 raise MissingLanguageModelAPIKeyError(
                     "OPENAI_API_KEY must be configured."
                 )
-            self._client = OpenAI(api_key=self._api_key)
-
-        return self._client
+            self._client = OpenAI(
+                api_key=self._api_key,
+                timeout=self._timeout,
+                max_retries=self._max_retries,
+            )
+            return self._client
 
     def generate(
         self,

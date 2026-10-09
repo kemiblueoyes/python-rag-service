@@ -27,12 +27,27 @@ class QdrantVectorStore:
         vector_size: int,
         url: str | None = None,
         api_key: str | None = None,
+        timeout: int = 5,
         client: QdrantClient | None = None,
     ) -> None:
-        self._client = client or QdrantClient(url=url, api_key=api_key)
+        self._owns_client = client is None
+        self._client = client or QdrantClient(
+            url=url,
+            api_key=api_key,
+            timeout=timeout,
+        )
         self._collection_name = collection_name
         self._vector_size = vector_size
         self._collection_ready = False
+
+    def close(self) -> None:
+        """Close a Qdrant client this adapter constructed."""
+
+        if not self._owns_client:
+            return
+        client = self._client
+        self._owns_client = False
+        client.close()
 
     def ensure_collection(self) -> None:
         if self._collection_ready:

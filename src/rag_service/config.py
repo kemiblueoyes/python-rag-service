@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Literal, NoReturn, get_args
 
 from dotenv.parser import parse_stream
-from pydantic import SecretStr, ValidationError
+from pydantic import Field, SecretStr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict, SettingsError
 
 from rag_service.logging_config import configure_logging
@@ -34,12 +34,15 @@ class Settings(BaseSettings):
     embedding_dimension: int = 1024
     embedding_batch_size: int = 128
     voyage_api_key: str | None = None
+    voyage_timeout_seconds: float = Field(default=60.0, gt=0, allow_inf_nan=False)
+    voyage_max_retries: int = Field(default=0, ge=0, le=2)
 
     # Vector storage
     vector_database: str = "qdrant"
     qdrant_url: str = "http://localhost:6333"
     qdrant_api_key: str | None = None
     qdrant_collection: str = "rag_chunks"
+    qdrant_timeout_seconds: int = Field(default=5, ge=1)
 
     # Retrieval
     lexical_corpus_path: Path = Path("data/wordpress-chunks.json")
@@ -69,6 +72,8 @@ class Settings(BaseSettings):
     generation_context_budget_tokens: int = 8_000
     generation_max_output_tokens: int = 1_000
     openai_api_key: str | None = None
+    openai_timeout_seconds: float = Field(default=120.0, gt=0, allow_inf_nan=False)
+    openai_max_retries: int = Field(default=0, ge=0, le=2)
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -239,7 +244,26 @@ def _settings_error_failures(exc: SettingsError) -> list[SettingsLoadFailure]:
     return [SettingsLoadFailure(_env_name(field_name), message)]
 
 
+_TIMEOUT_CORRECTIONS = {
+    "voyage_timeout_seconds": (
+        "Set this value to a finite number of seconds greater than 0."
+    ),
+    "openai_timeout_seconds": (
+        "Set this value to a finite number of seconds greater than 0."
+    ),
+    "qdrant_timeout_seconds": (
+        "Set this value to a whole number of seconds of at least 1."
+    ),
+}
+_RETRY_CORRECTION = "Set this value to an integer from 0 through 2."
+_RETRY_FIELDS = frozenset({"voyage_max_retries", "openai_max_retries"})
+
+
 def _correction(field_name: str | None, error_type: str) -> str:
+    if field_name in _TIMEOUT_CORRECTIONS:
+        return _TIMEOUT_CORRECTIONS[field_name]
+    if field_name in _RETRY_FIELDS:
+        return _RETRY_CORRECTION
     if error_type in _BOOL_ERROR_TYPES:
         return "Set this value to true or false."
     if error_type in _INT_ERROR_TYPES:

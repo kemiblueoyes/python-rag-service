@@ -55,6 +55,8 @@ the request batch size, and the API key.
 | `EMBEDDING_DIMENSION` | integer | No | `1024` | An integer of at least 1 that matches the model output | Sets the vector size stored in Qdrant. Use the output dimension of `EMBEDDING_MODEL`. The default `voyage-4-lite` configuration uses 1,024 dimensions. Startup rejects a value below 1. It doesn't call Voyage to compare the dimension with the model. |
 | `EMBEDDING_BATCH_SIZE` | integer | No | `128` | An integer of at least 1 | Sets how many texts the indexing command sends to Voyage in one embedding request. |
 | `VOYAGE_API_KEY` | string | Yes, for the API to start | none | A non-empty Voyage API key | Authenticates Voyage embedding and reranking requests. The API requires a non-empty value before it starts. Startup doesn't call Voyage. |
+| `VOYAGE_TIMEOUT_SECONDS` | number | No | `60` | A finite number of seconds greater than 0 | Sets the timeout, in seconds, for each Voyage embedding or reranking HTTP attempt. |
+| `VOYAGE_MAX_RETRIES` | integer | No | `0` | An integer from 0 through 2 | Sets the Voyage client's `max_retries` argument. See **Timeouts and retries** for how many attempts that value makes. |
 
 ## Vector database
 
@@ -67,6 +69,7 @@ and the API key when the instance requires one.
 | `QDRANT_URL` | string | No | `http://localhost:6333` | An `http` or `https` URL with a host. A port, when present, is an integer from 1 through 65535. | Sets the URL of the Qdrant instance. `localhost`, an IP address, and a hosted name are valid, such as `http://localhost:6333` or `https://your-cluster.cloud.qdrant.io`. Startup checks that syntax locally. It doesn't resolve the host or contact Qdrant, and the log doesn't include the URL. |
 | `QDRANT_API_KEY` | string | No, unless the Qdrant instance requires an API key | none | A Qdrant API key, or empty | Authenticates requests to Qdrant. Leave unset for an unauthenticated local instance. Set it when you enable API-key authentication locally or connect to a remote instance that requires a key.|
 | `QDRANT_COLLECTION` | string | No | `rag_chunks` | A collection name | Names the Qdrant collection that stores indexed chunks and their vectors. The service creates the collection. |
+| `QDRANT_TIMEOUT_SECONDS` | integer | No | `5` | A whole number of seconds of at least 1 | Sets the Qdrant client timeout in seconds for each REST or gRPC call. |
 
 ## Content source
 
@@ -99,6 +102,7 @@ the fusion constant, the chunk file used for BM25, and the score cutoff.
 ## Reranking
 
 After fusion, a reranker reorders the candidates. These settings choose that provider and model.
+Reranking uses `VOYAGE_TIMEOUT_SECONDS` and `VOYAGE_MAX_RETRIES`.
 
 | Setting | Type | Required | Default | Accepted values | Suggested description |
 | --- | --- | --- | --- | --- | --- |
@@ -119,6 +123,63 @@ choose the model, the reasoning effort, the context and output limits, and the A
 | `GENERATION_CONTEXT_BUDGET_TOKENS` | integer | No | `8000` | An integer of at least 1 | Sets the maximum number of retrieved-evidence tokens the service can include in the model context. The service keeps whole chunks in ranked order and doesn't split a chunk to fit the budget. |
 | `GENERATION_MAX_OUTPUT_TOKENS` | integer | No | `1000` | An integer of at least 1 | Sets the maximum number of tokens allowed for the generated answer. |
 | `OPENAI_API_KEY` | string | Yes, when `GENERATION_ENABLED` is `true` | none | A non-empty OpenAI API key | Authenticates OpenAI requests for answer generation. Required before startup when answer generation is on. Leave it unset when `GENERATION_ENABLED` is `false`. |
+| `OPENAI_TIMEOUT_SECONDS` | number | No | `120` | A finite number of seconds greater than 0 | Sets the timeout, in seconds, for each OpenAI HTTP attempt. |
+| `OPENAI_MAX_RETRIES` | integer | No | `0` | An integer from 0 through 2 | Sets how many extra OpenAI attempts follow the first one. |
+
+## Timeouts and retries
+
+The timeout settings use seconds. A nonfinite value, zero, or a negative number stops settings load.
+The diagnostic names the setting and the accepted range. It doesn't print the supplied value.
+A retry value outside 0 through 2 stops settings load the same way.
+
+The service passes `VOYAGE_TIMEOUT_SECONDS` to the Voyage client. voyageai 0.5.0 applies that number
+separately to the connect timeout and the read timeout for one HTTP attempt. Without a timeout, the
+SDK uses 600 seconds. A value of 0 would also fall through to that 600-second default, so this service
+rejects 0.
+
+The service passes `QDRANT_TIMEOUT_SECONDS` to the Qdrant client. qdrant-client 1.19.0 uses that whole
+number of seconds as the REST HTTP timeout and the gRPC deadline. The HTTP client applies the same
+number separately to connect, read, write, and acquiring a connection from the pool. Without this
+argument, the SDK uses 5 seconds. This service passes 5 by default. Search calls `query_points`, and
+indexing calls collection and upsert methods. Each of those calls gets this timeout. The client
+doesn't take a general retry count for them. `upload_points` and `upload_collection` can retry a
+failed batch, with a default of 3 retries, but this service doesn't call those methods and doesn't
+add its own retry loop.
+
+The service passes `OPENAI_TIMEOUT_SECONDS` to the OpenAI client. openai 3.1.0 gives that number to its
+HTTP client, which applies it separately to connect, read, write, and acquiring a connection from the
+pool on each attempt. The SDK default is 5 seconds to connect and 600 seconds for the other phases.
+This service replaces that pair with one finite value. The default is 120 seconds.
+
+These timeouts don't set a deadline for `POST /v1/search` or `POST /v1/answer`. Search can call Voyage,
+then Qdrant, then Voyage again for reranking. Answer adds the OpenAI request after retrieval. Each call
+uses its own timeout. A retry starts another attempt with the same timeout. Time spent waiting between
+attempts isn't part of the timeout.
+
+`VOYAGE_MAX_RETRIES` is the Voyage client's `max_retries` argument. voyageai 0.5.0 passes it to
+`stop_after_attempt`. On version 0.5.0, 0 and 1 both make one request. 2 makes two attempts, which is
+one retry after the first failure. The client retries rate-limit errors, service-unavailable errors,
+and timeouts. It doesn't retry authentication failures, invalid requests, or programming errors.
+Between attempts it waits with exponential jitter, starting at 1 second and capped at 16 seconds.
+That wait can make the call longer than the timeout alone. Each retry sends the embedding or reranking
+request again.
+
+`OPENAI_MAX_RETRIES` counts extra retries, not total attempts. openai 3.1.0 makes `max_retries + 1`
+attempts. 0 is one attempt, 1 is two attempts, and 2 is three attempts. The SDK default is 2. This
+service sets 0 unless you change it. The client retries timeouts, connection errors, and HTTP 408,
+409, 429, and 500 or higher. It doesn't retry other 4xx responses. Each retry waits and sends the
+request again, which can spend tokens and rate-limit budget.
+
+This service doesn't wrap those clients in another retry loop. With the defaults, a failed Voyage,
+Qdrant, or OpenAI call isn't sent again. Raising a retry limit adds latency and provider cost for that
+call. A search can pay that cost twice if you let both the query embedding and the later rerank call
+retry. Those are separate requests.
+
+A provider timeout returns 503 `retrieval_unavailable` from search and 503 `answer_unavailable` from
+answer. Configuration failures and programming errors keep their 500 responses.
+
+Startup doesn't call Voyage, OpenAI, Qdrant, or WordPress to test these limits. An invalid value fails
+when settings load, before the API startup check.
 
 ## WordPress client
 

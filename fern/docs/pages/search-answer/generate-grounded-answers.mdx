@@ -199,6 +199,8 @@ Set `GENERATION_ENABLED` to `true`, set `OPENAI_API_KEY`, and restart the API.
 
 When answer generation is on, startup requires a non-empty `OPENAI_API_KEY`.
 After startup, a temporary retrieval or language-model failure, context assembly, or citation checking can still produce this error.
+`OPENAI_TIMEOUT_SECONDS` bounds each OpenAI attempt. It doesn't set a deadline for the whole answer request.
+The default `OPENAI_MAX_RETRIES` is 0, so a timed-out generation call isn't sent again unless you raise that limit.
 A missing `OPENAI_API_KEY` at request time returns `500` with `configuration_error` instead.
 Restart the API after you change `.env`, then retry the request.
 

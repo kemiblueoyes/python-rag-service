@@ -1,3 +1,4 @@
+from rag_service.client_lifecycle import close_client
 from rag_service.config import Settings
 from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.answer_generator import AnswerGenerator
@@ -22,29 +23,37 @@ def create_answer_generator(settings: Settings) -> AnswerGenerator:
             diagnostic="Set GENERATION_PROVIDER to openai.",
         )
 
-    token_counter = OpenAITokenCounter(
-        model=settings.generation_model,
-    )
-    context_assembler = ContextAssembler(
-        token_counter=token_counter,
-        max_context_tokens=(
-            settings.generation_context_budget_tokens
-        ),
-    )
-    language_model = OpenAILanguageModel(
-        api_key=settings.openai_api_key,
-        model=settings.generation_model,
-        reasoning_effort=(
-            settings.generation_reasoning_effort
-        ),
-        max_output_tokens=(
-            settings.generation_max_output_tokens
-        ),
-    )
-
-    return AnswerGenerator(
-        context_assembler=context_assembler,
-        prompt_builder=PromptBuilder(),
-        language_model=language_model,
-        citation_validator=CitationValidator(),
-    )
+    created: list[object] = []
+    try:
+        token_counter = OpenAITokenCounter(
+            model=settings.generation_model,
+        )
+        context_assembler = ContextAssembler(
+            token_counter=token_counter,
+            max_context_tokens=(
+                settings.generation_context_budget_tokens
+            ),
+        )
+        language_model = OpenAILanguageModel(
+            api_key=settings.openai_api_key,
+            model=settings.generation_model,
+            timeout=settings.openai_timeout_seconds,
+            max_retries=settings.openai_max_retries,
+            reasoning_effort=(
+                settings.generation_reasoning_effort
+            ),
+            max_output_tokens=(
+                settings.generation_max_output_tokens
+            ),
+        )
+        created.append(language_model)
+        return AnswerGenerator(
+            context_assembler=context_assembler,
+            prompt_builder=PromptBuilder(),
+            language_model=language_model,
+            citation_validator=CitationValidator(),
+        )
+    except Exception:
+        for resource in reversed(created):
+            close_client(resource, operation="generation")
+        raise

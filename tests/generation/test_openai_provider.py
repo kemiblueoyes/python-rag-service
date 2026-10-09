@@ -200,7 +200,11 @@ def test_client_creation_preserves_sdk_environment_fallback(
     model = OpenAILanguageModel(model="gpt-5.6-terra", api_key=explicit_key)
     with patch("rag_service.generation.providers.openai.OpenAI") as sdk:
         model._require_client()
-        sdk.assert_called_once_with(api_key=explicit_key)
+        sdk.assert_called_once_with(
+            api_key=explicit_key,
+            timeout=model._timeout,
+            max_retries=model._max_retries,
+        )
 
 
 def test_openai_language_model_wraps_validation_error() -> None:

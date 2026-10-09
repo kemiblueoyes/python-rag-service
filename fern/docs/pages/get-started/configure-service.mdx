@@ -122,6 +122,14 @@ For every setting's type, default, and accepted values, see [Configuration refer
     and the context and output token limits. Leave those unless you intend to change the language model.
     When `GENERATION_ENABLED` is `true`, startup also requires a non-empty model name and token budgets of at least 1.
 
+    ## Leave the timeout and retry defaults
+
+    The example file sets a timeout for Voyage, Qdrant, and OpenAI, and it sets Voyage and OpenAI retries to 0.
+
+    Leave those values unless a provider call times out during indexing, search, or answer generation, or you accept the cost of a retry.
+    Each timeout bounds one provider attempt. It doesn't bound the whole search or answer request.
+    A retry sends that provider request again. See [Configuration reference](/docs/reference/configuration-reference) for the units and for what each client setting means.
+
     `.env` now has the Voyage, Qdrant, WordPress, retrieval, and OpenAI values the service needs. Don't commit `.env`.
 </Steps>
 

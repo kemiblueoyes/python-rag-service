@@ -34,18 +34,37 @@ class VoyageReranker:
         *,
         model: str = "rerank-2.5",
         api_key: str | None = None,
+        timeout: float = 60.0,
+        max_retries: int = 0,
         client: _VoyageClient | None = None,
     ) -> None:
+        self._owns_client = client is None
         if client is None:
             from voyageai.client import Client
 
             client = cast(
                 _VoyageClient,
-                Client(api_key=api_key),
+                Client(
+                    api_key=api_key,
+                    timeout=timeout,
+                    max_retries=max_retries,
+                ),
             )
 
         self._client = client
         self._model = model
+
+    def close(self) -> None:
+        """Release ownership of a client this adapter constructed.
+
+        voyageai 0.5.0 Client has no public close method. Its HTTP
+        session stays in the SDK's thread-local storage. An injected
+        client stays open.
+        """
+
+        if not self._owns_client:
+            return
+        self._owns_client = False
 
     def rerank(
         self,

@@ -13,6 +13,8 @@ def create_reranker(
         return VoyageReranker(
             model=settings.reranking_model,
             api_key=settings.voyage_api_key,
+            timeout=settings.voyage_timeout_seconds,
+            max_retries=settings.voyage_max_retries,
         )
 
     raise ServiceConfigurationError(

@@ -361,6 +361,16 @@ These diagnostics exclude exception text, stack traces, credentials, and request
 content. The public error response stays generic. After correcting a setting in
 `.env`, restart the API and retry the request.
 
+Voyage, Qdrant, and OpenAI calls use finite timeouts, in seconds:
+`VOYAGE_TIMEOUT_SECONDS` (60), `QDRANT_TIMEOUT_SECONDS` (5), and
+`OPENAI_TIMEOUT_SECONDS` (120). Each value bounds one provider attempt. It
+doesn't bound the whole search or answer request. `VOYAGE_MAX_RETRIES` and
+`OPENAI_MAX_RETRIES` default to 0. Raising either limit sends that provider
+request again after a retryable failure, which adds latency and provider cost.
+Qdrant search and upsert calls aren't retried. Invalid timeout or retry values
+stop settings load. The diagnostic names the setting and the accepted range,
+and it doesn't print the supplied value.
+
 Open the health-check endpoint:
 
 ```text
@@ -601,6 +611,18 @@ data/retrieval_smoke_results.md
 ```
 
 The report includes each query, returned result count, rerank scores, titles, heading paths, URLs, chunk IDs, and chunk text. It records no qualifying results for unsupported queries that don't pass the support gate.
+
+### BM25 benchmark
+
+Unfiltered BM25 search asks for the requested number of results. Filtered search still ranks the corpus before it applies the filter, so a matching chunk past the top of the global ranking can still be returned.
+
+Measure index construction and repeated searches on synthetic chunks. The command doesn't call Voyage, Qdrant, or OpenAI:
+
+```bash
+uv run python -m rag_service.commands.benchmark_bm25
+```
+
+It prints median milliseconds for construction, unfiltered search, and filtered search at several corpus sizes. Those times depend on the machine. The test suite doesn't compare them to a threshold.
 
 ## WordPress connector profiles
 

@@ -198,6 +198,9 @@ Check the configuration, credentials, and availability of the retrieval dependen
 `POST /v1/search` returns `503` with `retrieval_unavailable` when one of those dependencies can't complete the search.
 Startup already checks local settings and the chunk file. This response means a provider connection,
 timeout, rate limit, or server error happened after that check.
+`VOYAGE_TIMEOUT_SECONDS` and `QDRANT_TIMEOUT_SECONDS` bound each of those provider calls. They don't
+set a deadline for the whole search. The default retry count is 0, so a timed-out Voyage call isn't
+sent again unless you raise `VOYAGE_MAX_RETRIES`. Qdrant search calls aren't retried.
 See [Configuration reference](/docs/reference/configuration-reference) for those settings.
 
 ### 500 `configuration_error`

@@ -11,6 +11,7 @@ from rag_service.api.auth import (
     APIAuthenticationConfigurationError,
     InvalidAPIKeyError,
 )
+from rag_service.api.dependencies import shutdown_api_dependencies
 from rag_service.api.errors import (
     AnswerUnavailableError,
     UnexpectedErrorMiddleware,
@@ -38,7 +39,10 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Configure logging, then validate local API configuration."""
     configure_logging(settings.log_level)
     validate_api_configuration(settings)
-    yield
+    try:
+        yield
+    finally:
+        shutdown_api_dependencies()
 
 
 app = FastAPI(

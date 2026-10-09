@@ -205,6 +205,78 @@ def test_constructor_rejects_empty_corpus() -> None:
         Bm25Retriever([])
 
 
+def test_unfiltered_search_matches_full_ranking_prefix() -> None:
+    chunks = [
+        _chunk(
+            chunk_id=f"wordpress:page:{index}:chunk:0",
+            title=f"Topic {index}",
+            text="zephyr " * (index + 1) + f"document {index}",
+        )
+        for index in range(6)
+    ]
+    retriever = Bm25Retriever(chunks)
+
+    full = retriever.search("zephyr", limit=len(chunks))
+    short = retriever.search("zephyr", limit=2)
+
+    assert [(result.chunk.chunk_id, result.score) for result in short] == [
+        (result.chunk.chunk_id, result.score) for result in full[:2]
+    ]
+    assert short[0].score > short[1].score
+
+
+def test_unfiltered_search_caps_results_at_the_corpus_size() -> None:
+    chunks = [
+        _chunk(
+            chunk_id="wordpress:page:1:chunk:0",
+            title="Retrieval",
+            text="Retrieval systems find content.",
+        )
+    ]
+    retriever = Bm25Retriever(chunks)
+
+    results = retriever.search("retrieval", limit=50)
+
+    assert len(results) == 1
+
+
+def test_filtered_search_keeps_matches_outside_a_short_global_ranking() -> None:
+    pages = [
+        _chunk(
+            chunk_id=f"wordpress:page:{index}:chunk:0",
+            title="Zephyr",
+            text="zephyr " * 8 + f"page {index}",
+            content_type="page",
+        )
+        for index in range(5)
+    ]
+    glossary = _chunk(
+        chunk_id="wordpress:glossary:9:chunk:0",
+        title="Zephyr note",
+        text="zephyr appears once in this glossary entry.",
+        content_type="glossary",
+    )
+    retriever = Bm25Retriever([*pages, glossary])
+
+    unfiltered = retriever.search("zephyr", limit=6)
+    glossary_rank = next(
+        index
+        for index, result in enumerate(unfiltered)
+        if result.chunk.chunk_id == glossary.chunk_id
+    )
+    assert glossary_rank > 0
+
+    filtered = retriever.search(
+        "zephyr",
+        limit=1,
+        filters={"content_type": "glossary"},
+    )
+
+    assert [result.chunk.chunk_id for result in filtered] == [glossary.chunk_id]
+    assert filtered[0].score == unfiltered[glossary_rank].score
+    assert retriever.search("zephyr", limit=1)[0].chunk.chunk_id != glossary.chunk_id
+
+
 def test_search_rejects_unsupported_filter() -> None:
     retriever = Bm25Retriever(
         [

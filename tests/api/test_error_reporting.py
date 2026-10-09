@@ -9,7 +9,7 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 from httpx import Headers
-from openai import APIConnectionError, AuthenticationError
+from openai import APIConnectionError, APITimeoutError, AuthenticationError
 from qdrant_client.common.client_exceptions import ResourceExhaustedResponse
 from qdrant_client.http.exceptions import (
     ResponseHandlingException,
@@ -17,6 +17,7 @@ from qdrant_client.http.exceptions import (
 )
 from voyageai.error import APIConnectionError as VoyageConnectionError
 from voyageai.error import AuthenticationError as VoyageAuthenticationError
+from voyageai.error import Timeout as VoyageTimeout
 
 from rag_service.api.app import app
 from rag_service.api.dependencies import get_answer_generator, get_retrieval_service
@@ -226,6 +227,12 @@ def test_answer_generator_construction_failure_is_configuration_error(
             "retrieval_dependency_failed",
         ),
         (
+            VoyageTimeout(CANARY),
+            503,
+            "retrieval_unavailable",
+            "retrieval_dependency_failed",
+        ),
+        (
             UnexpectedResponse(
                 status_code=503,
                 reason_phrase=CANARY,
@@ -298,6 +305,43 @@ def test_answer_keeps_temporary_provider_failure(
         message=CANARY,
         request=request,
     )
+    retrieval = MagicMock(spec=RetrievalService)
+    retrieval.retrieve.return_value = []
+    generator = MagicMock()
+
+    def generate(**_kwargs: object) -> None:
+        model.generate(
+            GenerationPrompt(system_message=CANARY, user_message=CANARY)
+        )
+
+    generator.generate.side_effect = generate
+    app.dependency_overrides[get_retrieval_service] = lambda: retrieval
+    app.dependency_overrides[get_answer_generator] = lambda: generator
+
+    with caplog.at_level(logging.DEBUG):
+        response = TestClient(app).post(
+            "/v1/answer",
+            json={"query": CANARY},
+            headers=api_key_headers,
+        )
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "answer_unavailable"
+    _assert_safe(response, caplog, capsys, reason="provider_request_failed")
+
+
+def test_answer_timeout_stays_unavailable(
+    api_key_headers: dict[str, str],
+    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    request = httpx.Request("POST", "https://example.test/responses")
+    model = OpenAILanguageModel(
+        client=MagicMock(),
+        model="gpt-5.6-terra",
+        api_key="test-key",
+    )
+    model._client.responses.parse.side_effect = APITimeoutError(request)  # type: ignore[attr-defined]
     retrieval = MagicMock(spec=RetrievalService)
     retrieval.retrieve.return_value = []
     generator = MagicMock()

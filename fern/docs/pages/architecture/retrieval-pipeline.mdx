@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-semantic-retrieval, topic-lexical-retrieval, 
 components: [component-retrieval-service]
 next_steps: [AnsGenCit]
 related_pages: [SrchDoc, RtrvlEv, RecEvRes, SysArch, IndxPipe]
-last_modified: 2026-10-07
+last_modified: 2026-10-08
 audience: [secondary]
 ---
 
@@ -55,7 +55,9 @@ from the lexical corpus, `data/wordpress-chunks.json`, when the retrieval servic
 [Indexing pipeline](/docs/architecture/indexing-pipeline) explains how those two stores are written.
 
 Each search returns its own ranked list of candidate chunks. By default, vector retrieval keeps up to 20 candidates
-and BM25 retrieval keeps up to 20. The service then removes duplicate chunk IDs within each list and keeps the first
+and BM25 retrieval keeps up to 20. Without filters, BM25 asks the index for that many top results. With filters, it
+ranks the corpus first and then keeps matches. A matching chunk farther down the ranking can appear in those results.
+The service then removes duplicate chunk IDs within each list and keeps the first
 occurrence. At this point the two rankings are still separate. A vector score and a BM25 score aren't one shared
 scale.
 

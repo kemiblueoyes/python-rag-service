@@ -53,9 +53,17 @@ class Bm25Retriever:
             stopwords="en",
         )
 
+        # A filtered search has to rank the corpus before it can
+        # keep matches. An unfiltered search asks only for the
+        # requested number of results.
+        ranking_depth = (
+            len(self._chunks)
+            if filters
+            else min(limit, len(self._chunks))
+        )
         document_ids, scores = self._retriever.retrieve(
             query_tokens,
-            k=len(self._chunks),
+            k=ranking_depth,
         )
 
         results: list[SearchResult] = []

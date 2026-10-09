@@ -219,7 +219,11 @@ def main() -> None:
 
     rerank_client = cast(
         _VoyageRerankClient,
-        Client(api_key=settings.voyage_api_key),
+        Client(
+            api_key=settings.voyage_api_key,
+            timeout=settings.voyage_timeout_seconds,
+            max_retries=settings.voyage_max_retries,
+        ),
     )
 
     answerable_evaluations: list[
