@@ -39,7 +39,7 @@ wrapped cleanly.
 
 ## Inputs
 
-The authoring request should provide:
+The authoring request should provide new or updated values for:
 
 - `id`
 - title

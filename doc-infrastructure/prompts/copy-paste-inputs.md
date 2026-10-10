@@ -6,7 +6,7 @@ author-doc-page.md inputs:
 - page goal or user goal: 
 - `topics`: []
 - `components`: []
-- `prerequisites`: 
+- `prerequisites`: []
 - `next_steps`: []
 - `related_pages`: []
 - `lifecycle_status`: draft
@@ -16,7 +16,7 @@ author-doc-page.md inputs:
 
 review-doc-style.md inputs:
 
-- the documentation page to review 
+- the documentation page to review: 
 - content-type template: 
 - page or user goal:
 - relevant product/source material when needed to assess technical depth or system behavior
