@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -6,6 +7,7 @@ from pydantic import SecretStr
 
 from rag_service.api.app import app
 from rag_service.config import settings
+from tests.api.test_lifecycle import _prepare
 
 
 @pytest.mark.parametrize(
@@ -48,9 +50,12 @@ def test_public_api_rejects_missing_api_key(
     ],
 )
 def test_public_api_rejects_incorrect_api_key_without_provider_work(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
     path: str,
     supplied_key: str,
 ) -> None:
+    _prepare(monkeypatch, tmp_path)
     with (
         patch("voyageai.client.Client") as voyage,
         patch("rag_service.vectorstores.qdrant.QdrantClient") as qdrant,
