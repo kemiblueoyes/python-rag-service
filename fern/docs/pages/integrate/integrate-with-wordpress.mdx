@@ -13,18 +13,16 @@ last_modified: 2026-10-09
 audience: [primary]
 ---
 
-The included WordPress client lets site visitors search indexed documentation and ask for a grounded
-answer through the Python RAG Service. The browser sends Search and Ask requests to WordPress. The
-plugin calls the Python RAG service from PHP and keeps the service URL and API key on the server.
+Use the included WordPress client to let visitors search indexed documentation and request answers grounded in that content.
 
-The WordPress connector indexes source content. This page covers the WordPress client, which calls
-the public API and renders Search and Ask for visitors. Index that content before you expect Search
-or Ask to return documentation. See
-[Index WordPress content](/docs/index-content/index-wordpress-content).
+The visitor's browser sends Search and Ask requests to WordPress. The plugin calls the Python RAG Service from PHP,
+keeping the service URL and API key on the server.
 
-The plugin doesn't add a settings screen in wp-admin. You set the service URL and API key in
-`wp-config.php`, add the `[python_rag_service]` shortcode, and deploy the plugin directory.
-Optional constants set how many Search and Ask requests the site forwards each minute.
+The **WordPress client** displays results and answers. The **WordPress connector** indexes the content they use.
+Before using the client, [index your WordPress content](/docs/index-content/index-wordpress-content).
+
+This guide covers installing the plugin, configuring the connection and request limits, and adding the `[python_rag_service]`
+shortcode. Configuration lives in `wp-config.php`; the plugin doesn't provide a settings page in wp-admin.
 
 ## Prerequisites
 
@@ -53,7 +51,7 @@ In wp-admin, activate **Python RAG Service Client**. Activation registers the
 
 ## Set the service URL and API key
 
-Define the Python service origin and API key in `wp-config.php` before the `/* That's all, stop editing! Happy publishing. */` comment:
+Add these constants to `wp-config.php` before the `/* That's all, stop editing! Happy publishing. */` comment:
 
 ```php
 define(
@@ -67,71 +65,105 @@ define(
 );
 ```
 
-`RAG_SERVICE_API_BASE_URL` is the service origin only. The plugin removes a trailing slash, then
-appends `/v1/search` or `/v1/answer`. Leave those paths out of the constant. Point the constant
-at the API itself. The plugin doesn't follow a redirect, and it keeps certificate verification
-on. An origin that only redirects to the API fails the call. See
-**Route Search and Ask through WordPress** for that failure.
+| Constant | What to set |
+| --- | --- |
+| `RAG_SERVICE_API_BASE_URL` | The Python RAG Service origin, such as `https://your-rag-service.example.com`. Don't include `/v1/search` or `/v1/answer`. |
+| `RAG_SERVICE_API_KEY` | The exact value of the service's `RAG_API_KEY`. The plugin sends it in the `X-API-Key` header. |
 
-`RAG_SERVICE_API_KEY` has to match `RAG_API_KEY` exactly. The plugin sends that value in the
-`X-API-Key` header. See [Authentication](/docs/get-started/authentication) for how the Python RAG
-service checks the header, and [Configuration reference](/docs/reference/configuration-reference)
-for both WordPress constants.
+### Choose an address WordPress can reach
 
-WordPress calls `RAG_SERVICE_API_BASE_URL` from the server that runs PHP. The visitor's browser
-doesn't call that URL. During local development, the Python RAG service has to be running at an
-address the WordPress server can reach. When WordPress is hosted on another machine,
-`http://127.0.0.1:8000` on your computer isn't that address. A temporary HTTPS tunnel can connect
-them. For a deployed site, set `RAG_SERVICE_API_BASE_URL` to the origin of the hosted Python RAG
-service.
+The server running WordPress and PHP calls the service URL. The visitor's browser doesn't call it.
 
-If either constant is undefined, Search and Ask return HTTP 500 with the message
-`The RAG service URL isn't configured.` The plugin returns that same message when only
-`RAG_SERVICE_API_KEY` is undefined.
+- **Local development:** The Python RAG Service must be running at an address the WordPress server can reach.
+If WordPress runs on another machine, it can't reach your computer's service through `http://127.0.0.1:8000`.
+A temporary HTTPS tunnel can connect them.
+- **Deployed site:** Use the origin of your hosted Python RAG Service.
+
+### URL requirements
+
+- Point the URL directly at the API. The plugin doesn't follow redirects.
+- Leave out the endpoint paths. The plugin removes a trailing slash and appends `/v1/search` or `/v1/answer`.
+- HTTPS certificate verification remains enabled.
+
+An origin that redirects to the API fails the call. See **Route Search and Ask through WordPress** for how the plugin handles that failure.
+
+### Missing configuration
+
+If either constant is undefined, Search and Ask return HTTP 500 with:
+
+```text
+The RAG service URL isn't configured.
+```
+
+The plugin returns this same message even when only `RAG_SERVICE_API_KEY` is undefined.
+
+See [Authentication](/docs/get-started/authentication) for API-key validation and
+[Configuration reference](/docs/reference/configuration-reference) for both constants.
 
 ## Choose how many requests to forward
 
-Search and Ask stay available without a WordPress login. The plugin limits how many of those
-requests it forwards to Python. The default is 30 Search forwards and 10 Ask forwards per minute.
-Every visitor shares the Search allowance, and every visitor shares the Ask allowance. The plugin
-ignores `X-Forwarded-For`, `CF-Connecting-IP`, and other visitor-supplied forwarding headers, so
-those headers don't create a separate allowance.
+Search and Ask are available without a WordPress login. The plugin limits how many requests it forwards to the Python RAG Service.
 
-Set either limit in `wp-config.php` when you want a different positive integer:
+Each action has a separate allowance shared by all visitors:
+
+| Action | Default allowance |
+| --- | --- |
+| Search | 30 forwarded requests per minute. |
+| Ask | 10 forwarded requests per minute. |
+
+These are site-wide limits, not per-visitor limits. The plugin ignores forwarding headers such as `X-Forwarded-For` and
+`CF-Connecting-IP`; they don't create separate allowances.
+
+### Change the limits
+
+To change either default, define its constant in `wp-config.php`:
 
 ```php
 define( 'RAG_SERVICE_SEARCH_REQUESTS_PER_MINUTE', 30 );
 define( 'RAG_SERVICE_ANSWER_REQUESTS_PER_MINUTE', 10 );
 ```
 
-Leave a constant undefined to keep its default. The value has to be an unquoted integer of 1 or
-greater. Zero, a negative number, a decimal, or a quoted string is invalid. An invalid Search
-value stops Search from calling Python and returns HTTP 503 with
-`Search is temporarily unavailable.` Ask keeps its own limit. An invalid Ask value stops Ask the
-same way and leaves Search unchanged.
+Leave a constant undefined to keep its default.
 
-The counters live in the WordPress database, in `{prefix}rag_service_rate_limits`. On a site whose
-table prefix is `wp_`, that table is `wp_rag_service_rate_limits`. Each route has one row. The
-stored minute only moves forward. A reservation that still names an earlier minute is rejected,
-including after the same route moves its row forward and after the other route runs cleanup. That
-reservation doesn't open a counter for the earlier minute.
+Values must be **unquoted integers of 1 or greater**. Zero, negative numbers, decimals, and quoted strings are invalid.
 
-The plugin creates the table with `dbDelta` when you activate the plugin. If the plugin is already
-active when you copy these files in, the next request replaces the table when the
-`rag_service_rate_limit_schema` option isn't `2`. Replacing the table clears the counts already
-stored. No Redis server or other new service is required. Admission uses the stored count, so a
-connection that reports an unchanged row as a match still rejects a full minute. The plugin
-doesn't change that connection's flags. Concurrent PHP workers share the same counter.
+| Invalid setting | Effect |
+| --- | --- |
+| Search limit | Search returns HTTP 503 with `Search is temporarily unavailable.` and doesn't call Python. Ask remains available under its own limit. |
+| Ask limit | Ask returns HTTP 503 with `Answer generation is temporarily unavailable.` and doesn't call Python. Search remains available under its own limit. |
 
-The window is a fixed minute. A new minute starts the counter at one. Traffic at the end of one
-minute and the start of the next can use both allowances, so a short period can reach twice the
-limit. The limit counts an attempt after the plugin reserves a slot, including an attempt that
-Python then fails. Empty and overlong queries are rejected before a slot is reserved.
+### How requests are counted
 
-This limit protects the volume of Search and Ask requests the WordPress proxy sends. It doesn't
-apply to another client that calls the Python RAG service directly. It isn't a spending cap for
-Voyage or OpenAI, and it isn't a complete denial-of-service defense. The site still accepts the
-HTTP request, and other public WordPress routes are unchanged.
+- **Fixed-minute windows:** Each new minute starts a fresh counter. Requests near the end of one minute and the start of
+  the next can use both allowances, allowing up to twice the limit within a short period.
+- **Failed attempts count:** Once the plugin reserves a slot, the attempt counts even if the Python request fails.
+- **Invalid queries don't count:** Empty queries and queries longer than 2,000 Unicode code points are rejected before a slot is reserved.
+- **Full allowances reject requests:** The route returns HTTP 429 with `Too many requests. Try again shortly.` A `Retry-After`
+  header gives the seconds remaining in the current minute.
+
+### Counter storage
+
+Counters are stored in the WordPress database in `{prefix}rag_service_rate_limits`. With the default `wp_` prefix, the table
+is `wp_rag_service_rate_limits`.
+
+Search and Ask each have one counter row. Concurrent PHP workers share these counters; no Redis server or additional service
+is required.
+
+The stored minute only moves forward. A reservation for an earlier minute is rejected, even after counter updates or cleanup.
+It can't reopen an earlier window or bypass a full allowance.
+
+The plugin creates the table during activation. If you update an already-active plugin, the next request replaces the table
+when `rag_service_rate_limit_schema` isn't `2`. Replacing the table clears the existing counts.
+
+### Scope of the limits
+
+These limits control requests forwarded by the WordPress proxy. They:
+
+- Don't apply to clients that call the Python RAG Service directly.
+- Don't cap Voyage or OpenAI spending.
+- Don't provide complete protection against denial-of-service attacks.
+
+WordPress still receives the incoming HTTP requests. Other public WordPress routes are unaffected.
 
 ## Add the shortcode
 
@@ -150,7 +182,8 @@ When a heading anchor is available, the deepest heading links directly to that p
 Ask displays the answer with basic formatting for paragraphs, bulleted lists, and bold text. Citations link to supporting sources,
 and a `Sources` list appears when the response includes sources.
 
-When `sufficient_evidence` is false, the client also displays `The available pages and articles may not contain enough information.`
+When `sufficient_evidence` is false, the client also displays `The available pages and articles may
+not contain enough information.`
 
 </Steps>
 
@@ -159,77 +192,118 @@ routes. The plugin adds the API key when it calls the Python RAG service.
 
 ## Route Search and Ask through WordPress
 
-The shortcode posts the visitor's query to WordPress. The browser request doesn't include the API
-key, a result limit, or metadata filters.
+The shortcode sends the visitor's query to WordPress. The browser request contains `query` only—no API key,
+result limit, or metadata filters.
 
-Search sends a JSON body with `query` to `python-rag-service/v1/search`. The plugin then calls
-`POST /v1/search` on `RAG_SERVICE_API_BASE_URL` with that query, `limit` set to 5, and
-`X-API-Key`. The WordPress HTTP request times out after 15 seconds.
+The plugin adds `X-API-Key` when it calls the Python RAG Service.
 
-Ask sends the same kind of body to `python-rag-service/v1/answer`. The plugin calls
-`POST /v1/answer` with `query` only. That route doesn't accept `limit`.
+### Request routes
 
-On a site that uses the default WordPress REST prefix, the browser calls:
+| Action | WordPress REST route | Python endpoint | Forwarded body |
+| --- | --- | --- | --- |
+| Search | `python-rag-service/v1/search` | `POST /v1/search` | `query` and `limit: 5`. |
+| Ask | `python-rag-service/v1/answer` | `POST /v1/answer` | `query` only. The endpoint doesn't accept `limit`. |
+
+Both Python requests use `RAG_SERVICE_API_BASE_URL`. The WordPress HTTP request for Search times out after 15 seconds.
+
+With the default WordPress REST prefix, the browser calls:
 
 ```text
 https://your-wordpress-site.example/wp-json/python-rag-service/v1/search
 https://your-wordpress-site.example/wp-json/python-rag-service/v1/answer
 ```
 
-A successful proxy call returns the Python response body with HTTP 200. See
-[Search documentation](/docs/search-and-answer/search-documentation) and
-[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers) for those fields.
+A successful proxy call returns HTTP 200 with the Python response body. See [Search documentation](/docs/search-and-answer/search-documentation) and [Generate grounded answers](/docs/search-and-answer/generate-grounded-answers) for the response fields.
 
-The form doesn't submit an empty query. After `sanitize_text_field` and trimming, the REST routes
-reject an empty query before they reserve a rate-limit slot or call Python. Search returns HTTP 400
-with `A search query is required.` Ask returns HTTP 400 with `A question is required.`
+### Query validation
 
-A query longer than 2,000 Unicode code points returns HTTP 422 with `The query is too long.` The
-plugin counts code points, not bytes. `é` counts as one code point. A one-code-point
-emoji counts as one. A combining mark counts as its own code point, so `e` followed by a combining
-acute accent counts as two. The message doesn't include the query. The Python service still applies its
-own query, filter, and body-size checks. See [Errors](/reference/errors).
+The form doesn't submit an empty query. The REST routes also apply `sanitize_text_field`, trim the query, and check its
+length before reserving a rate-limit slot or calling Python.
 
-When the shared counter for a route is full, that route returns HTTP 429 with
-`Too many requests. Try again shortly.` and a `Retry-After` header. The header is the number of
-seconds left in the current minute. The Search and Ask script shows the REST `message` and enables
-the buttons again. It doesn't send the rejected request again.
+| Invalid query | Status | Message |
+| --- | --- | --- |
+| Empty Search query | 400 | `A search query is required.` |
+| Empty Ask query | 400 | `A question is required.` |
+| More than 2,000 Unicode code points | 422 | `The query is too long.` |
 
-Python HTTP 413 becomes HTTP 413 with `The request is too large.` Python HTTP 422 becomes HTTP 422
-with `The request couldn't be processed.` Those visitor messages are fixed. They don't include the
-Python error body, the query, the API key, or exception text.
+Length is measured in Unicode code points, not bytes. A single-code-point `é` or emoji counts as one. An `e` followed by a
+separate combining acute accent counts as two.
 
-Connection failures, timeouts, a wrong API key, a missing or invalid limit setting, a rate-limit
-storage failure, a redirect, a non-JSON body, and provider failures stay on HTTP 503. Search uses
-`Search is temporarily unavailable.` Ask uses `Answer generation is temporarily unavailable.` The
-plugin doesn't call Python when storage fails or the limit setting is invalid.
+The message doesn't include the query. The Python service also applies its own query, filter, and body-size checks.
+See [Errors](/reference/errors).
+
+### Rate-limit responses
+
+When an action's shared allowance is full, WordPress returns:
+
+- **Status:** HTTP 429.
+- **Message:** `Too many requests. Try again shortly.`
+- **`Retry-After`:** The number of seconds remaining in the current minute.
+
+The interface displays the message and enables the buttons again. It doesn't automatically retry the rejected request.
+
+### Service and proxy failures
+
+| Failure | Status returned by WordPress | Visitor message |
+| --- | --- | --- |
+| Python returns HTTP 413 | 413 | `The request is too large.` |
+| Python returns HTTP 422 | 422 | `The request couldn't be processed.` |
+| Search encounters another service or proxy failure | 503 | `Search is temporarily unavailable.` |
+| Ask encounters another service or proxy failure | 503 | `Answer generation is temporarily unavailable.` |
+
+HTTP 503 covers:
+
+- Connection failures, timeouts, incorrect API keys, redirects, non-JSON responses, and provider failures.
+- Missing or invalid request-limit settings and rate-limit storage failures.
+
+The plugin doesn't call Python when the limit setting is invalid or rate-limit storage fails.
+
+Visitor messages are fixed. They don't expose the Python error body, query, API key, or exception text.
 
 <Note>
-WordPress doesn't require a logged-in user for `python-rag-service/v1/search` or
-`python-rag-service/v1/answer`. A client that can reach the site can send Search and Ask through
-the proxy. Those routes share the site-wide limits in **Choose how many requests to forward**.
-The API key stays in `wp-config.php`.
+The WordPress routes don't require a logged-in user. Any client that can reach the site can send Search and Ask
+requests through the proxy, subject to the site-wide limits in **Choose how many requests to forward**. The
+API key stays in `wp-config.php`.
 </Note>
 
 ## Source links
 
-The browser accepts an absolute `http` or `https` URL with a host and no username or password.
-Uppercase and lowercase scheme names are both accepted. It rejects other schemes, including
-`javascript:` and `data:`, along with malformed URLs, relative URLs, URLs that contain whitespace,
-and URLs that embed credentials.
+The client checks source URLs before displaying them as links.
 
-A rejected URL stays on the page as the title, heading, citation, or source name. That text isn't a
-link. One rejected URL doesn't stop the other results or the rest of the answer from rendering.
-Titles, excerpts, headings, and answer text stay text. Links that open a new tab keep
-`rel="noopener noreferrer"`.
+### Accepted URLs
 
-The browser applies this check to results already stored in the index, including a URL that was
-indexed before this check existed. Indexing applies the same rule when WordPress records are
-ingested again. A published record with body text whose source URL fails the check is saved as a
-canonical document and produces no chunks. The indexing log includes the WordPress record ID and
-doesn't include the URL. Deploying the updated browser script doesn't require you to delete or
-rebuild the live index. Ingest the documents again when you want the indexing check to apply to
-records fetched on that run.
+A source URL must:
+
+- Be an absolute `http` or `https` URL with a host.
+- Contain no username or password.
+- Contain no whitespace.
+- Be correctly formed.
+
+Scheme names can use uppercase or lowercase letters.
+
+The client rejects relative URLs and other schemes, including `javascript:` and `data:`.
+
+### Rejected URLs
+
+When a URL fails validation, its title, heading, citation, or source name still appears as text, without a link. Other
+results and the rest of the answer continue to display.
+
+Titles, excerpts, headings, and answer content remain text. Links that open a new tab use `rel="noopener noreferrer"`.
+
+### Existing and newly indexed content
+
+URL validation applies at two stages:
+
+| Stage | Behavior |
+| --- | --- |
+| Browser display | Checks URLs in all returned results, including content indexed before this validation existed. |
+| WordPress indexing | Applies the same URL rules to records fetched during that indexing run. |
+
+During indexing, a published record with body text and an invalid source URL is saved as a canonical document but
+produces no chunks. The indexing log includes the WordPress record ID, without the URL.
+
+Deploying the updated browser script doesn't require deleting or rebuilding the live index. Ingest documents again
+when you want the indexing check to apply to those records.
 
 ## Deploy plugin updates
 
@@ -287,10 +361,11 @@ curl -s -X POST https://your-wordpress-site.example/wp-json/python-rag-service/v
 A working proxy returns HTTP 200 and the `POST /v1/search` body. Missing constants return HTTP 500
 and `The RAG service URL isn't configured.` A key that doesn't match `RAG_API_KEY`, a service URL
 that WordPress can't reach, or an origin that redirects, returns HTTP 503 and
-`Search is temporarily unavailable.` An empty query returns HTTP 400. A query of more than 2,000
-Unicode code points returns HTTP 422 and `The query is too long.` More than 30 forwarded Search
-requests in the current minute returns HTTP 429, `Too many requests. Try again shortly.`, and
-`Retry-After`.
+`Search is temporarily unavailable.`
+
+An empty query returns HTTP 400. A query of more than 2,000 Unicode code points returns HTTP 422 and
+`The query is too long.` More than 30 forwarded Search requests in the current minute returns HTTP 429,
+`Too many requests. Try again shortly.`, and `Retry-After`.
 
 ## Related pages
 
@@ -298,6 +373,7 @@ requests in the current minute returns HTTP 429, `Too many requests. Try again s
   Call `POST /v1/search` and `POST /v1/answer` from a client other than this plugin.
 - **[Errors](/reference/errors)**: Look up the Python error codes. The WordPress proxy keeps
   HTTP 413 and 422, with its own fixed messages, and replaces other Python failures with HTTP 503.
-- **[Search documentation](/docs/search-and-answer/search-documentation)**: See the `POST /v1/search` response that the Search button renders.
+- **[Search documentation](/docs/search-and-answer/search-documentation)**: See the `POST /v1/search`
+  response that the Search button renders.
 - **[Generate grounded answers](/docs/search-and-answer/generate-grounded-answers)**: See
   `sufficient_evidence`, citations, and sources in the `POST /v1/answer` response.

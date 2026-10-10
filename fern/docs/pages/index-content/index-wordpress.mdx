@@ -24,7 +24,8 @@ Run it for the first build. After WordPress content changes, use
 
 ## Prerequisites
 
-**[Configure the service](/docs/get-started/configure-the-service)**: Set `WORDPRESS_BASE_URL`, the Voyage API key, and the Qdrant connection this command calls.
+**[Configure the service](/docs/get-started/configure-the-service)**: Set `WORDPRESS_BASE_URL`, the Voyage API key, and
+the Qdrant connection this command calls.
 
 <Steps toc={true}>
 ## Run the full indexing command
@@ -33,23 +34,36 @@ From the project directory, run:
 
 <Markdown src="/docs/snippets/code/rebuild-vector-index.mdx" />
 
-`--rebuild-vector-index` fetches the published records in `WORDPRESS_COLLECTIONS`, processes
-every eligible document, creates embeddings, and replaces the matching points (vector records)
-in the Qdrant collection named by `QDRANT_COLLECTION`.
+The `--rebuild-vector-index` option:
 
-The command writes canonical documents to `data/wordpress-documents.json` and retrieval-ready
-chunks to `data/wordpress-chunks.json`. Leave these output paths at their defaults. BM25
-retrieval reads the chunk file at `LEXICAL_CORPUS_PATH`, which is `data/wordpress-chunks.json`
-unless you changed it. The API reads that same file when it starts, so start the API after this command writes it.
+1. Fetches published records from `WORDPRESS_COLLECTIONS`.
+2. Processes every eligible document into chunks.
+3. Creates embeddings for the chunks.
+4. Replaces matching vector records in the Qdrant collection named by `QDRANT_COLLECTION`.
 
-If `WORDPRESS_BASE_URL` is empty, the command stops and doesn't write either file. Let the
-run finish. The command writes the document and chunk files only after vector synchronization
-returns. If WordPress, Voyage, or Qdrant fails before that, those files still show the last
-successful run, or they don't exist yet.
+### Output files
+
+| File | Contents |
+| --- | --- |
+| `data/wordpress-documents.json` | Canonical documents fetched from WordPress. |
+| `data/wordpress-chunks.json` | Retrieval-ready chunks. |
+
+Keep these output paths at their defaults. BM25 keyword retrieval reads the chunk file at `LEXICAL_CORPUS_PATH`, which
+defaults to `data/wordpress-chunks.json`.
+
+Start the API after indexing finishes. It reads that chunk file during startup.
+
+### Completion and failures
+
+Let the command finish. It writes the document and chunk files only after vector synchronization returns.
+
+- **Missing source URL:** If `WORDPRESS_BASE_URL` is empty, the command stops without writing either file.
+- **Provider failure:** If WordPress, Voyage, or Qdrant fails before synchronization returns, the files remain from the
+last successful run—or don't exist yet if this is the first run.
 
 <Note>
-Use this rebuild for the first index, and again after you change the embedding model,
-embedding dimension, chunking rules, or stored payload structure.
+Use a full rebuild for the first index and after changing the embedding model, embedding dimension, chunking rules, or
+stored payload structure.
 </Note>
 </Steps>
 
@@ -92,24 +106,27 @@ collections. Check `WORDPRESS_BASE_URL` and `WORDPRESS_COLLECTIONS` on
 
 ### Chunks
 
-`data/wordpress-chunks.json` is a JSON array of retrieval-ready chunks. Each chunk includes
-`chunk_id`, `document_id`, `text`, `heading_path`, and `url`.
+`data/wordpress-chunks.json` contains a JSON array of retrieval-ready chunks. Each chunk includes `chunk_id`, `document_id`,
+`text`, `heading_path`, and `url`.
 
-The indexing pipeline creates chunks only for documents where `indexable` is true and
-`document_role` is `content`. However, a published record:
+The pipeline creates chunks only for documents where:
 
-- with an empty body is saved as a canonical
-document and produces no chunks.
-- whose source URL isn't an absolute `http` or `https` URL without a username or password is saved the same way
-and produces no chunks. The command logs that record's WordPress ID and doesn't print the URL.
+- `indexable` is `true`.
+- `document_role` is `content`.
 
-The check runs when documents are ingested again. It leaves records already stored in the live index in place.
+Some published records are saved as canonical documents without producing chunks:
 
-A page with an empty body is stored with `document_role` set to `landing`. One document
-can also produce several chunks, so `M` doesn't have to equal `N`.
+| Condition | Behavior |
+| --- | --- |
+| Empty body | The document is stored with `document_role: landing` and produces no chunks. |
+| Invalid source URL | The document produces no chunks. The URL must be an absolute `http` or `https` URL without a username or password. The log includes the WordPress record ID, without the URL. |
 
-An empty chunk array while `N` is greater than 0 means none of the fetched documents had body
-text to chunk.
+The URL check applies when records are ingested again. It doesn't retroactively check records already stored in the live index.
+
+One document can produce several chunks, so the chunk count (`M`) doesn't have to equal the document count (`N`).
+
+If the chunk array is empty but `N` is greater than 0, documents were fetched but none produced retrieval-ready chunks. Check
+their body text, source URLs, `indexable` values, and document roles.
 
 ### Embeddings
 
@@ -134,7 +151,8 @@ document and chunk files weren't updated for this run.
 
 ## Next steps
 
-**[Authentication](/docs/get-started/authentication)**: Set the API key that `POST /v1/search` and `POST /v1/answer` require before you query this index.
+**[Authentication](/docs/get-started/authentication)**: Set the API key that `POST /v1/search` and `POST /v1/answer` require
+before you query this index.
 
 ## Related pages
 

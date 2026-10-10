@@ -9,7 +9,7 @@ topics: [topic-answer-evaluation, topic-evidence-sufficiency, topic-citations]
 components: [component-evaluation-framework, component-answer-generation-service]
 next_steps: [RecEvRes]
 related_pages: [AnsGenCit, EvArch, RtrvlEv, HowEv, EvalRef]
-last_modified: 2026-10-07
+last_modified: 2026-10-09
 audience: [secondary]
 ---
 
@@ -21,39 +21,76 @@ To generate an answer report, see [Run the evaluation](/docs/evaluate/run-the-ev
 
 ## How the command answers a case
 
-The answer command sends each case’s query and filters to the current retrieval pipeline and requests 5 chunks.
-Retrieval can return fewer chunks or none. The command generates an answer from the returned chunks and doesn’t
-read the saved retrieval report. The answer report records the requested count as `retrieval_limit`.
+### Retrieve evidence
 
-Generation builds the answer the structural checks score. The model proposes the answer text, citation
-identifiers, and a `sufficient_evidence` flag. The application validates those citations against the sources it
-supplied to the model, then keeps the cited sources on the finished answer.
-[Answer generation and citations](/docs/architecture/answer-generation-and-citations) explains that workflow.
+The answer command sends each case's query and filters to the current retrieval pipeline and requests 5 chunks. Retrieval can
+return fewer chunks or none.
 
-The structural checks use the finished answer. They compare the model-reported sufficient_evidence flag with the
-answer expectation and check cited chunk IDs against the case’s relevant sources. If the case has no answer expectation,
-the command stops.
+The command uses these returned chunks, not the saved retrieval report. The answer report records the requested count as `retrieval_limit`.
 
-If retrieval or generation fails before it returns an answer, the command stops. It doesn't record that failure
-as an answer with insufficient evidence.
+### Generate and validate the answer
+
+The model proposes answer text, citation identifiers, and a `sufficient_evidence` flag.
+
+The application validates the citations against the sources supplied to the model, then keeps the cited sources on the finished answer.
+
+See [Answer generation and citations](/docs/architecture/answer-generation-and-citations) for that workflow.
+
+### Run the structural checks
+
+The checks use the finished answer to:
+
+- Compare the model-reported `sufficient_evidence` flag with the case's answer expectation.
+- Check cited chunk IDs against the case's relevant sources.
+
+### Conditions that stop the command
+
+The command stops when:
+
+- A case has no answer expectation.
+- Retrieval or generation fails before returning an answer.
+
+A retrieval or generation failure isn't recorded as an answer with insufficient evidence.
 
 ## Evidence sufficiency
 
-`sufficiency_correct` is true when the model's `sufficient_evidence` flag equals
-`expected_sufficient_evidence`. The report stores that flag as `actual_sufficient_evidence`.
+The evaluation compares the model's evidence-sufficiency flag with the dataset expectation.
 
-A correct sufficiency result means the model-reported flag matches the dataset expectation. The check doesn’t
-independently judge whether the retrieved evidence can answer the question.
+### Report fields
 
-The application accepts the model's proposal only when the flag agrees with the citation list. A sufficient
-proposal includes at least one citation identifier. An insufficient proposal includes none. The application
-doesn't replace the flag with its own judgment.
+| Field | Meaning |
+| --- | --- |
+| `expected_sufficient_evidence` | Whether the dataset expects enough evidence to answer the question. |
+| `actual_sufficient_evidence` | The model's returned `sufficient_evidence` flag, as stored in the report. |
+| `sufficiency_correct` | `true` when the actual and expected flags match. |
 
-The answer summary treats a case as answerable when `expected_sufficient_evidence` is true, and as unanswerable
-when it's false. The summary doesn't use `expect_empty` or `category` for that split. In the current dataset, a
-case that expects sufficient evidence also has `expect_empty` false, and an expected-empty case expects
-insufficient evidence. The dataset model doesn't require those fields to agree.
-[Evaluation framework reference](/docs/reference/evaluation-framework-reference) defines the three fields.
+A correct result means the flags agree. The check doesn't independently assess whether the retrieved evidence can answer the question.
+
+### Application validation
+
+Before accepting the model's proposal, the application checks that the flag agrees with the citation list:
+
+| Proposed `sufficient_evidence` | Required citations |
+| --- | --- |
+| `true` | At least one citation identifier. |
+| `false` | No citation identifiers. |
+
+The application checks this consistency but doesn't replace the flag with its own evidence judgment.
+
+### Answerable and unanswerable summary groups
+
+The answer summary groups cases by `expected_sufficient_evidence`:
+
+- **Answerable:** The expected flag is `true`.
+- **Unanswerable:** The expected flag is `false`.
+
+It doesn't use `expect_empty` or `category` to choose these groups.
+
+In the current dataset, cases expecting sufficient evidence have `expect_empty: false`, and expected-empty cases
+expect insufficient evidence. However, the dataset model doesn't require these fields to agree.
+
+See [Evaluation framework reference](/docs/reference/evaluation-framework-reference) for the definitions of
+`expected_sufficient_evidence`, `expect_empty`, and `category`.
 
 ## Citation behavior
 
@@ -138,16 +175,30 @@ Each score is an integer from 0 through 2. A review passes only when every score
 | Unsupported details | No meaningful unsupported claims or details. | Minor unsupported details. | Major unsupported claims or details. |
 | Focus / relevance | Directly answers the question with relevant context. | Answers the question but includes unnecessary digressions. | Mostly off topic or doesn’t address the question. |
 
-The project stores the scores in `data/evaluation/answer_qualitative_review.json`.
-`rag_service.commands.report_qualitative_answers` doesn't assign the scores. It checks that the review matches
-the saved answer run, then writes `data/evaluation/answer_qualitative_review.md`.
+### Review files
 
-The review matches the run when the dataset ID, dataset version, answer-run timestamp, and generation model agree.
-The timestamps must identify the same moment; their string formatting can differ.
+Reviewers save their scores in `data/evaluation/answer_qualitative_review.json`.
 
-The reviewed case IDs must match exactly those selected cases in the saved answer report. Missing and extra case IDs
-both fail validation. [Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists those
-match fields. `reviewed_at` records when the reviewer wrote the scores. It isn't part of the match.
+The `rag_service.commands.report_qualitative_answers` command validates that file against the saved answer run, then writes
+`data/evaluation/answer_qualitative_review.md`. It doesn't assign scores.
+
+### Matching the review to the answer run
+
+The following values must agree between the review file and the saved answer report:
+
+- Dataset ID.
+- Dataset version.
+- Answer-run timestamp.
+- Generation model.
+
+Timestamps must identify the same moment, but their string formatting can differ.
+
+Reviewed case IDs must match exactly the cases selected for human review: those with `expected_answer.expected_sufficient_evidence: true`,
+including cases that failed the structural checks. Missing or extra case IDs fail validation.
+
+`reviewed_at` records when the reviewer wrote the scores. It isn't used to match the review to the answer run.
+
+See [Evaluation framework reference](/docs/reference/evaluation-framework-reference) for the matching fields.
 
 ## Human review summary
 
