@@ -1,3 +1,4 @@
+import hashlib
 from secrets import compare_digest
 from typing import Annotated
 
@@ -22,6 +23,10 @@ class APIAuthenticationConfigurationError(RuntimeError):
     """Raised when API authentication is not configured."""
 
 
+def _api_key_digest(value: str) -> bytes:
+    return hashlib.sha256(value.encode("utf-8")).digest()
+
+
 def require_api_key(
     api_key: Annotated[str | None, Security(api_key_header)],
 ) -> None:
@@ -37,8 +42,8 @@ def require_api_key(
         )
 
     if api_key is None or not compare_digest(
-        api_key.encode("utf-8"),
-        configured_key.encode("utf-8"),
+        _api_key_digest(api_key),
+        _api_key_digest(configured_key),
     ):
         raise InvalidAPIKeyError(
             "A valid API key is required."
