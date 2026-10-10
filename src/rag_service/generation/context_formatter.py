@@ -1,38 +1,50 @@
+import json
 from collections.abc import Sequence
 
 from rag_service.generation.models import ContextSource
 
-
-def format_context_source(source: ContextSource) -> str:
-    """Format one context source for inclusion in a model prompt."""
-
-    lines = [
-        f"[SOURCE {source.citation_id}]",
-        f"Title: {source.chunk.title}",
-    ]
-
-    if source.chunk.heading_path:
-        lines.append(
-            f"Heading: {' > '.join(source.chunk.heading_path)}"
-        )
-
-    lines.extend(
-        [
-            "Content:",
-            source.chunk.text,
-            f"[END SOURCE {source.citation_id}]",
-        ]
-    )
-
-    return "\n".join(lines)
+SourceRecord = dict[str, str | list[str]]
 
 
-def format_context_sources(
+def source_record(source: ContextSource) -> SourceRecord:
+    """Return the source fields that are sent to the language model."""
+
+    return {
+        "citation_id": source.citation_id,
+        "title": source.chunk.title,
+        "heading_path": list(source.chunk.heading_path),
+        "content": source.chunk.text,
+    }
+
+
+def serialize_json(value: object) -> str:
+    """Serialize a prompt value with the shared JSON settings."""
+
+    return json.dumps(value, ensure_ascii=False)
+
+
+def serialize_context_sources(
     sources: Sequence[ContextSource],
 ) -> str:
-    """Format ordered context sources for inclusion in a model prompt."""
+    """Serialize ordered sources exactly as they appear in the user message."""
 
-    return "\n\n".join(
-        format_context_source(source)
-        for source in sources
+    return serialize_json(
+        [source_record(source) for source in sources]
+    )
+
+
+def serialize_user_message(
+    *,
+    question: str,
+    sources: Sequence[ContextSource],
+) -> str:
+    """Serialize the question and sources as one JSON user message."""
+
+    return serialize_json(
+        {
+            "question": question,
+            "sources": [
+                source_record(source) for source in sources
+            ],
+        }
     )

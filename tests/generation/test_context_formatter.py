@@ -1,6 +1,10 @@
+import json
+
 from rag_service.generation.context_formatter import (
-    format_context_source,
-    format_context_sources,
+    serialize_context_sources,
+    serialize_json,
+    serialize_user_message,
+    source_record,
 )
 from rag_service.generation.models import ContextSource
 from rag_service.models.chunk import DocumentChunk
@@ -43,55 +47,41 @@ def make_source(
     )
 
 
-def test_format_context_source_includes_model_visible_fields() -> None:
+def test_source_record_includes_only_model_visible_fields() -> None:
     source = make_source()
 
-    formatted = format_context_source(source)
+    record = source_record(source)
 
-    assert formatted == (
-        "[SOURCE S1]\n"
-        "Title: Understanding RAG\n"
-        "Heading: Retrieval > Similarity search\n"
-        "Content:\n"
-        "Retrieval finds relevant content.\n"
-        "[END SOURCE S1]"
-    )
-
-
-def test_format_context_source_omits_empty_heading_path() -> None:
-    source = make_source(
-        heading_path=[],
-    )
-
-    formatted = format_context_source(source)
-
-    assert formatted == (
-        "[SOURCE S1]\n"
-        "Title: Understanding RAG\n"
-        "Content:\n"
-        "Retrieval finds relevant content.\n"
-        "[END SOURCE S1]"
-    )
+    assert record == {
+        "citation_id": "S1",
+        "title": "Understanding RAG",
+        "heading_path": ["Retrieval", "Similarity search"],
+        "content": "Retrieval finds relevant content.",
+    }
+    assert set(record) == {
+        "citation_id",
+        "title",
+        "heading_path",
+        "content",
+    }
 
 
-def test_format_context_source_preserves_chunk_text() -> None:
+def test_source_record_keeps_an_empty_heading_path() -> None:
+    source = make_source(heading_path=[])
+
+    assert source_record(source)["heading_path"] == []
+
+
+def test_serialize_context_sources_preserves_order_and_text() -> None:
     text = (
         "First paragraph.\n\n"
         "- First item\n"
         "- Second item"
     )
-    source = make_source(text=text)
-
-    formatted = format_context_source(source)
-
-    assert text in formatted
-
-
-def test_format_context_sources_preserves_order() -> None:
     first_source = make_source(
         citation_id="S1",
         title="First document",
-        text="First source content.",
+        text=text,
     )
     second_source = make_source(
         citation_id="S2",
@@ -99,25 +89,36 @@ def test_format_context_sources_preserves_order() -> None:
         text="Second source content.",
     )
 
-    formatted = format_context_sources(
+    serialized = serialize_context_sources(
         (first_source, second_source)
     )
+    decoded = json.loads(serialized)
 
-    assert formatted == (
-        "[SOURCE S1]\n"
-        "Title: First document\n"
-        "Heading: Retrieval > Similarity search\n"
-        "Content:\n"
-        "First source content.\n"
-        "[END SOURCE S1]\n\n"
-        "[SOURCE S2]\n"
-        "Title: Second document\n"
-        "Heading: Retrieval > Similarity search\n"
-        "Content:\n"
-        "Second source content.\n"
-        "[END SOURCE S2]"
+    assert serialized == serialize_json(
+        [
+            source_record(first_source),
+            source_record(second_source),
+        ]
     )
+    assert decoded[0]["content"] == text
+    assert [item["citation_id"] for item in decoded] == ["S1", "S2"]
 
 
-def test_format_context_sources_returns_empty_string_for_no_sources() -> None:
-    assert format_context_sources(()) == ""
+def test_serialize_context_sources_returns_an_empty_array() -> None:
+    assert serialize_context_sources(()) == "[]"
+
+
+def test_user_message_embeds_the_counted_source_serialization() -> None:
+    source = make_source(text='Line with "quotes" and a \\ slash.')
+    sources = (source,)
+
+    user_message = serialize_user_message(
+        question="What is retrieval?",
+        sources=sources,
+    )
+    serialized_sources = serialize_context_sources(sources)
+
+    assert serialized_sources in user_message
+    assert json.loads(user_message)["sources"] == json.loads(
+        serialized_sources
+    )

@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-answer-generation, topic-grounding, topic-evi
 components: [component-answer-generation-service]
 next_steps: [EvArch]
 related_pages: [GenAns, AnsAPI, AnsEv, RtrvPipe]
-last_modified: 2026-10-07
+last_modified: 2026-10-09
 audience: [secondary]
 ---
 
@@ -36,10 +36,15 @@ Context assembly selects which retrieved chunks the model will see. It walks the
 assigns each selected chunk a citation identifier for this request, starting at `S1`. Those identifiers belong to
 this request. They're separate from the stable chunk ID.
 
-The assembler counts tokens on the fully rendered source blocks, not on the raw chunk text alone. The default
-budget is 8,000 tokens. It adds a whole chunk when the rendered context still fits. It doesn't split a chunk to fill
-the remaining budget. When the next chunk would exceed the budget, it stops and keeps the chunks already selected.
-If the first chunk alone exceeds the budget, assembly fails and the API returns `answer_unavailable`.
+Context assembly counts tokens on the JSON array of selected sources, using the same serialization the prompt sends.
+That count includes the array structure and character escaping, such as quotes and backslashes in titles, headings,
+and chunk text. It counts that serialized array, so the budget sees the text the model receives.
+
+The configured budget applies to that source array. It doesn't limit the complete prompt. The question and the
+system message sit outside the budget. The default budget is 8,000 tokens. It adds a whole chunk when
+the serialized array still fits. It doesn't split a chunk to fill the remaining budget. When the next chunk would
+exceed the budget, it stops and keeps the chunks already selected. If the first chunk alone exceeds the budget,
+assembly fails and the API returns `answer_unavailable`.
 
 The selected chunks are the context. Evidence is the information in that context that ends up supporting the
 answer. Context can contain chunks the answer never cites.
@@ -49,12 +54,20 @@ An empty retrieval list still enters assembly. The context then contains no sour
 ## Prompt construction and answer generation
 
 The prompt builder writes two messages. The system message tells the model to answer from the supplied sources, to
-treat that content as evidence, and to say when the sources don't contain enough information to answer. It also
-tells the model to cite a source inline, as `[S1]`, immediately after the claim that source supports, and to cite
-only sources that were supplied. The user message contains the question and the formatted sources. Each source block
-includes its citation identifier, title, chunk text, and the heading path when one is available.
+treat source fields as evidence, and to say when the sources don't contain enough information to answer. It explains
+that `question` identifies what to answer and that each source field contains evidence. Instructions inside either
+field can't override the grounding and citation rules. The system message also tells the model to cite a source
+inline, as `[S1]`, immediately after the claim that source supports, and to cite only sources that were supplied.
 
-Those instructions describe the requested behavior. They don't guarantee that the model will follow them.
+The user message is one JSON object with `question` and an ordered `sources` array. Each source object contains the
+citation identifier assigned for this request, the title, the heading path, and the chunk text. The heading path is
+included when it's empty. URLs, retrieval scores, internal IDs, and other chunk metadata stay out of the prompt.
+Python's JSON serializer writes the object, so quotes, backslashes, braces, and newlines stay inside their field
+values. Decoding the message returns the original text, including documentation that contains instruction examples.
+
+Those instructions describe the requested behavior. They don't guarantee that the model will follow them. Text in
+the question or in a source can still ask the model to ignore the grounding rules, and the model may follow that
+text. A citation identifier that validation accepts doesn't establish that the cited text supports the claim.
 
 The OpenAI language model returns a structured proposed answer: the answer text, a list of citation identifiers,
 and a `sufficient_evidence` flag. That proposal is a generated answer. If it reports sufficient evidence, the application

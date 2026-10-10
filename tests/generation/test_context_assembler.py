@@ -3,7 +3,7 @@ import pytest
 from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.context_assembler import ContextAssembler
 from rag_service.generation.context_formatter import (
-    format_context_sources,
+    serialize_context_sources,
 )
 from rag_service.generation.errors import ContextBudgetError
 from rag_service.models.chunk import DocumentChunk
@@ -78,7 +78,7 @@ def test_assemble_returns_empty_context_for_no_results() -> None:
     context = assembler.assemble([])
 
     assert context.sources == ()
-    assert context.token_count == 0
+    assert context.token_count == len("[]")
 
 
 def test_assemble_preserves_retrieval_order_and_assigns_citation_ids() -> None:
@@ -140,7 +140,7 @@ def test_assemble_reports_tokens_for_complete_formatted_context() -> None:
 
     context = assembler.assemble(results)
 
-    formatted_context = format_context_sources(
+    formatted_context = serialize_context_sources(
         context.sources
     )
 
@@ -239,3 +239,72 @@ def test_assemble_preserves_empty_heading_path() -> None:
     context = assembler.assemble([result])
 
     assert context.sources[0].chunk.heading_path == []
+
+
+def test_assemble_counts_json_escaping_at_the_budget_boundary() -> None:
+    quoted_text = '"quoted" \\ slash'
+    result = make_result(
+        chunk_id="quoted",
+        text=quoted_text,
+        score=0.95,
+    )
+    sizing_assembler = ContextAssembler(
+        token_counter=CharacterTokenCounter(),
+        max_context_tokens=10_000,
+    )
+    serialized_tokens = sizing_assembler.assemble(
+        [result]
+    ).token_count
+    serialized = serialize_context_sources(
+        sizing_assembler.assemble([result]).sources
+    )
+
+    assert serialized_tokens == len(serialized)
+    assert serialized_tokens > len(quoted_text)
+
+    fitting_assembler = ContextAssembler(
+        token_counter=CharacterTokenCounter(),
+        max_context_tokens=serialized_tokens,
+    )
+    assert len(fitting_assembler.assemble([result]).sources) == 1
+
+    with pytest.raises(ContextBudgetError) as exc_info:
+        ContextAssembler(
+            token_counter=CharacterTokenCounter(),
+            max_context_tokens=serialized_tokens - 1,
+        ).assemble([result])
+
+    assert exc_info.value.required_tokens == serialized_tokens
+    assert exc_info.value.budget_tokens == serialized_tokens - 1
+
+
+def test_assemble_drops_a_source_whose_escaped_form_exceeds_the_budget() -> None:
+    first_result = make_result(
+        chunk_id="first",
+        text="Short.",
+        score=0.95,
+    )
+    second_result = make_result(
+        chunk_id="second",
+        text='"' * 12,
+        score=0.88,
+    )
+    sizing_assembler = ContextAssembler(
+        token_counter=CharacterTokenCounter(),
+        max_context_tokens=10_000,
+    )
+    first_tokens = sizing_assembler.assemble(
+        [first_result]
+    ).token_count
+    raw_increment = len(second_result.chunk.text)
+    budget_for_raw_text = first_tokens + raw_increment
+
+    context = ContextAssembler(
+        token_counter=CharacterTokenCounter(),
+        max_context_tokens=budget_for_raw_text,
+    ).assemble([first_result, second_result])
+
+    assert [source.chunk.chunk_id for source in context.sources] == [
+        "first"
+    ]
+    assert context.token_count == first_tokens

@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from rag_service.generation.answer_generator import AnswerGenerator
@@ -123,8 +125,11 @@ def test_answer_generator_returns_only_cited_sources() -> None:
     assert result.sources[0].chunk is second.chunk
 
     assert language_model.prompt is not None
-    assert "[SOURCE S1]" in language_model.prompt.user_message
-    assert "[SOURCE S2]" in language_model.prompt.user_message
+    payload = json.loads(language_model.prompt.user_message)
+    assert [source["citation_id"] for source in payload["sources"]] == [
+        "S1",
+        "S2",
+    ]
 
 
 def test_answer_generator_returns_insufficient_answer_without_sources() -> None:
@@ -148,9 +153,8 @@ def test_answer_generator_returns_insufficient_answer_without_sources() -> None:
     assert result.sufficient_evidence is False
 
     assert language_model.prompt is not None
-    assert language_model.prompt.user_message.endswith(
-        "Sources:\n"
-    )
+    payload = json.loads(language_model.prompt.user_message)
+    assert payload["sources"] == []
 
 
 def test_answer_generator_propagates_invalid_citation() -> None:

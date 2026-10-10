@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from rag_service.errors import ServiceConfigurationError
 from rag_service.generation.context_formatter import (
-    format_context_sources,
+    serialize_context_sources,
 )
 from rag_service.generation.errors import ContextBudgetError
 from rag_service.generation.models import (
@@ -42,7 +42,9 @@ class ContextAssembler:
         """Assemble ranked retrieval results into model context."""
 
         selected_sources: list[ContextSource] = []
-        token_count = 0
+        token_count = self._token_counter.count_tokens(
+            serialize_context_sources(())
+        )
 
         for result in results:
             candidate_source = ContextSource(
@@ -54,7 +56,7 @@ class ContextAssembler:
                 *selected_sources,
                 candidate_source,
             )
-            formatted_context = format_context_sources(
+            formatted_context = serialize_context_sources(
                 candidate_sources
             )
             candidate_token_count = (

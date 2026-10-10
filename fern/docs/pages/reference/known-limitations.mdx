@@ -20,14 +20,16 @@ whether the current implementation fits your content, integration, and quality r
 
 ### WordPress is the only implemented connector
 
-The core pipeline uses a platform-neutral document model, but WordPress is the only implemented connector. Indexing another content source requires
+The core pipeline uses a platform-neutral document model, but WordPress is the only implemented connector. Indexing another content
+source requires
 a connector that maps its content into that model.
 
 See [Indexing pipeline](/docs/architecture/indexing-pipeline) for the connector's role.
 
 ### Source changes require an indexing run
 
-Publishing, updating, or unpublishing WordPress content doesn't automatically refresh the index. Retrieval and citations can reflect older content
+Publishing, updating, or unpublishing WordPress content doesn't automatically refresh the index. Retrieval and citations can reflect
+older content
 until an indexing run completes.
 
 Follow [Re-index and update content](/docs/index-content/re-index-and-update-content) after source changes.
@@ -65,8 +67,9 @@ See [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) for the measurem
 
 ### Answer context has a fixed retrieval depth and token budget
 
-The answer endpoint retrieves up to five chunks. Clients can't increase that limit. The context assembler keeps whole chunks in rank order
-and stops when the next chunk exceeds the token budget. This can leave useful evidence out of the model's context.
+The answer endpoint retrieves up to five chunks. Clients can't increase that limit. Context assembly keeps whole chunks in rank order
+and stops when the next serialized source array exceeds the token budget. The budget counts that JSON array, including escaping and structure.
+It doesn't limit the question or the system message. This can leave useful evidence out of the model's context.
 
 If the first chunk exceeds the budget, the request fails with `answer_unavailable`. Increasing the configured budget can address that constraint,
 but doesn't increase retrieval depth.
@@ -80,6 +83,15 @@ Citation validation checks that citation identifiers match the supplied context.
 whether the answer is complete, or whether the model correctly reports sufficient evidence.
 
 Use [Answer evaluation](/docs/evaluate/answer-evaluation) to assess support, completeness, unsupported details, and focus through human review.
+
+### Source text can still steer the model
+
+The user message is JSON, so quotes, braces, and fake source boundaries in a question or chunk stay inside field values. They don't add sources
+or fields to the parsed message. The service leaves documentation text intact, including passages that contain instructions or code examples.
+
+The model can still follow instructions that appear in those fields, such as a request to ignore the grounding rules. The service doesn't run a
+separate check that detects or removes that text. A citation identifier that matches the supplied context still doesn't show that the cited
+passage supports the claim.
 
 ## Service health checks
 
