@@ -90,3 +90,12 @@ Invalid timeout or retry values stop settings load before the API startup check:
 
 The diagnostic names the setting and its accepted range without printing the supplied value. Startup doesn't
 contact Voyage, OpenAI, Qdrant, or WordPress to test these settings.
+
+## Client cleanup
+
+Search and answer open Voyage, Qdrant, and OpenAI clients on the first request that needs them.
+Startup checks local settings and the chunk file, and it leaves those clients unopened.
+
+When the API process stops, it closes the clients that search or answer created.
+A close failure writes one error line with `operation=shutdown` and `reason=cleanup_failed`.
+The line names the operation and the reason. It leaves out the exception text, the traceback, and any provider response.

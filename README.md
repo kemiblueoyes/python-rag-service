@@ -383,6 +383,11 @@ Qdrant search and upsert calls aren't retried. Invalid timeout or retry values
 stop settings load. The diagnostic names the setting and the accepted range,
 and it doesn't print the supplied value.
 
+Search and answer open Voyage, Qdrant, and OpenAI clients on the first request
+that needs them. When the API process stops, it closes those clients. A close
+failure writes one error line with `operation=shutdown` and
+`reason=cleanup_failed`. The line leaves out the exception text.
+
 Open the health-check endpoint:
 
 ```text
@@ -745,9 +750,9 @@ OPENAI_API_KEY=your-openai-api-key
 
 Set `GENERATION_ENABLED=false` to start the API and serve search without `OPENAI_API_KEY`. `POST /v1/answer` then returns `503` with `answer_unavailable`.
 
-`GENERATION_CONTEXT_BUDGET_TOKENS` applies to the fully rendered evidence blocks. The workflow includes whole sources in retrieval order. It doesn't truncate chunks to fit the budget.
+The user message is a JSON object with `question` and an ordered `sources` array. `GENERATION_CONTEXT_BUDGET_TOKENS` counts that sources array, including its structure and character escaping. The question and the system message sit outside the count. The workflow keeps whole sources in retrieval order, stops when the next source would exceed the budget, and doesn't split a chunk to fill the remaining tokens.
 
-Citation identifiers such as `S1` and `S2` are local to one answer-generation request. Validation ensures that every citation refers to evidence supplied to the model. The final response then renumbers cited sources sequentially by first appearance so clients receive compact citation sequences without gaps.
+Citation identifiers such as `S1` and `S2` are local to one answer-generation request. Validation checks that every citation identifier refers to a source supplied to the model. A matching identifier doesn't show that the cited text supports the claim. The final response then renumbers cited sources sequentially by first appearance so clients receive compact citation sequences without gaps.
 
 ### Live answer-generation smoke test
 
@@ -986,7 +991,7 @@ Evaluation datasets live in `evaluation/datasets/` and generated evaluation arti
 
 ## Documentation
 
-Documentation for the Python RAG Service is currently being built. The public pages live in `fern/docs` and are authored as MDX with Fern, which publishes the documentation site (coming soon). The set covers installation, configuration, indexing, search, grounded answers, architecture, evaluation, and the API. Many of those pages are still drafts.
+The public pages live in `fern/docs` and are authored as MDX with Fern. Fern publishes them at <https://python-rag-service.docs.buildwithfern.com/>. The set covers installation, configuration, indexing, search, grounded answers, architecture, evaluation, and the API. The pages under `fern/docs/pages` are published.
 
 `doc-infrastructure/` defines how those pages are written.
 
@@ -1053,25 +1058,29 @@ on other branches and pull requests.
 
 ### Publish documentation
 
-On pushes to `main`, the `CI` workflow runs tests and production documentation
-validation, publishes that same commit to
-<https://python-rag-service.docs.buildwithfern.com/>, and checks the live links.
+On pushes to `main`, the `CI` workflow runs the test job, the WordPress MySQL
+rate-limit job, and the locked-dependency audit. The test job includes Ruff,
+pytest, and production documentation validation. After those three jobs succeed,
+the workflow publishes that same commit to
+<https://python-rag-service.docs.buildwithfern.com/> and checks the live links.
 
-Every successful push to `main` republishes the documentation, including pushes
-that only change code.
+A failure in the test job, the WordPress rate-limit job, or the dependency audit
+stops publication. A commit that only changes code still publishes when those
+jobs succeed.
 
-Before enabling publication, create a Fern token for the `doc-landscape`
-organization with `fern token` and add it to GitHub Actions as the repository
-secret `FERN_TOKEN` under **Settings > Secrets and variables > Actions**.
+Publication uses a Fern token for the `doc-landscape` organization. Create it
+with `fern token` and store it in GitHub Actions as the repository secret
+`FERN_TOKEN` under **Settings > Secrets and variables > Actions**.
 
 To publish without a new commit, open **Actions > CI > Run workflow** and select
-`main`. The manual run repeats tests and validation before publishing. Pull
-requests and other branches run validation only.
+`main`. The manual run repeats the same jobs before publishing. Pull requests
+and other branches run the test, rate-limit, and audit jobs, and they don't
+publish.
 
 The workflow installs the Fern version from `fern/fern.config.json` and uses the
-Python and documentation lint lockfiles. Validation failure stops publication.
-A missing token fails the publish job with a setup message. Runs on the same
-branch are serialized, and a superseded commit is skipped before publishing.
+Python and documentation lint lockfiles. A missing token fails the publish job
+with a setup message. Runs on the same branch are serialized, and a superseded
+commit is skipped before publishing.
 
 The `Documentation link check` workflow runs after publication, every Monday,
 and on manual request. A link-check failure occurs after publication and does
