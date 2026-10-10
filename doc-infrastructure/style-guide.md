@@ -270,7 +270,7 @@ Format JSON for readability when displaying a response in the terminal. Match th
 
 | Sample type | Format |
 |---|---|
-| cURL, when Python is a prerequisite | Append `\| python -m json.tool` |
+| cURL, when Python is a prerequisite | Append `\| python3 -m json.tool` |
 | Python using `requests` or `httpx` | `print(json.dumps(response.json(), indent=2))` |
 | Python using `urllib` | `payload = json.loads(response.read().decode())`, followed by `print(json.dumps(payload, indent=2))` |
 

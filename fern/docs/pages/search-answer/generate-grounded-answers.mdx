@@ -10,7 +10,7 @@ components: [component-answer-generation-service, component-public-api]
 prerequisites: [ConfSrv, IndxWP, Auth]
 next_steps: [IntApp]
 related_pages: [AnsAPI, AnsGenCit, SrchDoc]
-last_modified: 2026-10-09
+last_modified: 2026-10-10
 audience: [primary]
 ---
 
@@ -40,7 +40,7 @@ curl -s -X POST http://127.0.0.1:8000/v1/answer \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-long-random-api-key" \
   -d '{"query": "Why does inconsistent terminology cause retrieval failures?"}' \
-  | python -m json.tool
+  | python3 -m json.tool
 ```
 
 ```python Python
@@ -84,10 +84,10 @@ curl -s -X POST http://127.0.0.1:8000/v1/answer \
   -d '{
     "query": "Why does inconsistent terminology cause retrieval failures?",
     "filters": {
-      "source": "wordpress"
+      "content_type": "post"
     }
   }' \
-  | python -m json.tool
+  | python3 -m json.tool
 ```
 
 ```python Python
@@ -97,7 +97,7 @@ from urllib.request import Request, urlopen
 body = json.dumps({
     "query": "Why does inconsistent terminology cause retrieval failures?",
     "filters": {
-        "source": "wordpress",
+        "content_type": "post",
     },
 }).encode()
 

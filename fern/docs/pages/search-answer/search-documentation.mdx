@@ -10,7 +10,7 @@ components: [component-retrieval-service, component-public-api]
 prerequisites: [IndxWP, Auth]
 next_steps: [GenAns, IntApp]
 related_pages: [SrchAPI, RtrvPipe, TutSrch]
-last_modified: 2026-10-09
+last_modified: 2026-10-10
 audience: [primary]
 ---
 
@@ -35,7 +35,7 @@ curl -s -X POST http://127.0.0.1:8000/v1/search \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-long-random-api-key" \
   -d '{"query": "How does metadata improve retrieval?"}' \
-  | python -m json.tool
+  | python3 -m json.tool
 ```
 
 ```python Python
@@ -93,7 +93,7 @@ curl -s -X POST http://127.0.0.1:8000/v1/search \
     },
     "limit": 5
   }' \
-  | python -m json.tool
+  | python3 -m json.tool
 ```
 
 ```python Python

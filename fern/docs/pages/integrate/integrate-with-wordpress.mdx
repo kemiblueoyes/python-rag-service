@@ -9,7 +9,7 @@ topics: [topic-integration, topic-api, topic-authentication]
 components: [component-wordpress-client, component-public-api]
 prerequisites: [Auth, IndxWP]
 related_pages: [IntApp, Errs, SrchDoc, GenAns]
-last_modified: 2026-10-09
+last_modified: 2026-10-10
 audience: [primary]
 ---
 
@@ -355,7 +355,7 @@ server. On a site that uses the default REST prefix:
 curl -s -X POST https://your-wordpress-site.example/wp-json/python-rag-service/v1/search \
   -H "Content-Type: application/json" \
   -d '{"query": "How does metadata improve retrieval?"}' \
-  | python -m json.tool
+  | python3 -m json.tool
 ```
 
 A working proxy returns HTTP 200 and the `POST /v1/search` body. Missing constants return HTTP 500

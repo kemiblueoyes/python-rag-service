@@ -10,7 +10,7 @@ components: [component-evaluation-framework]
 prerequisites: [IndxWP]
 next_steps: [RecEvRes]
 related_pages: [RtrvlEv, AnsEv, EvArch, HowEv, EvalRef]
-last_modified: 2026-10-07
+last_modified: 2026-10-10
 audience: [secondary]
 ---
 
@@ -25,9 +25,9 @@ report.
 
 ## Prerequisites
 
-**[Configure the service](/docs/get-started/configure-the-service)**: Configure Voyage and Qdrant in `.env`. Answer evaluation
+- **[Configure the service](/docs/get-started/configure-the-service)**: Configure Voyage and Qdrant in `.env`. Answer evaluation
 also requires OpenAI configuration.
-**[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index the evaluation queries search.
+- **[Index WordPress content](/docs/index-content/index-wordpress-content)**: Build the index the evaluation queries search.
 The indexed collection must match `QDRANT_COLLECTION`. The local chunk file used by BM25 must also be available at
 `LEXICAL_CORPUS_PATH`, which defaults to data/wordpress-chunks.json.
 

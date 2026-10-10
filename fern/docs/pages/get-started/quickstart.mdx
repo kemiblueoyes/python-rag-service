@@ -9,7 +9,7 @@ topics: [topic-installation, topic-configuration, topic-authentication, topic-in
 components: [component-indexing-pipeline, component-retrieval-service, component-public-api]
 next_steps: [SrchDoc, GenAns]
 related_pages: [Instl, ConfSrv, Auth, IndxWP]
-last_modified: 2026-10-08
+last_modified: 2026-10-10
 audience: [primary]
 ---
 
@@ -75,7 +75,7 @@ for each step live on the related pages.
 
     <Tabs>
         <Tab title="Local">
-            Start Qdrant with Docker in its own terminal and leave the container running.
+            Download the Qdrant Docker image:
 
             ```bash
             docker pull qdrant/qdrant
@@ -84,9 +84,9 @@ for each step live on the related pages.
             The example `.env` matches this server: `QDRANT_URL` is `http://localhost:6333`
             and `QDRANT_API_KEY` is empty. A default local Qdrant doesn't check an API key.
 
-            Run this command from a directory outside the project.
-            It creates a `qdrant_storage` folder there and keeps Qdrant's database files
-            out of the repository.
+            In a separate terminal, change to a directory outside the project and run the following
+            command. It starts Qdrant and creates a `qdrant_storage` folder in that directory to store
+            its database files. Leave this terminal open while using the service.
 
             ```bash
             docker run -p 6333:6333 -p 6334:6334 \
@@ -155,7 +155,8 @@ for each step live on the related pages.
     curl -s -X POST http://127.0.0.1:8000/v1/search \
       -H "Content-Type: application/json" \
       -H "X-API-Key: your-long-random-api-key" \
-      -d '{"query": "How does metadata improve retrieval?"}'
+      -d '{"query": "How does metadata improve retrieval?"}' \
+      | python3 -m json.tool
     ```
 
     ## Verification
