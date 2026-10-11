@@ -7,7 +7,7 @@ description: Look up concise definitions for RAG, retrieval, indexing, evaluatio
 lifecycle_status: published
 topics: [topic-terminology]
 max-toc-depth: 3
-last_modified: 2026-10-07
+last_modified: 2026-10-11
 audience: [primary, secondary]
 ---
 
@@ -115,6 +115,12 @@ The retrieved chunks selected and assembled for the language model (LLM) to use 
 
 **Related terms:** [Evidence](#evidence), [Generated answer](#generated-answer), [Retrieved chunk](#retrieved-chunk)
 
+### Context budget
+
+The token limit for source context supplied to the language model. In the Python RAG Service, the budget counts the serialized JSON sources array, including its structure and character escaping. The question and system message are outside that count.
+
+**Related terms:** [Chunk](#chunk), [Context](#context), [Generated answer](#generated-answer)
+
 ## E
 
 ### Embedding
@@ -164,6 +170,16 @@ An answer generated from retrieved documentation and supported by the evidence s
 **Related terms:** [Citation validation](#citation-validation), [Evidence](#evidence), [Generated answer](#generated-answer), [Sufficient evidence](#sufficient-evidence)
 
 ## H
+
+### Health check
+
+A request used to check a service's condition. In the Python RAG Service, GET /health reports whether the API process is running. It doesn't check external providers or the lexical corpus, and doesn't establish that search or answer generation is available.
+
+#### Example
+
+GET /health can succeed while a search request fails because Qdrant is unavailable.
+
+**Related terms:** [Generated answer](#generated-answer), [Retrieval](#retrieval), [Startup validation](#startup-validation)
 
 ### Hybrid retrieval
 
@@ -221,7 +237,39 @@ If four of five evaluated results are relevant, Precision@5 is 0.8.
 
 **Related terms:** [Recall](#recall), [Relevance](#relevance), [Retrieval evaluation](#retrieval-evaluation)
 
+### Prompt injection
+
+Instructions in a question or retrieved content that attempt to override the model's intended behavior. The Python RAG Service uses JSON to keep that text inside field values, but the model can still follow instructions contained in those fields.
+
+#### Example
+
+A retrieved chunk might instruct the model to ignore the grounding rules and produce an answer unrelated to the supplied evidence.
+
+**Related terms:** [Citation validation](#citation-validation), [Context](#context), [Generated answer](#generated-answer), [Unsupported claim](#unsupported-claim)
+
+### Provider client
+
+Code used by the Python RAG Service to communicate with an external provider, such as Voyage, Qdrant, or OpenAI. This differs from a client application that sends requests to the RAG API. The service initializes provider clients when first needed and closes them during API shutdown.
+
+**Related terms:** [Client](#client), [Retry](#retry), [Startup validation](#startup-validation), [Timeout](#timeout)
+
+### Proxy
+
+An intermediary that forwards requests to another service. The WordPress proxy receives Search and Ask requests, validates the query, applies site-wide rate limits, and adds the API key before forwarding an accepted request to the Python RAG Service.
+
+**Related terms:** [Client](#client), [Rate limit](#rate-limit)
+
 ## R
+
+### Rate limit
+
+A restriction on how many requests are allowed during a period. The WordPress client applies separate site-wide limits to Search and Ask requests forwarded to the Python RAG Service. All visitors share each action's allowance.
+
+#### Example
+
+When the Search allowance is full, the WordPress proxy rejects additional Search requests until the next minute.
+
+**Related terms:** [Client](#client), [Proxy](#proxy), [Retry](#retry)
 
 ### Recall
 
@@ -289,7 +337,19 @@ A chunk that remains after the retrieval pipeline has selected the content to re
 
 **Related terms:** [Candidate chunk](#candidate-chunk), [Chunk](#chunk), [Context](#context), [Retrieval](#retrieval), [Support gate](#support-gate)
 
+### Retry
+
+Another attempt to perform an operation after it fails. Provider clients can retry certain failures when retries are enabled. Additional attempts and waiting between them can increase request duration, provider usage, and cost.
+
+**Related terms:** [Provider client](#provider-client), [Rate limit](#rate-limit), [Timeout](#timeout)
+
 ## S
+
+### Startup validation
+
+Checks performed before the API accepts requests. The Python RAG Service checks local configuration and the lexical corpus file. These checks don't contact external providers or establish that search and answer requests will succeed.
+
+**Related terms:** [Health check](#health-check), [Lexical corpus](#lexical-corpus), [Provider client](#provider-client)
 
 ### Sufficient evidence
 
@@ -316,6 +376,14 @@ The retrieval decision that determines whether the reranked candidates adequatel
 A query can retrieve topically relevant candidates but still return no search results when the support gate determines that the candidates don't adequately support the query.
 
 **Related terms:** [Relevance](#relevance), [Reranking](#reranking), [Retrieved chunk](#retrieved-chunk), [Support](#support)
+
+## T
+
+### Timeout
+
+A limit on how long a call or one of its stages can wait before failing. The Python RAG Service applies timeouts to individual provider calls. These settings don't establish an overall deadline for a search or answer request.
+
+**Related terms:** [Provider client](#provider-client), [Retry](#retry)
 
 ## U
 

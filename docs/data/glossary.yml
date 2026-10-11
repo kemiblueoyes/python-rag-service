@@ -499,3 +499,121 @@ terms:
     related_terms:
       - retrieval-evaluation
       - reciprocal-rank-fusion
+
+  - id: context-budget
+    term: Context budget
+    definition: >
+      The token limit for source context supplied to the language model.
+      In the Python RAG Service, the budget counts the serialized JSON
+      sources array, including its structure and character escaping.
+      The question and system message are outside that count.
+    related_terms:
+      - context
+      - chunk
+      - generated-answer
+
+  - id: prompt-injection
+    term: Prompt injection
+    definition: >
+      Instructions in a question or retrieved content that attempt to
+      override the model's intended behavior. The Python RAG Service uses
+      JSON to keep that text inside field values, but the model can still
+      follow instructions contained in those fields.
+    example: >
+      A retrieved chunk might instruct the model to ignore the grounding
+      rules and produce an answer unrelated to the supplied evidence.
+    related_terms:
+      - context
+      - generated-answer
+      - citation-validation
+      - unsupported-claim
+
+  - id: rate-limit
+    term: Rate limit
+    definition: >
+      A restriction on how many requests are allowed during a period.
+      The WordPress client applies separate site-wide limits to Search
+      and Ask requests forwarded to the Python RAG Service. All visitors
+      share each action's allowance.
+    example: >
+      When the Search allowance is full, the WordPress proxy rejects
+      additional Search requests until the next minute.
+    related_terms:
+      - client
+      - proxy
+      - retry
+
+  - id: timeout
+    term: Timeout
+    definition: >
+      A limit on how long a call or one of its stages can wait before
+      failing. The Python RAG Service applies timeouts to individual
+      provider calls. These settings don't establish an overall deadline
+      for a search or answer request.
+    related_terms:
+      - provider-client
+      - retry
+
+  - id: retry
+    term: Retry
+    definition: >
+      Another attempt to perform an operation after it fails. Provider
+      clients can retry certain failures when retries are enabled.
+      Additional attempts and waiting between them can increase request
+      duration, provider usage, and cost.
+    related_terms:
+      - provider-client
+      - timeout
+      - rate-limit
+
+  - id: startup-validation
+    term: Startup validation
+    definition: >
+      Checks performed before the API accepts requests. The Python RAG
+      Service checks local configuration and the lexical corpus file.
+      These checks don't contact external providers or establish that
+      search and answer requests will succeed.
+    related_terms:
+      - lexical-corpus
+      - health-check
+      - provider-client
+
+  - id: health-check
+    term: Health check
+    definition: >
+      A request used to check a service's condition. In the Python RAG
+      Service, GET /health reports whether the API process is running.
+      It doesn't check external providers or the lexical corpus, and
+      doesn't establish that search or answer generation is available.
+    example: >
+      GET /health can succeed while a search request fails because
+      Qdrant is unavailable.
+    related_terms:
+      - startup-validation
+      - retrieval
+      - generated-answer
+
+  - id: proxy
+    term: Proxy
+    definition: >
+      An intermediary that forwards requests to another service.
+      The WordPress proxy receives Search and Ask requests, validates
+      the query, applies site-wide rate limits, and adds the API key
+      before forwarding an accepted request to the Python RAG Service.
+    related_terms:
+      - client
+      - rate-limit
+
+  - id: provider-client
+    term: Provider client
+    definition: >
+      Code used by the Python RAG Service to communicate with an external
+      provider, such as Voyage, Qdrant, or OpenAI. This differs from a
+      client application that sends requests to the RAG API. The service
+      initializes provider clients when first needed and closes them
+      during API shutdown.
+    related_terms:
+      - client
+      - timeout
+      - retry
+      - startup-validation

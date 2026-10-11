@@ -9,19 +9,25 @@ Client
 Connector
 Content source
 Context
+Context budget
 Embedding
 Evaluation dataset
 Evidence
 Expected-empty
 Generated answer
 Grounded answer
+Health check
 Hybrid retrieval
 Indexing
 Insufficient evidence
 Lexical corpus
 Precision
+Prompt injection
+Provider client
+Proxy
 Pydantic
 pytest
+Rate limit
 Recall
 Reciprocal rank
 Reciprocal rank fusion (RRF)
@@ -31,8 +37,11 @@ Retrieval
 Retrieval evaluation
 Retrieval-augmented generation (RAG)
 Retrieved chunk
+Retry
+Startup validation
 Sufficient evidence
 Support
 Support gate
+Timeout
 Unsupported claim
 Vector retrieval
