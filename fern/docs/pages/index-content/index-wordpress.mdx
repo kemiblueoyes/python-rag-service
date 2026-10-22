@@ -10,7 +10,7 @@ components: [component-wordpress-connector, component-indexing-pipeline]
 prerequisites: [ConfSrv]
 next_steps: [Auth]
 related_pages: [IndxPipe, RIndxUpdt, TutIndx]
-last_modified: 2026-10-09
+last_modified: 2026-10-22
 audience: [primary, secondary]
 ---
 
@@ -55,11 +55,15 @@ Start the API after indexing finishes. It reads that chunk file during startup.
 
 ### Completion and failures
 
-Let the command finish. It writes the document and chunk files only after vector synchronization returns.
+Let the command finish. It publishes the chunk file and then the document snapshot only after vector synchronization
+returns. Each file is replaced only after its new copy has been fully written. The document snapshot is the
+checkpoint for a completed run.
 
 - **Missing source URL:** If `WORDPRESS_BASE_URL` is empty, the command stops without writing either file.
 - **Provider failure:** If WordPress, Voyage, or Qdrant fails before synchronization returns, the files remain from the
 last successful run—or don't exist yet if this is the first run.
+- **Publication failure:** If saving a file fails, the document snapshot remains the last completed run. The next run
+retries the pending changes. Neither destination is left partially written.
 
 <Note>
 Use a full rebuild for the first index and after changing the embedding model, embedding dimension, chunking rules, or

@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "policy_id": "doc-landscape-retrieval-quality",
+  "policy_version": 1,
+  "status": "ready_for_workflow_integration",
+  "scope": "Initial local portfolio limits; three reviewed runs do not establish long-term variability.",
+  "baseline_file": "approved-retrieval-baseline.json",
+  "metric_rules": {
+    "mean_precision_at_k": {
+      "minimum": 0.9,
+      "maximum_decline": 0.03
+    },
+    "mean_recall_at_k": {
+      "minimum": 0.7,
+      "maximum_decline": 0.03
+    },
+    "mean_reciprocal_rank": {
+      "minimum": 0.85,
+      "maximum_decline": 0.05
+    },
+    "hit_rate_at_k": {
+      "minimum": 1.0,
+      "maximum_decline": 0.0
+    },
+    "unanswerable_accuracy": {
+      "minimum": 1.0,
+      "maximum_decline": 0.0
+    }
+  },
+  "calculation": {
+    "metric_source": "summary",
+    "decline": "baseline - observed",
+    "minimum_pass": "observed >= minimum",
+    "decline_pass": "baseline - observed <= maximum_decline",
+    "all_rules_required": true,
+    "round_before_comparison": false,
+    "equality_passes": true,
+    "improvements_allowed": true,
+    "arithmetic": "Use decimal arithmetic on the serialized numeric values. The equivalent observed >= baseline - maximum_decline comparison must pass at equality; binary floating-point subtraction must not cause a boundary failure."
+  },
+  "comparability": {
+    "required_equal_fields": [
+      "dataset_id",
+      "dataset_version",
+      "k",
+      "summary.total_cases",
+      "summary.answerable_cases",
+      "summary.unanswerable_cases",
+      "retrieval_configuration.collection",
+      "retrieval_configuration.k",
+      "retrieval_configuration.embedding_provider",
+      "retrieval_configuration.embedding_model",
+      "retrieval_configuration.embedding_dimension",
+      "retrieval_configuration.vector_database",
+      "retrieval_configuration.lexical_corpus_path",
+      "retrieval_configuration.reranking_provider",
+      "retrieval_configuration.reranking_model",
+      "retrieval_configuration.retrieval_vector_candidate_depth",
+      "retrieval_configuration.retrieval_lexical_candidate_depth",
+      "retrieval_configuration.retrieval_fused_candidate_depth",
+      "retrieval_configuration.retrieval_rrf_k",
+      "retrieval_configuration.retrieval_support_cutoff"
+    ],
+    "configuration_fields": [
+      "collection",
+      "k",
+      "embedding_provider",
+      "embedding_model",
+      "embedding_dimension",
+      "vector_database",
+      "lexical_corpus_path",
+      "reranking_provider",
+      "reranking_model",
+      "retrieval_vector_candidate_depth",
+      "retrieval_lexical_candidate_depth",
+      "retrieval_fused_candidate_depth",
+      "retrieval_rrf_k",
+      "retrieval_support_cutoff"
+    ],
+    "missing_metadata_outcome": "needs_review",
+    "mismatch_outcome": "needs_review",
+    "require_unchanged_source_corpus": false,
+    "dataset_label_or_reference_changes": "Require a new dataset version and explicit baseline review."
+  },
+  "completeness": {
+    "required_metrics": [
+      "mean_precision_at_k",
+      "mean_recall_at_k",
+      "mean_reciprocal_rank",
+      "hit_rate_at_k",
+      "unanswerable_accuracy"
+    ],
+    "metric_type": "finite number, excluding booleans",
+    "metric_range": {
+      "minimum": 0,
+      "maximum": 1
+    },
+    "missing_or_null_metric_outcome": "needs_review",
+    "invalid_metric_type_nonfinite_or_out_of_range_outcome": "operational_failure",
+    "precision_coverage_rule": "summary.precision_evaluable_cases == summary.answerable_cases",
+    "incomplete_precision_coverage_outcome": "needs_review",
+    "required_failure_evidence_any_of": [
+      "cases with case_id and boolean passed",
+      "failed_case_ids"
+    ],
+    "missing_failure_evidence_outcome": "needs_review",
+    "inconsistent_case_counts_or_outcomes": "operational_failure"
+  },
+  "known_failure_handling": {
+    "source": "baseline.known_failed_case_ids",
+    "new_failures": "observed_failed_case_ids minus baseline.known_failed_case_ids",
+    "new_failure_outcome": "quality_failed",
+    "show_existing_known_failures": true,
+    "known_failure_resolution_does_not_replace_baseline": true
+  },
+  "outcome_order": [
+    {
+      "outcome": "operational_failure",
+      "when": "Python job failed or report malformed",
+      "route": "evaluation_error",
+      "quality_pass": false
+    },
+    {
+      "outcome": "needs_review",
+      "when": "Required metrics or comparison metadata unavailable, precision coverage incomplete, or dataset/configuration mismatch",
+      "route": "review",
+      "confirmed_regression": false
+    },
+    {
+      "outcome": "quality_failed",
+      "when": "Comparable complete report breaches any metric rule or has a newly failed case",
+      "record_all_breaches": true
+    },
+    {
+      "outcome": "passed",
+      "when": "Comparable fully judged report satisfies every rule and has no newly failed case",
+      "show_known_failures": true
+    }
+  ],
+  "planned_regression_route": {
+    "destination": "jira",
+    "implemented": false,
+    "qualifying_reasons": [
+      "maximum_decline_breached",
+      "new_failed_case"
+    ],
+    "minimum_only_breach_is_regression": false
+  },
+  "outcome_record": {
+    "required_fields": [
+      "indexing_job_id",
+      "evaluation_job_id",
+      "n8n_execution_id",
+      "policy_version",
+      "dataset_version",
+      "report_paths",
+      "reasons"
+    ],
+    "unavailable_context": "Retain the field as null and give a specific reason; never fabricate IDs or paths.",
+    "metric_breach_fields": [
+      "metric",
+      "baseline",
+      "observed",
+      "minimum",
+      "decline_limit",
+      "breached_rule"
+    ],
+    "breached_rule_values": [
+      "minimum",
+      "maximum_decline"
+    ],
+    "new_failure_fields": [
+      "case_id",
+      "reason"
+    ],
+    "retain_fields": [
+      "known_failed_case_ids",
+      "observed_known_failed_case_ids",
+      "resolved_known_failed_case_ids"
+    ]
+  },
+  "baseline_update": {
+    "automatic_replacement": false,
+    "requires_explicit_review": true
+  },
+  "distribution": {
+    "method": "read_only_docker_bind_mount",
+    "container_directory": "/opt/rag-policies",
+    "policy_path": "/opt/rag-policies/retrieval-quality-policy.json",
+    "baseline_path": "/opt/rag-policies/approved-retrieval-baseline.json",
+    "load": "Read and parse both JSON files once per n8n execution; retain that snapshot through retries.",
+    "configuration_instructions": "README.md",
+    "configured_by_this_change": false
+  },
+  "activation": {
+    "configuration_verification_required": true,
+    "configuration_verified": true,
+    "automatic_comparisons_enabled": false,
+    "remaining_step": "Wire and validate n8n policy loading and outcome routing."
+  }
+}

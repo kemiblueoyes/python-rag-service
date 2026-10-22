@@ -26,7 +26,7 @@ from rag_service.retrieval import (
 )
 
 DATASET_PATH = Path("evaluation/datasets/baseline.json")
-OUTPUT_DIRECTORY = Path("data/evaluation")
+OUTPUT_DIRECTORY = Path("data/evaluation/latest")
 JSON_OUTPUT_PATH = OUTPUT_DIRECTORY / "answer_baseline.json"
 MARKDOWN_OUTPUT_PATH = OUTPUT_DIRECTORY / "answer_baseline.md"
 

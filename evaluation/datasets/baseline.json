@@ -1,6 +1,6 @@
 {
     "dataset_id": "doc-landscape-baseline",
-    "version": "1.5",
+    "version": "1.7",
     "description": "Human-labeled retrieval and answer evaluation dataset for The Doc Landscape WordPress index.",
     "cases": [
         {
@@ -549,7 +549,7 @@
                         "heading_path": [
                             "What the Discipline Spans"
                         ],
-                        "chunk_id": "wordpress:page:2672:chunk:v1:49ec96efb031a85bcd9176a8ee83effaf23d5de887ab5ab30e1d011da77e5474"
+                        "chunk_id": "wordpress:page:2672:chunk:v1:87abbcd779d51ab1efff333a0143c52e07404387664727ce45cd1bc51db7cbf7"
                     },
                     {
                         "document_id": "wordpress:page:2647",
@@ -587,7 +587,7 @@
                         "document_id": "wordpress:page:2672",
                         "title": "Documentation Engineering",
                         "heading_path": [],
-                        "chunk_id": "wordpress:page:2672:chunk:v1:96a50252ff41f329b6bc8082287c9e2a964e7b6beb98ae19842fe4dff1d2edf5",
+                        "chunk_id": "wordpress:page:2672:chunk:v1:c766bea21181124ceef5606d32b1484f1417fede0791f2a1cc94bd744799f60d",
                         "role": "primary"
                     },
                     {
@@ -651,7 +651,7 @@
                         "document_id": "wordpress:page:2672",
                         "title": "Documentation Engineering",
                         "heading_path": [],
-                        "chunk_id": "wordpress:page:2672:chunk:v1:96a50252ff41f329b6bc8082287c9e2a964e7b6beb98ae19842fe4dff1d2edf5"
+                        "chunk_id": "wordpress:page:2672:chunk:v1:c766bea21181124ceef5606d32b1484f1417fede0791f2a1cc94bd744799f60d"
                     },
                     {
                         "document_id": "wordpress:page:2672",
@@ -685,7 +685,7 @@
                         "heading_path": [
                             "What the Discipline Spans"
                         ],
-                        "chunk_id": "wordpress:page:2672:chunk:v1:49ec96efb031a85bcd9176a8ee83effaf23d5de887ab5ab30e1d011da77e5474",
+                        "chunk_id": "wordpress:page:2672:chunk:v1:87abbcd779d51ab1efff333a0143c52e07404387664727ce45cd1bc51db7cbf7",
                         "role": "primary"
                     }
                 ],
@@ -759,6 +759,16 @@
                             "Retrieval Depends on Context"
                         ],
                         "chunk_id": "wordpress:page:2368:chunk:v1:37f14f932cb405c3617c905302fab4a35fccb2791fdebcb69a83516c9a9e2547",
+                        "role": "supporting"
+                    },
+                    {
+                        "document_id": "wordpress:page:1475",
+                        "title": "Ephemeral Knowledge: The Richest Layer Nobody Captures",
+                        "heading_path": [
+                            "Why Ephemeral Knowledge It’s the Richest Layer",
+                            "What Writers Lose When Ephemeral Knowledge Disappears"
+                        ],
+                        "chunk_id": "wordpress:page:1475:chunk:v1:6018ea1a074ee39214353b4a3b87f330c8bda8094ac3568649f260567146c61b",
                         "role": "supporting"
                     }
                 ],
@@ -1388,7 +1398,7 @@
                         "heading_path": [
                             "What the Discipline Spans"
                         ],
-                        "chunk_id": "wordpress:page:2672:chunk:v1:49ec96efb031a85bcd9176a8ee83effaf23d5de887ab5ab30e1d011da77e5474",
+                        "chunk_id": "wordpress:page:2672:chunk:v1:87abbcd779d51ab1efff333a0143c52e07404387664727ce45cd1bc51db7cbf7",
                         "role": "primary"
                     },
                     {

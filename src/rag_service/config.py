@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     # API authentication
     rag_api_key: SecretStr | None = None
+    operations_api_key: SecretStr | None = None
 
     # WordPress connector
     wordpress_base_url: str | None = None
