@@ -122,6 +122,27 @@ From the repository root, run:
 The command validates the review against `answer_baseline.json`, summarizes the recorded scores, and writes
 `data/evaluation/answer_qualitative_review.md`.
 
+## Save a report snapshot
+
+After running retrieval and answer evaluation, preserve the reports and their
+dataset in a new folder:
+
+    ```bash
+    uv run python -m rag_service.commands.snapshot_evaluation_reports
+    ```
+
+The command reads the dataset version and creates a folder under
+`evaluation/reports/`. For the Doc Landscape dataset, the folder name is
+`doc-landscape-v<version>-<UTC-date>`. It contains the dataset, the JSON and
+Markdown reports, a manifest with file checksums, and a README.
+
+To include a completed human review, add `--include-review`. The command validates
+the review against the saved answer run before saving the set.
+
+Existing folders are never overwritten. Use `--name <new-folder-name>` to save
+another set for the same version and date. Review and commit the new folder if
+you want to publish it.
+
 ## Next steps
 
 **[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Compare this run with the recorded
