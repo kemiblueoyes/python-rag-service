@@ -4,9 +4,7 @@ from rag_service.embeddings import (
     create_embedding_provider,
 )
 from rag_service.errors import ServiceConfigurationError
-from rag_service.lexical import (
-    create_lexical_retriever,
-)
+from rag_service.lexical.refreshing import RefreshingLexicalRetriever
 from rag_service.provider_failures import retrieval_exception_for
 from rag_service.reranking import (
     create_reranker,
@@ -42,7 +40,7 @@ def _build_retrieval_service(settings: Settings) -> RetrievalService:
         created.append(embedding_provider)
         vector_store = create_vector_store(settings)
         created.append(vector_store)
-        lexical_retriever = create_lexical_retriever(settings)
+        lexical_retriever = RefreshingLexicalRetriever(settings)
         created.append(lexical_retriever)
         reranker = create_reranker(settings)
         created.append(reranker)

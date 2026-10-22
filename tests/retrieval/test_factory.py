@@ -50,7 +50,7 @@ def test_create_retrieval_service_builds_configured_dependencies(
         vector_store_factory,
     )
     monkeypatch.setattr(
-        "rag_service.retrieval.factory.create_lexical_retriever",
+        "rag_service.retrieval.factory.RefreshingLexicalRetriever",
         lexical_factory,
     )
     monkeypatch.setattr(
@@ -102,7 +102,7 @@ def test_failed_initialization_closes_created_clients_without_logging_exception_
         MagicMock(return_value=vector_store),
     )
     monkeypatch.setattr(
-        "rag_service.retrieval.factory.create_lexical_retriever",
+        "rag_service.retrieval.factory.RefreshingLexicalRetriever",
         MagicMock(side_effect=RuntimeError("index failed")),
     )
     reranker_factory = MagicMock()

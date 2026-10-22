@@ -33,12 +33,21 @@ older content until an indexing run completes.
 Follow [Re-index and update content](/docs/index-content/re-index-and-update-content) after source changes.
 Changes to embedding or chunking behavior require a full rebuild, as described in that procedure.
 
-### Running API processes don't automatically reload the lexical index
+### Lexical refresh happens on the next request
 
-Re-indexing updates Qdrant and the lexical corpus file, but running API processes retain their in-memory BM25 index. Retrieval
-can therefore combine current vector records with outdated lexical chunks.
+After indexing replaces the configured `LEXICAL_CORPUS_PATH` file, each running API process checks file identity and metadata
+on its next search or answer request. It builds a complete in-memory BM25 replacement before using it. Unchanged files reuse
+the existing index. No API restart is required after indexing; changes to environment configuration still require a restart.
 
-Restart each API process after a successful indexing run to load the updated corpus.
+Refresh and lexical searches are serialized within each process. The request that triggers a refresh, and concurrent lexical
+searches, wait for the build. A request already searching the previous snapshot can finish with that snapshot. No provider clients
+are replaced or closed during refresh. Invalid, missing, unreadable, or continuously changing corpora return the existing controlled
+configuration error instead of serving stale lexical results. A later request retries, allowing recovery after a valid publication.
+
+Keep the public API and operations runner as separate processes with access to the same corpus path. Every API worker refreshes
+independently; there is no background watcher or cross-process notification. Publish complete files with atomic replacement, as the
+WordPress indexer does. Qdrant updates and lexical publication are not one transaction, so requests during indexing can still observe
+different vector and lexical generations. File metadata checks avoid hashing the whole corpus on each request.
 
 ## Retrieval coverage and support detection
 

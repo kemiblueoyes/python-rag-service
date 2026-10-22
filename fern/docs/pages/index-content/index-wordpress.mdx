@@ -163,3 +163,12 @@ before you query this index.
 - **[Indexing pipeline](/docs/architecture/indexing-pipeline)**: See how source content becomes canonical documents, chunks, embeddings, and vector records.
 - **[Re-index and update content](/docs/index-content/re-index-and-update-content)**: Update an existing index after WordPress content changes without another full rebuild.
 - **[Build and inspect your first documentation index](/docs/index-content/build-your-first-documentation-index)**: Follow one indexing run stage by stage and inspect each artifact.
+
+## Refresh the running API
+
+After the indexer publishes the chunk file at `LEXICAL_CORPUS_PATH`, each API process rebuilds its in-memory BM25 index on its
+next search or answer request. No restart is required. That request waits for the rebuild; unchanged files reuse the existing index.
+The API and operations runner remain separate processes and must share access to the configured corpus file.
+
+A failed refresh returns a controlled configuration error and retries on later requests. See
+[Known limitations](/docs/reference/known-limitations) for concurrency and index consistency limits.

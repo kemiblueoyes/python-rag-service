@@ -30,7 +30,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "{\n  \"operation\": \"index_wordpress\"\n}",
-        "options": {}
+        "options": {
+          "timeout": 15000
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -40,6 +42,8 @@
       ],
       "id": "6ea723ed-ff07-4efb-ad1a-d080dcf398e7",
       "name": "Start indexing",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
       "credentials": {
         "httpHeaderAuth": {
           "id": "aqCCIEtbchqXbb0P",
@@ -52,7 +56,9 @@
         "url": "={{ 'http://host.docker.internal:8001' + $json.status_url }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
-        "options": {}
+        "options": {
+          "timeout": 15000
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -62,6 +68,8 @@
       ],
       "id": "3b1e4057-d4d9-4243-a79a-f9f61b7179b9",
       "name": "Check indexing",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
       "credentials": {
         "httpHeaderAuth": {
           "id": "aqCCIEtbchqXbb0P",
@@ -206,7 +214,7 @@
         "rule": {
           "interval": [
             {
-              "field": "hours"
+              "triggerAtHour": 14
             }
           ]
         }
@@ -292,45 +300,12 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://host.docker.internal:8001/jobs",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Idempotency-Key",
-              "value": "={{ 'n8n-eval-' + $json.job_id }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "{\"operation\":\"evaluate_retrieval\"}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        1968,
-        -864
-      ],
-      "id": "a816b0ad-0a44-42e7-801f-7eae37480802",
-      "name": "Start evalutation",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "aqCCIEtbchqXbb0P",
-          "name": "Local RAG operations"
-        }
-      }
-    },
-    {
-      "parameters": {
         "url": "={{ 'http://host.docker.internal:8001' + $json.status_url }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
-        "options": {}
+        "options": {
+          "timeout": 15000
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -340,6 +315,8 @@
       ],
       "id": "9d53dbf0-3e52-459b-8bb7-822a44a3b4ce",
       "name": "Check evaluation",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
       "credentials": {
         "httpHeaderAuth": {
           "id": "aqCCIEtbchqXbb0P",
@@ -481,7 +458,7 @@
     },
     {
       "parameters": {
-        "errorMessage": "={{ 'Evaluation stopped with status ' + $json.status + '. Job ID: ' + $json.job_id }}"
+        "errorMessage": "={{ [\n  'Operation: ' + ($json.operation ?? 'Unavailable'),\n  'Status: ' + ($json.status ?? 'Unknown'),\n  'Job ID: ' + ($json.job_id ?? 'Unavailable'),\n  'Error code: ' + ($json.error?.code ?? 'Not provided'),\n  'Reason: ' + ($json.error?.message ?? 'No error details provided.')\n].join('\\n') }}"
       },
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
@@ -680,7 +657,7 @@
     },
     {
       "parameters": {
-        "errorMessage": "={{ 'Indexing stopped with status ' + $json.status + '. Job ID: ' + $json.job_id }}"
+        "errorMessage": "={{ [\n  'Operation: ' + ($json.operation ?? 'Unavailable'),\n  'Status: ' + ($json.status ?? 'Unknown'),\n  'Job ID: ' + ($json.job_id ?? 'Unavailable'),\n  'Error code: ' + ($json.error?.code ?? 'Not provided'),\n  'Reason: ' + ($json.error?.message ?? 'No error details provided.')\n].join('\\n') }}"
       },
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
@@ -806,8 +783,8 @@
       "type": "n8n-nodes-base.jira",
       "typeVersion": 1,
       "position": [
-        3760,
-        -960
+        3888,
+        -944
       ],
       "id": "d83e4c88-d986-450f-b967-0f4665918edb",
       "name": "Create regression issue",
@@ -944,6 +921,45 @@
       ],
       "id": "8c361324-c3c9-477c-83c1-8ba387e50ce3",
       "name": "Restore evaluation result"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8001/jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ 'n8n-eval-' + $json.job_id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"operation\":\"evaluate_retrieval\"}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1968,
+        -864
+      ],
+      "id": "a816b0ad-0a44-42e7-801f-7eae37480802",
+      "name": "Start evaluation",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aqCCIEtbchqXbb0P",
+          "name": "Local RAG operations"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -1057,23 +1073,12 @@
       "main": [
         [
           {
-            "node": "Start evalutation",
+            "node": "Start evaluation",
             "type": "main",
             "index": 0
           }
         ],
         []
-      ]
-    },
-    "Start evalutation": {
-      "main": [
-        [
-          {
-            "node": "Check evaluation",
-            "type": "main",
-            "index": 0
-          }
-        ]
       ]
     },
     "Check evaluation": {
@@ -1344,6 +1349,17 @@
           }
         ]
       ]
+    },
+    "Start evaluation": {
+      "main": [
+        [
+          {
+            "node": "Check evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1353,9 +1369,13 @@
     "timeSavedMode": "fixed",
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": 600,
-    "availableInMCP": false
+    "availableInMCP": false,
+    "errorWorkflow": "8DNOp8zSFfV5phxH",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true
   },
-  "versionId": "c833ae9a-d44d-4412-bd96-2bfab06c3c3b",
+  "versionId": "e4e5d156-e84a-44ab-8066-cf69cab800c6",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "ae285777e5e00dbc75bea3e91320d4e67725ff33205dd1c4862fbeffcb9eb5ef"

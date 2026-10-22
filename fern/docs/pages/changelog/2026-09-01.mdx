@@ -42,7 +42,7 @@ tracking future changes. The project remains in active development.
 ## Known issues
 
 WordPress is the only implemented content connector. Source changes require an
-indexing run, followed by an API restart to refresh the in-memory keyword index.
+indexing run. Running API processes now refresh the in-memory keyword index on the next search or answer request.
 Compound questions can miss evidence for part of the question, and citation checks
 don't establish that every claim has factual support.
 
