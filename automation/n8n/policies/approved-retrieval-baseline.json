@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "baseline_id": "doc-landscape-v1.7-20261014T015403845276Z",
+  "baseline_version": 1,
+  "policy_version": 1,
+  "status": "fixed_baseline_configuration_verified",
+  "dataset_id": "doc-landscape-baseline",
+  "dataset_version": "1.7",
+  "generated_at": "2026-10-14T01:54:03.845276+00:00",
+  "k": 5,
+  "summary": {
+    "total_cases": 22,
+    "answerable_cases": 14,
+    "unanswerable_cases": 8,
+    "hit_rate_at_k": 1.0,
+    "mean_precision_at_k": 0.9428571428571428,
+    "mean_recall_at_k": 0.7581632653061224,
+    "mean_reciprocal_rank": 0.9071428571428571,
+    "unanswerable_accuracy": 1.0,
+    "precision_evaluable_cases": 14,
+    "overall_success_rate": 0.9545454545454546
+  },
+  "known_failed_case_ids": [
+    "multi-section-001"
+  ],
+  "retrieval_configuration": {
+    "collection": "rag_chunks",
+    "k": 5,
+    "embedding_provider": "voyage",
+    "embedding_model": "voyage-4-lite",
+    "embedding_dimension": 1024,
+    "vector_database": "qdrant",
+    "lexical_corpus_path": "data/wordpress-chunks.json",
+    "reranking_provider": "voyage",
+    "reranking_model": "rerank-2.5",
+    "retrieval_vector_candidate_depth": 20,
+    "retrieval_lexical_candidate_depth": 20,
+    "retrieval_fused_candidate_depth": 20,
+    "retrieval_rrf_k": 60,
+    "retrieval_support_cutoff": 0.7
+  },
+  "report_reference": {
+    "path": "evidence/doc-landscape-v1.7-initial-retrieval.json",
+    "original_filename": "retrieval_baseline(5).json",
+    "sha256": "d026a07480ae2e29ab9f5061c7a0ce252d278afcecbcd8cd85607eeafad885da"
+  },
+  "configuration_evidence": {
+    "path": "evidence/doc-landscape-v1.7-configuration-job.json",
+    "evaluation_job_id": "874d4473-d85c-4dc3-b314-3225ff8755b5",
+    "generated_at": "2026-10-14T19:22:09.706507+00:00",
+    "dataset_id": "doc-landscape-baseline",
+    "dataset_version": "1.7",
+    "report_paths": {
+      "json": "data/operations/runs/874d4473-d85c-4dc3-b314-3225ff8755b5/retrieval_baseline.json",
+      "markdown": "data/operations/runs/874d4473-d85c-4dc3-b314-3225ff8755b5/retrieval_baseline.md"
+    },
+    "worktree": "/Users/abionta/.codex/worktrees/dd7a/python-rag-service",
+    "verification_status": "recorded_settings_match",
+    "compared_recorded_settings": {
+      "collection": "rag_chunks",
+      "embedding_model": "voyage-4-lite",
+      "retrieval_support_cutoff": 0.7,
+      "k": 5
+    },
+    "mismatches": [],
+    "case_counts_match": true,
+    "provenance_note": "Complete configuration captured from the fresh operations job in the same worktree and environment. The original report recorded only collection, embedding model, support cutoff, and k; other historical configuration values cannot be independently established from that report.",
+    "fresh_summary_replaces_fixed_summary": false
+  },
+  "replacement_policy": "Never replace on success, retry, improvement, or known-failure resolution; explicit baseline review is required."
+}

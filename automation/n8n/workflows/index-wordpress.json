@@ -1,0 +1,1366 @@
+{
+  "name": "RAG Indexing",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -480
+      ],
+      "id": "7d6c79bd-8e6a-45e4-9b75-682c5a903ced",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8001/jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ 'n8n-index-' + $execution.id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"operation\": \"index_wordpress\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        848,
+        -528
+      ],
+      "id": "6ea723ed-ff07-4efb-ad1a-d080dcf398e7",
+      "name": "Start indexing",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aqCCIEtbchqXbb0P",
+          "name": "Local RAG operations"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ 'http://host.docker.internal:8001' + $json.status_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1072,
+        -528
+      ],
+      "id": "3b1e4057-d4d9-4243-a79a-f9f61b7179b9",
+      "name": "Check indexing",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aqCCIEtbchqXbb0P",
+          "name": "Local RAG operations"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "succeeded",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "dd00bc72-f0f4-42aa-8ace-b58e763c1951"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Succeeded"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a739df0e-2b7e-4da8-9a6a-cf12c2c74c8b",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1bb61554-4112-4b40-81ca-de155c39adfa",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "queued",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Queued"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b384e077-677f-484c-a914-c0a92d472d83",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "running",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Running"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1296,
+        -720
+      ],
+      "id": "8f76635a-eb2a-4328-b189-afd64fa14eaf",
+      "name": "Indexing status"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1520,
+        -624
+      ],
+      "id": "d7966310-a556-462d-a47e-7152aae71c48",
+      "name": "Wait before checking",
+      "webhookId": "5c05b11c-ff13-4988-b24f-933d7141bd97"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -48,
+        -672
+      ],
+      "id": "f6603867-799d-490f-9561-52da8e1ffae0",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a0b3c802-a6de-4104-8f72-d2ed24fd690c",
+              "name": "created_at_local",
+              "value": "={{ DateTime.fromISO($json.created_at).setZone('America/Denver').toFormat('MMM d, yyyy, h:mm:ss a') }}",
+              "type": "string"
+            },
+            {
+              "id": "035cb578-51eb-4428-a128-d9bd42149c25",
+              "name": "started_at_local",
+              "value": "={{ DateTime.fromISO($json.started_at).setZone('America/Denver').toFormat('MMM d, yyyy, h:mm:ss a') }}",
+              "type": "string"
+            },
+            {
+              "id": "f3a9c86d-7dcc-44ef-9327-6205c7b45d96",
+              "name": "completed_at_local",
+              "value": "={{ DateTime.fromISO($json.completed_at).setZone('America/Denver').toFormat('MMM d, yyyy, h:mm:ss a') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1520,
+        -864
+      ],
+      "id": "0addc59b-2151-4d9e-99dc-274a66a3196c",
+      "name": "Local Time Success"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f42199d5-22ef-473c-8f1f-d02408e78bf0",
+              "leftValue": "={{ $json.result.changes_detected }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1744,
+        -864
+      ],
+      "id": "75d430a6-bab4-4df2-a428-5f4ef47232ed",
+      "name": "Content changed"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8001/jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ 'n8n-eval-' + $json.job_id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"operation\":\"evaluate_retrieval\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1968,
+        -864
+      ],
+      "id": "a816b0ad-0a44-42e7-801f-7eae37480802",
+      "name": "Start evalutation",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aqCCIEtbchqXbb0P",
+          "name": "Local RAG operations"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ 'http://host.docker.internal:8001' + $json.status_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2192,
+        -864
+      ],
+      "id": "9d53dbf0-3e52-459b-8bb7-822a44a3b4ce",
+      "name": "Check evaluation",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aqCCIEtbchqXbb0P",
+          "name": "Local RAG operations"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "succeeded",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c74a1db0-d636-463b-ba48-7324fcc4d975"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Succeeded"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e2e4a1b3-c0a7-41dc-a972-643346ad7a01",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "012d43e7-cecf-4add-818b-3ccd5c3ce13d",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "queued",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Queued"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0cbe9811-7e46-44b1-b3d5-d3582ce6dfff",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "running",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Running"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2416,
+        -1008
+      ],
+      "id": "9191ecbf-0af4-491f-9587-85a9b082b5a5",
+      "name": "Evaluation status"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        -672
+      ],
+      "id": "da16a331-566f-46c4-bcd6-ea9233e9b801",
+      "name": "Wait before checking evaluation",
+      "webhookId": "f90e197c-179f-45bf-b0af-80e760f4a1f6"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ 'Evaluation stopped with status ' + $json.status + '. Job ID: ' + $json.job_id }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -864
+      ],
+      "id": "2adef4e5-bfbf-4bcc-8ea8-a7a851321e64",
+      "name": "Evaluation error"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/opt/rag-policies/*.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        -528
+      ],
+      "id": "b9b7f6f9-6a09-4bb0-abd7-2ec79fabd0c4",
+      "name": "Read policy files"
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "destinationKey": "document",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        -528
+      ],
+      "id": "a82febc3-955e-4d41-bc4a-cd919faa0fb4",
+      "name": "Parse policy files"
+    },
+    {
+      "parameters": {
+        "jsCode": "const documents = $input.all().map(item => item.json.document);\n\nconst policies = documents.filter(\n  doc => doc?.policy_id === 'doc-landscape-retrieval-quality'\n);\nconst baselines = documents.filter(doc => doc?.baseline_id);\n\nif (\n  documents.length !== 2 ||\n  policies.length !== 1 ||\n  baselines.length !== 1\n) {\n  throw new Error('Expected exactly one policy and one baseline.');\n}\n\nconst policy = policies[0];\nconst baseline = baselines[0];\n\nif (policy.schema_version !== 1 || baseline.schema_version !== 1) {\n  throw new Error('Unsupported policy or baseline schema version.');\n}\n\nif (\n  !Number.isInteger(policy.policy_version) ||\n  policy.policy_version < 1 ||\n  baseline.policy_version !== policy.policy_version\n) {\n  throw new Error('Invalid or mismatched policy versions.');\n}\n\nif (\n  policy.activation?.configuration_verified !== true ||\n  baseline.configuration_evidence?.verification_status !==\n    'recorded_settings_match'\n) {\n  throw new Error('Baseline configuration verification is incomplete.');\n}\n\nreturn [{ json: { policy, baseline } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -528
+      ],
+      "id": "5bed9a07-1e83-458f-9441-110d32ad9083",
+      "name": "Prepare quality rules"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node: Compare retrieval quality\n// Language: JavaScript. Mode: Run Once for All Items.\n// Input: Evaluation status -> Succeeded (the operations job envelope).\n// Reads this execution's saved Prepare quality rules and Content changed outputs.\n// No network requests, external packages, baseline writes, or Jira actions.\n\nfunction compareQuality(job, snapshot, context = {}) {\n  const reasons = [];\n  const problems = [];\n  const reviews = [];\n  const breaches = [];\n  const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);\n  const missing = value => value === undefined || value === null;\n  const at = (value, path) => path.split('.').reduce((v, key) => v?.[key], value);\n  const problem = (code, detail) => problems.push({ code, detail });\n  const review = (code, detail) => reviews.push({ code, detail });\n  const policy = snapshot?.policy;\n  const baseline = snapshot?.baseline;\n  const report = object(job?.result) ? job.result : null;\n  const record = {\n    outcome: null,\n    indexing_job_id: context.indexing_job_id ?? null,\n    evaluation_job_id: job?.job_id ?? null,\n    n8n_execution_id: context.n8n_execution_id ?? null,\n    policy_version: policy?.policy_version ?? null,\n    baseline_id: baseline?.baseline_id ?? null,\n    dataset_version: report?.dataset_version ?? null,\n    report_paths: report?.report_paths ?? null,\n    known_failed_case_ids: baseline?.known_failed_case_ids ?? [],\n    observed_known_failed_case_ids: [],\n    resolved_known_failed_case_ids: [],\n    observed_failed_case_ids: null,\n    new_failed_case_ids: [],\n    metrics: {},\n    regression_route_eligible: false,\n    reasons,\n  };\n\n  function finish(outcome) {\n    record.outcome = outcome;\n    reasons.unshift(...problems, ...reviews, ...breaches);\n    for (const field of ['indexing_job_id', 'evaluation_job_id', 'n8n_execution_id', 'policy_version', 'dataset_version', 'report_paths']) {\n      if (missing(record[field])) reasons.push({ code: 'context_unavailable', field, detail: `${field} was unavailable; retained as null.` });\n    }\n    if (outcome === 'passed') reasons.push({ code: 'all_checks_passed', detail: 'All comparison rules passed. Existing known failures remain visible.' });\n    return record;\n  }\n\n  // Decimal arithmetic on number.toString(), without binary subtraction.\n  // BigInt stays internal; output contains only JSON-compatible values.\n  function decimal(value) {\n    const [mantissa, exponent = '0'] = String(value).toLowerCase().split('e');\n    const [whole, fraction = ''] = mantissa.split('.');\n    let coefficient = BigInt(whole + fraction);\n    let scale = fraction.length - Number(exponent);\n    if (scale < 0) { coefficient *= 10n ** BigInt(-scale); scale = 0; }\n    return { coefficient, scale };\n  }\n  function subtract(a, b) {\n    const scale = Math.max(a.scale, b.scale);\n    return { coefficient: a.coefficient * 10n ** BigInt(scale - a.scale) - b.coefficient * 10n ** BigInt(scale - b.scale), scale };\n  }\n  function compare(a, b) {\n    const difference = subtract(a, b).coefficient;\n    return difference < 0n ? -1 : difference > 0n ? 1 : 0;\n  }\n  function decimalText(value) {\n    const sign = value.coefficient < 0n ? '-' : '';\n    const digits = (value.coefficient < 0n ? -value.coefficient : value.coefficient).toString().padStart(value.scale + 1, '0');\n    return sign + (value.scale ? digits.slice(0, -value.scale) + '.' + digits.slice(-value.scale) : digits);\n  }\n  const metricNames = ['mean_precision_at_k', 'mean_recall_at_k', 'mean_reciprocal_rank', 'hit_rate_at_k', 'unanswerable_accuracy'];\n  const validMetric = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1;\n  const validIds = value => Array.isArray(value) && value.every(id => typeof id === 'string' && id.length > 0) && new Set(value).size === value.length;\n\n  if (!object(policy) || !object(baseline)) {\n    problem('policy_load_failed', 'The saved execution must contain both policy and baseline objects.');\n    return finish('operational_failure');\n  }\n  if (policy.schema_version !== 1 || baseline.schema_version !== 1 || policy.policy_version !== 1 || baseline.policy_version !== policy.policy_version) {\n    problem('unsupported_version', 'This comparator supports schema 1 and policy 1 with matching baseline policy_version.');\n  }\n  if (policy.activation?.configuration_verified !== true || baseline.configuration_evidence?.verification_status !== 'recorded_settings_match') {\n    problem('configuration_not_verified', 'Baseline configuration verification is incomplete.');\n  }\n  if (!validIds(baseline.known_failed_case_ids)) problem('invalid_baseline', 'known_failed_case_ids must be a unique list of nonempty strings.');\n  if (!Array.isArray(policy.comparability?.required_equal_fields) || !policy.comparability.required_equal_fields.every(path => typeof path === 'string' && path.length > 0)) {\n    problem('invalid_policy', 'Comparability fields are missing or invalid.');\n  }\n  if (!Array.isArray(policy.completeness?.required_metrics) || metricNames.some(name => !policy.completeness.required_metrics.includes(name)) || policy.completeness.required_metrics.length !== metricNames.length) {\n    problem('invalid_policy', 'The required metric list must match the supported policy 1 metrics.');\n  }\n  for (const name of metricNames) {\n    const rule = policy.metric_rules?.[name];\n    if (!validMetric(rule?.minimum) || !validMetric(rule?.maximum_decline) || !validMetric(baseline.summary?.[name])) {\n      problem('invalid_policy_or_baseline', `Invalid rule or baseline metric: ${name}.`);\n    }\n  }\n  if (problems.length) return finish('operational_failure');\n  if (!object(job) || job.operation !== 'evaluate_retrieval' || job.status !== 'succeeded' || !report || job.error != null) {\n    problem('evaluation_not_successful', 'Expected a succeeded evaluate_retrieval job with an object result and no job error.');\n    return finish('operational_failure');\n  }\n  if (!object(report.summary)) {\n    if (missing(report.summary)) review('summary_missing', 'Evaluation summary is unavailable.');\n    else problem('malformed_summary', 'Evaluation summary must be an object.');\n    return finish(problems.length ? 'operational_failure' : 'needs_review');\n  }\n\n  const observed = { ...report, k: report.k ?? report.retrieval_configuration?.k };\n  for (const path of policy.comparability.required_equal_fields) {\n    const expected = at(baseline, path);\n    const actual = at(observed, path);\n    if (missing(expected)) problem('invalid_baseline', `Baseline comparison field is missing: ${path}.`);\n    else if (missing(actual)) review('comparison_metadata_missing', `Current report is missing ${path}.`);\n    else if (actual !== expected) review('comparison_mismatch', `${path} differs from the fixed baseline. Expected ${JSON.stringify(expected)}; observed ${JSON.stringify(actual)}.`);\n  }\n  if (!missing(report.retrieval_configuration) && !object(report.retrieval_configuration)) problem('malformed_configuration', 'retrieval_configuration must be an object.');\n  if (!missing(report.k) && !missing(report.retrieval_configuration?.k) && report.k !== report.retrieval_configuration.k) problem('inconsistent_k', 'Report k and retrieval_configuration.k disagree.');\n\n  const summary = report.summary;\n  const countFields = ['total_cases', 'answerable_cases', 'unanswerable_cases', 'precision_evaluable_cases'];\n  for (const field of countFields) {\n    if (missing(summary[field])) review('count_missing', `summary.${field} is unavailable.`);\n    else if (!Number.isSafeInteger(summary[field]) || summary[field] < 0) problem('invalid_count', `summary.${field} must be a nonnegative integer.`);\n  }\n  const hasCounts = countFields.every(field => Number.isSafeInteger(summary[field]) && summary[field] >= 0);\n  if (hasCounts) {\n    if (summary.total_cases !== summary.answerable_cases + summary.unanswerable_cases) problem('inconsistent_counts', 'Answerable and unanswerable counts do not add up to total_cases.');\n    if (summary.precision_evaluable_cases > summary.answerable_cases) problem('inconsistent_counts', 'Precision coverage exceeds answerable case count.');\n    else if (summary.precision_evaluable_cases < summary.answerable_cases) review('incomplete_precision_coverage', `${summary.precision_evaluable_cases}/${summary.answerable_cases} answerable cases have complete precision judgments.`);\n  }\n  for (const name of metricNames) {\n    if (missing(summary[name])) review('metric_unavailable', `summary.${name} is missing or null.`);\n    else if (!validMetric(summary[name])) problem('invalid_metric', `summary.${name} must be a finite number between 0 and 1; booleans are invalid.`);\n  }\n\n  let failedIds = null;\n  let casesFailed = null;\n  if (!missing(report.failed_case_ids)) {\n    if (!validIds(report.failed_case_ids)) problem('invalid_failure_evidence', 'failed_case_ids must be a unique list of nonempty strings.');\n    else failedIds = report.failed_case_ids;\n  }\n  if (!missing(report.cases)) {\n    if (!Array.isArray(report.cases) || report.cases.some(c => !object(c) || typeof c.case_id !== 'string' || !c.case_id || typeof c.passed !== 'boolean') || new Set(report.cases.map(c => c.case_id)).size !== report.cases.length) {\n      problem('invalid_case_evidence', 'Cases must have unique case_id values and boolean passed values.');\n    } else if (Number.isSafeInteger(summary.total_cases) && report.cases.length !== summary.total_cases) {\n      problem('inconsistent_case_count', 'The case outcome list is not complete.');\n    } else {\n      casesFailed = report.cases.filter(c => !c.passed).map(c => c.case_id);\n      if (failedIds && JSON.stringify([...failedIds].sort()) !== JSON.stringify([...casesFailed].sort())) problem('inconsistent_failures', 'failed_case_ids disagrees with case outcomes.');\n      if (failedIds === null) failedIds = casesFailed;\n    }\n  }\n  if (failedIds === null) review('failure_evidence_missing', 'Neither an explicit failed_case_ids list nor complete case outcomes are available.');\n  if (failedIds !== null) {\n    record.observed_failed_case_ids = [...failedIds];\n    if (Number.isSafeInteger(summary.total_cases) && failedIds.length > summary.total_cases) problem('inconsistent_failures', 'There are more failed IDs than total cases.');\n    if (!missing(summary.overall_success_rate)) {\n      if (!validMetric(summary.overall_success_rate)) problem('invalid_metric', 'overall_success_rate is malformed.');\n      else if (summary.total_cases > 0 && Math.abs(summary.overall_success_rate - (summary.total_cases - failedIds.length) / summary.total_cases) > 1e-12) problem('inconsistent_outcomes', 'overall_success_rate disagrees with failed case count.');\n    }\n  }\n  if (problems.length) return finish('operational_failure');\n  // An incomparable or incompletely judged report cannot confirm regression.\n  if (reviews.length) return finish('needs_review');\n\n  const known = new Set(baseline.known_failed_case_ids);\n  const failed = new Set(failedIds);\n  record.observed_known_failed_case_ids = failedIds.filter(id => known.has(id));\n  record.resolved_known_failed_case_ids = baseline.known_failed_case_ids.filter(id => !failed.has(id));\n  record.new_failed_case_ids = failedIds.filter(id => !known.has(id));\n  for (const case_id of record.new_failed_case_ids) {\n    breaches.push({ code: 'new_failed_case', case_id, reason: 'This failed case is not in the fixed baseline known-failure list.' });\n  }\n  for (const name of metricNames) {\n    const rule = policy.metric_rules[name];\n    const baselineValue = baseline.summary[name];\n    const actual = summary[name];\n    const decline = subtract(decimal(baselineValue), decimal(actual));\n    const minimumPassed = compare(decimal(actual), decimal(rule.minimum)) >= 0;\n    const declinePassed = compare(decline, decimal(rule.maximum_decline)) <= 0;\n    record.metrics[name] = {\n      baseline: baselineValue, observed: actual, minimum: rule.minimum,\n      decline_limit: rule.maximum_decline,\n      decline: decimalText(decline),\n      minimum_passed: minimumPassed, decline_passed: declinePassed,\n    };\n    const detail = { metric: name, baseline: baselineValue, observed: actual, minimum: rule.minimum, decline_limit: rule.maximum_decline };\n    if (!minimumPassed) breaches.push({ code: 'minimum_breached', ...detail, breached_rule: 'minimum' });\n    if (!declinePassed) breaches.push({ code: 'maximum_decline_breached', ...detail, breached_rule: 'maximum_decline' });\n  }\n  record.regression_route_eligible = breaches.some(reason => policy.planned_regression_route.qualifying_reasons.includes(reason.code));\n  return finish(breaches.length ? 'quality_failed' : 'passed');\n}\n\nconst inputItems = $input.all();\nif (inputItems.length !== 1) throw new Error('Compare retrieval quality expects exactly one evaluation job.');\nconst job = inputItems[0].json;\nlet snapshot = null;\nlet indexingJobId = null;\ntry { snapshot = $('Prepare quality rules').first().json; } catch (_) { /* Report missing snapshot as an operational failure. */ }\ntry { indexingJobId = $('Content changed').first().json.job_id ?? null; } catch (_) { /* Preserve null if context is unavailable. */ }\nconst quality = compareQuality(job, snapshot, {\n  indexing_job_id: indexingJobId,\n  n8n_execution_id: $execution.id ?? null,\n});\nreturn [{ json: { ...job, quality } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -1056
+      ],
+      "id": "e8497ec6-09ed-44f3-9b78-39e4df53a1c1",
+      "name": "Compare retrieval quality"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.quality.outcome }}",
+                    "rightValue": "passed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "be9a9982-7250-436a-bca4-934d9c05fbbc"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Passed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6d9f1605-4110-415c-bb6b-19897082c469",
+                    "leftValue": "={{ $json.quality.outcome }}",
+                    "rightValue": "needs_review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Needs review"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4f035f67-3cd2-4340-a7d5-179f0c42124e",
+                    "leftValue": "={{ $json.quality.outcome }}",
+                    "rightValue": "quality_failed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Quality failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "43e936e1-d256-48bb-b3ff-3579f58e17b9",
+                    "leftValue": "={{ $json.quality.outcome }}",
+                    "rightValue": "operational_failure",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Operational failure"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        2864,
+        -1104
+      ],
+      "id": "16ad0f87-a60a-4eb2-8cc3-9c3d14e287cd",
+      "name": "Retrieval quality outcome"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ 'Retrieval quality: ' + ($json.quality?.outcome ?? 'unexpected outcome') + '. Evaluation job: ' + $json.job_id + '. Reasons: ' + JSON.stringify($json.quality?.reasons ?? []) }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        4176,
+        -592
+      ],
+      "id": "d07a0b10-25d5-4bfe-a51e-bfe75cd678e0",
+      "name": "Quality check stopped"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ 'Indexing stopped with status ' + $json.status + '. Job ID: ' + $json.job_id }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -432
+      ],
+      "id": "4dd877b8-be9e-48bd-a19a-68d9396de9f6",
+      "name": "Indexing error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6d550c31-7fe9-43d9-8872-f1acba8f0cf2",
+              "leftValue": "={{ $json.quality.regression_route_eligible }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3088,
+        -976
+      ],
+      "id": "ab3eed34-8279-45b4-afba-b9640c2667d6",
+      "name": "Report regression"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "options": {
+          "jql": "={{ 'project = N8NRAG AND labels = \"rag-retrieval-regression\" AND labels = \"rag-baseline-' + $('Prepare quality rules').first().json.baseline.baseline_id.toLowerCase().replace(/[^a-z0-9-]/g, '-') + '\" AND statusCategory != Done ORDER BY created ASC' }}"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        3312,
+        -1056
+      ],
+      "id": "ce046ee2-d6a3-4aed-a24e-4851e631f972",
+      "name": "Find open regression",
+      "alwaysOutputData": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "UZfpPhx79j6OGxBt",
+          "name": "Jira RAG automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b0801070-4803-47ee-b527-4a3773a34eb8",
+              "leftValue": "={{ $json.key }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3536,
+        -1056
+      ],
+      "id": "e46fd7af-2f29-4a27-8fb9-b65e17c474b0",
+      "name": "Issue exists"
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "n8n RAG"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10007",
+          "mode": "list",
+          "cachedResultName": "Task"
+        },
+        "summary": "={{ 'Retrieval regression — dataset ' + $('Compare retrieval quality').first().json.quality.dataset_version }}",
+        "additionalFields": {
+          "description": "={{ 'Retrieval quality checks detected a regression against the approved baseline.\\n\\n' + JSON.stringify($('Compare retrieval quality').first().json.quality, null, 2) }}",
+          "labels": "={{ [\n  'rag-retrieval-regression',\n  'rag-baseline-' + $('Prepare quality rules').first().json.baseline.baseline_id.toLowerCase().replace(/[^a-z0-9-]/g, '-')\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        3760,
+        -960
+      ],
+      "id": "d83e4c88-d986-450f-b967-0f4665918edb",
+      "name": "Create regression issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "UZfpPhx79j6OGxBt",
+          "name": "Jira RAG automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "issueKey": "={{ $json.key }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        3760,
+        -1152
+      ],
+      "id": "585c651b-0560-4ebb-907e-2b575ad03b38",
+      "name": "Get existing regression",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "UZfpPhx79j6OGxBt",
+          "name": "Jira RAG automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "issueComment",
+        "operation": "getAll",
+        "issueKey": "={{ $json.key }}",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        3984,
+        -1152
+      ],
+      "id": "652b6b2a-da1c-47cf-8893-81cddd7b4326",
+      "name": "Get regression comments",
+      "alwaysOutputData": true,
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "UZfpPhx79j6OGxBt",
+          "name": "Jira RAG automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const evaluation = $('Compare retrieval quality').first().json;\nconst issue = $('Get existing regression').first().json;\nconst jobId = evaluation.quality?.evaluation_job_id;\n\nif (typeof jobId !== 'string' || !jobId.trim()) {\n  throw new Error('Evaluation job ID is missing.');\n}\n\nif (evaluation.quality?.outcome !== 'quality_failed' ||\n    evaluation.quality?.regression_route_eligible !== true) {\n  throw new Error('Expected a confirmed regression.');\n}\n\nif (typeof issue.key !== 'string' ||\n    !Object.prototype.hasOwnProperty.call(issue.fields ?? {}, 'description')) {\n  throw new Error('Ticket key or description field is missing.');\n}\n\nconst items = $input.all().map(item => item.json);\nconst emptyResult = items.length === 1 &&\n  Object.keys(items[0]).length === 0;\nconst comments = emptyResult ? [] : items;\n\nif (comments.some(comment =>\n  typeof comment.id !== 'string' ||\n  !Object.prototype.hasOwnProperty.call(comment, 'body'))) {\n  throw new Error('Unexpected comment data. Check the comments node output.');\n}\n\nconst containsJob = body => JSON.stringify(body ?? '').includes(jobId);\nconst inDescription = containsJob(issue.fields.description);\nconst matchingCommentIds = comments\n  .filter(comment => containsJob(comment.body))\n  .map(comment => comment.id);\n\nreturn [{\n  json: {\n    ...evaluation,\n    jira_issue_key: issue.key,\n    job_already_recorded: inDescription || matchingCommentIds.length > 0,\n    job_recorded_in_description: inDescription,\n    matching_comment_ids: matchingCommentIds,\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4208,
+        -1152
+      ],
+      "id": "959caf86-1b03-40d1-9609-f2c9702c7cb5",
+      "name": "Check recorded job"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "57c0ce77-35ab-44a5-bebb-178fc75cffe9",
+              "leftValue": "={{ $json.job_already_recorded }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4432,
+        -1152
+      ],
+      "id": "7e8e9766-79bb-4bbb-a212-f76e101fbfeb",
+      "name": "Job already recorded"
+    },
+    {
+      "parameters": {
+        "resource": "issueComment",
+        "issueKey": "={{ $json.jira_issue_key }}",
+        "comment": "={{ 'Additional regression findings for this approved baseline.\\n\\n' + JSON.stringify($json.quality, null, 2) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        4656,
+        -1056
+      ],
+      "id": "59a44e6e-7427-40a5-9c25-f01230d6f30e",
+      "name": "Add regression findings",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "UZfpPhx79j6OGxBt",
+          "name": "Jira RAG automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const evaluation = $('Compare retrieval quality').first().json;\nconst response = $input.first().json;\nconst issueKey = response.key ??\n  $('Find open regression').first().json.key;\n\nif (!issueKey || !evaluation.quality) {\n  throw new Error('Jira issue key or evaluation evidence is missing.');\n}\n\nreturn [{\n  json: {\n    ...evaluation,\n    jira_issue_key: issueKey,\n    jira_action: response.key ? 'issue_created' : 'comment_added',\n    jira_response_id: response.id ?? null,\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4416,
+        -848
+      ],
+      "id": "8c361324-c3c9-477c-83c1-8ba387e50ce3",
+      "name": "Restore evaluation result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read policy files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start indexing": {
+      "main": [
+        [
+          {
+            "node": "Check indexing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check indexing": {
+      "main": [
+        [
+          {
+            "node": "Indexing status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Indexing status": {
+      "main": [
+        [
+          {
+            "node": "Local Time Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Indexing error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait before checking",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait before checking",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Indexing error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait before checking": {
+      "main": [
+        [
+          {
+            "node": "Check indexing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Read policy files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local Time Success": {
+      "main": [
+        [
+          {
+            "node": "Content changed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content changed": {
+      "main": [
+        [
+          {
+            "node": "Start evalutation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Start evalutation": {
+      "main": [
+        [
+          {
+            "node": "Check evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check evaluation": {
+      "main": [
+        [
+          {
+            "node": "Evaluation status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation status": {
+      "main": [
+        [
+          {
+            "node": "Compare retrieval quality",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evaluation error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait before checking evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait before checking evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evaluation error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait before checking evaluation": {
+      "main": [
+        [
+          {
+            "node": "Check evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read policy files": {
+      "main": [
+        [
+          {
+            "node": "Parse policy files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse policy files": {
+      "main": [
+        [
+          {
+            "node": "Prepare quality rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare quality rules": {
+      "main": [
+        [
+          {
+            "node": "Start indexing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare retrieval quality": {
+      "main": [
+        [
+          {
+            "node": "Retrieval quality outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieval quality outcome": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Quality check stopped",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Report regression",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Quality check stopped",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Quality check stopped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report regression": {
+      "main": [
+        [
+          {
+            "node": "Find open regression",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Quality check stopped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find open regression": {
+      "main": [
+        [
+          {
+            "node": "Issue exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Issue exists": {
+      "main": [
+        [
+          {
+            "node": "Get existing regression",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create regression issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get existing regression": {
+      "main": [
+        [
+          {
+            "node": "Get regression comments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get regression comments": {
+      "main": [
+        [
+          {
+            "node": "Check recorded job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check recorded job": {
+      "main": [
+        [
+          {
+            "node": "Job already recorded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job already recorded": {
+      "main": [
+        [
+          {
+            "node": "Quality check stopped",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add regression findings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create regression issue": {
+      "main": [
+        [
+          {
+            "node": "Restore evaluation result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add regression findings": {
+      "main": [
+        [
+          {
+            "node": "Restore evaluation result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore evaluation result": {
+      "main": [
+        [
+          {
+            "node": "Quality check stopped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 600,
+    "availableInMCP": false
+  },
+  "versionId": "c833ae9a-d44d-4412-bd96-2bfab06c3c3b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ae285777e5e00dbc75bea3e91320d4e67725ff33205dd1c4862fbeffcb9eb5ef"
+  },
+  "nodeGroups": [],
+  "id": "3quHhyRs5QheYLmv",
+  "tags": []
+}

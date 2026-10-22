@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-indexing]
 components: [component-wordpress-connector, component-indexing-pipeline, component-vector-database, component-embedding-provider]
 next_steps: [RtrvPipe]
 related_pages: [IndxWP, RIndxUpdt, TutIndx, SysArch]
-last_modified: 2026-10-07
+last_modified: 2026-10-22
 audience: [secondary]
 ---
 
@@ -68,21 +68,25 @@ content under the same heading keeps the same ID across runs.
 
 ## Embeddings and storage
 
-The indexing command writes the current canonical documents to `data/wordpress-documents.json`. That file is the
-snapshot the next run compares against. WordPress remains the source of truth. The snapshot is the last successfully
-indexed view of those documents.
-
-It also writes the current retrieval-ready chunks to `data/wordpress-chunks.json`. That file is the lexical corpus.
-It includes chunks from unchanged documents, because the file is the full corpus BM25 retrieval reads later. It
-omits documents that content processing skipped.
-
 Voyage generates an embedding for each chunk that the run stores in Qdrant. Qdrant keeps that vector with
 the chunk metadata. Query embeddings are created later, during retrieval, and aren't part of indexing.
 
 The command generates those embeddings before it deletes or replaces Qdrant records. A Voyage failure leaves the
-existing vector records in place. The command writes the document snapshot and the chunk file after vector
-synchronization returns. If Voyage or Qdrant fails, both files stay as they were, and the next run can retry the
-same changes.
+existing vector records in place. File publication starts only after vector synchronization returns.
+
+The command first replaces `data/wordpress-chunks.json`. That file is the lexical corpus. It includes chunks from
+unchanged documents, because the file is the full corpus BM25 retrieval reads later. It omits documents that
+content processing skipped.
+
+It then replaces `data/wordpress-documents.json`. That file is the snapshot the next run compares against, and it
+is the checkpoint for a completed run. WordPress remains the source of truth. The snapshot is the last run that
+finished publication.
+
+Each file is written to a temporary file in its destination directory, flushed and fsynced, then moved into place. Readers see
+the previous complete file or the new complete file. If saving the chunk file fails, the document snapshot stays
+unchanged. If saving the snapshot fails, both files remain readable, the snapshot stays on the previous run, and
+the next run detects the same changes. If Voyage or Qdrant fails, both files stay as they were, and the next run
+can retry the same changes.
 
 ## Full and incremental indexing
 

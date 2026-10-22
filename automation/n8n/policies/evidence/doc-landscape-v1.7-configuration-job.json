@@ -1,0 +1,50 @@
+{
+  "job_id": "874d4473-d85c-4dc3-b314-3225ff8755b5",
+  "operation": "evaluate_retrieval",
+  "status": "succeeded",
+  "status_url": "/jobs/874d4473-d85c-4dc3-b314-3225ff8755b5",
+  "created_at": "2026-10-14T19:22:01.086185+00:00",
+  "started_at": "2026-10-14T19:22:01.088399+00:00",
+  "completed_at": "2026-10-14T19:22:09.721041+00:00",
+  "result": {
+    "dataset_id": "doc-landscape-baseline",
+    "dataset_version": "1.7",
+    "generated_at": "2026-10-14T19:22:09.706507+00:00",
+    "summary": {
+      "total_cases": 22,
+      "answerable_cases": 14,
+      "unanswerable_cases": 8,
+      "hit_rate_at_k": 1.0,
+      "mean_precision_at_k": 0.9428571428571428,
+      "mean_recall_at_k": 0.7581632653061224,
+      "mean_reciprocal_rank": 0.9071428571428571,
+      "unanswerable_accuracy": 1.0,
+      "precision_evaluable_cases": 14,
+      "overall_success_rate": 0.9545454545454546
+    },
+    "failed_case_ids": [
+      "multi-section-001"
+    ],
+    "report_paths": {
+      "json": "data/operations/runs/874d4473-d85c-4dc3-b314-3225ff8755b5/retrieval_baseline.json",
+      "markdown": "data/operations/runs/874d4473-d85c-4dc3-b314-3225ff8755b5/retrieval_baseline.md"
+    },
+    "retrieval_configuration": {
+      "collection": "rag_chunks",
+      "k": 5,
+      "embedding_provider": "voyage",
+      "embedding_model": "voyage-4-lite",
+      "embedding_dimension": 1024,
+      "vector_database": "qdrant",
+      "lexical_corpus_path": "data/wordpress-chunks.json",
+      "reranking_provider": "voyage",
+      "reranking_model": "rerank-2.5",
+      "retrieval_vector_candidate_depth": 20,
+      "retrieval_lexical_candidate_depth": 20,
+      "retrieval_fused_candidate_depth": 20,
+      "retrieval_rrf_k": 60,
+      "retrieval_support_cutoff": 0.7
+    }
+  },
+  "error": null
+}

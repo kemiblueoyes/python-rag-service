@@ -10,7 +10,7 @@ components: [component-wordpress-connector, component-indexing-pipeline]
 prerequisites: [IndxWP]
 next_steps: [SrchDoc]
 related_pages: [IndxPipe, TutIndx]
-last_modified: 2026-10-07
+last_modified: 2026-10-22
 audience: [primary]
 ---
 
@@ -40,8 +40,11 @@ The command fetches the published records in `WORDPRESS_COLLECTIONS` and compare
 - A document that matches the snapshot is unchanged. The command doesn't send it to Voyage or rewrite it in Qdrant.
 - A document that was in the snapshot but isn't in the current published set is removed or unpublished. The command deletes its Qdrant points.
 
-The command writes the new snapshot and `data/wordpress-chunks.json` only after Qdrant synchronization returns.
-If Voyage or Qdrant fails before that, the previous snapshot stays in place and the next run can retry the same changes.
+The command publishes `data/wordpress-chunks.json` and then `data/wordpress-documents.json` only after Qdrant
+synchronization returns. The document file is the checkpoint the next run compares against. Each file is replaced
+only after its new copy has been fully written, so a failed save leaves the previous checkpoint readable.
+If Voyage or Qdrant fails, both files stay in place and the next run retries the same changes. If saving the
+checkpoint fails, the next run still sees the pending changes.
 Embedding finishes before any Qdrant delete, so a Voyage failure doesn't remove chunks that are still searchable.
 
 ## Rebuild the index when its structure changes

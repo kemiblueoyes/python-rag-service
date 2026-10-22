@@ -9,13 +9,13 @@ from rag_service.evaluation.qualitative import (
 )
 
 REVIEW_PATH = Path(
-    "data/evaluation/answer_qualitative_review.json"
+    "data/evaluation/latest/answer_qualitative_review.json"
 )
 ANSWER_BASELINE_PATH = Path(
-    "data/evaluation/answer_baseline.json"
+    "data/evaluation/latest/answer_baseline.json"
 )
 OUTPUT_PATH = Path(
-    "data/evaluation/answer_qualitative_review.md"
+    "data/evaluation/latest/answer_qualitative_review.md"
 )
 
 

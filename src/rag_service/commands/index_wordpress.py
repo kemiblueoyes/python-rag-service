@@ -1,5 +1,7 @@
 import argparse
 import json
+import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -48,15 +50,45 @@ def _write_models(
     output_path: Path,
     models: list[CanonicalDocument] | list[DocumentChunk],
 ) -> None:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
+    _publish_text(
+        output_path,
         json.dumps(
             [model.model_dump(mode="json") for model in models],
             indent=2,
             ensure_ascii=False,
         ),
-        encoding="utf-8",
     )
+
+
+def _publish_text(output_path: Path, text: str) -> None:
+    """Replace one JSON file so readers never see a partial write."""
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_file = tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        dir=output_path.parent,
+        prefix=f".{output_path.name}.",
+        suffix=".tmp",
+        delete=False,
+    )
+    temporary_path = Path(temporary_file.name)
+    try:
+        with temporary_file:
+            temporary_file.write(text)
+            temporary_file.flush()
+            os.fsync(temporary_file.fileno())
+        os.replace(temporary_path, output_path)
+    except BaseException:
+        _remove_temporary(temporary_path)
+        raise
+
+
+def _remove_temporary(path: Path) -> None:
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        pass
 
 
 def run(
@@ -111,9 +143,7 @@ def run(
             preserve_block=build_wordpress_block_preserver(
                 profile.preserved_block_classes
             ),
-            excluded_section_headings=(
-                profile.excluded_section_headings
-            ),
+            excluded_section_headings=(profile.excluded_section_headings),
         )
 
     vector_index_stats = None
@@ -127,10 +157,12 @@ def run(
             rebuild=rebuild_vector_index,
         )
 
-    # The snapshot represents the last successfully synchronized index.
-    _write_models(output_path, current_documents)
+    # Chunks are published before the document snapshot. The snapshot is the
+    # checkpoint for a completed run, so a failed publication leaves it in place
+    # and the next run still detects the same changes.
     if chunk_output_path is not None:
         _write_models(chunk_output_path, chunks)
+    _write_models(output_path, current_documents)
 
     return WordPressIndexResult(
         changes=changes,
