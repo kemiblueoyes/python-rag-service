@@ -1,6 +1,5 @@
 // fern/constants.js
 
 export const evaluationDatasetId = 'doc-landscape-baseline'
-export const evaluationDataset = "doc-landscape-v1.5"
-export const evaluationVersion = "1.5"
+export const evaluationDatasetVersion = "1.7"
 export const apiVersion = "v1"

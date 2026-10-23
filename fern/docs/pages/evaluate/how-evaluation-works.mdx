@@ -13,6 +13,8 @@ last_modified: 2026-10-22
 audience: [secondary]
 ---
 
+import { evaluationDatasetVersion, evaluationDatasetId } from "@/constants"
+
 The Python RAG Service measures retrieval quality and answer quality with a versioned evaluation dataset. Each test
 case pairs a query with the result the service should produce. Retrieval evaluation compares the chunks the retrieval
 pipeline returns with that expected result. Answer evaluation checks the generated answer, including evidence
@@ -39,7 +41,7 @@ Run the evaluation again after a change that can affect retrieval or answer qual
 
 The evaluation dataset is the maintained collection of test cases. The project stores it at `evaluation/datasets/baseline.json`.
 
-The current dataset ID is `doc-landscape-baseline`, and the version is `1.5`. It's the human-labeled set for The Doc Landscape
+The current dataset ID is <code>{evaluationDatasetId}</code>, and the version is <code>{evaluationDatasetVersion}</code>. It's the human-labeled set for The Doc Landscape
 WordPress index and contains 22 cases.
 
 Reports and the human review record the dataset version they used. Both runs in a comparison need the same dataset version.
@@ -176,7 +178,7 @@ Citation checks happen at two stages:
 A retrieval gap and a weak answer are different failures. The returned chunks can miss part of the expected retrieval result
 while still providing enough evidence for an answer.
 
-In the recorded dataset `1.5` run, `multi-section-001` doesn't retrieve every primary section in the top five chunks. Its
+In the recorded dataset <code>{evaluationDatasetVersion}</code> run, `multi-section-001` doesn't retrieve every primary section in the top five chunks. Its
 generated answer nevertheless covers the required points. See [Known limitations](/docs/reference/known-limitations) for that
 retrieval-coverage gap.
 
@@ -225,7 +227,7 @@ Evaluation runs write JSON and Markdown reports under `data/evaluation/`.
 
 These are local files. Git ignores `/data/`, so the reports aren't included in the repository. See
 [Recorded evaluation reports](/docs/evaluate/recorded-evaluation-results) for a published snapshot on how the
-Python RAG Service performed on The Doc Landscape's WordPress corpus using dataset version `1.5`.
+Python RAG Service performed on The Doc Landscape's WordPress corpus using dataset version <code>{evaluationDatasetVersion}</code>.
 
 See [Evaluation architecture](/docs/architecture/evaluation-architecture) for how the dataset, commands, and generated
 files fit together.

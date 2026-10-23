@@ -1,0 +1,69 @@
+{
+  "name": "RAG failure alerts",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -144
+      ],
+      "id": "4edea68a-cd8f-4a78-a5e6-e17acf3f87a9",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@example.com",
+        "subject": "={{ '[RAG alert] ' + ($json.workflow?.name ?? 'Workflow') + ' — ' + ($json.execution?.lastNodeExecuted ?? 'Trigger failure') }}",
+        "emailType": "text",
+        "message": "={{ [\n  'Workflow: ' + ($json.workflow?.name ?? 'Unavailable'),\n  'Failed step: ' + ($json.execution?.lastNodeExecuted ?? $json.trigger?.error?.node?.name ?? 'Trigger'),\n  'Execution ID: ' + ($json.execution?.id ?? 'Unavailable'),\n  '',\n  'Error:',\n  ($json.execution?.error?.message ?? $json.trigger?.error?.message ?? 'No error message provided'),\n  '',\n  'Execution link:',\n  ($json.execution?.url ?? 'Unavailable — open n8n and check Executions'),\n  '',\n  'Next action: Open the execution and inspect the failed step. For indexing or evaluation errors, also check the operations-server terminal.'\n].join('\\n') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        -144
+      ],
+      "id": "d1c8527f-a17c-47ae-bc4f-d7261f2a88ab",
+      "name": "Send a message",
+      "webhookId": "d5f3ee8f-193f-42c7-88f4-0a36e7dc187e",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "executionTimeout": 600
+  },
+  "versionId": "83e0473b-78cb-4458-8280-c4fa68e98528",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "id": "8DNOp8zSFfV5phxH",
+  "tags": []
+}

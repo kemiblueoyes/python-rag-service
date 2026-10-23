@@ -140,10 +140,35 @@ from inside Docker first. If the loopback listener is unreachable, restart with
 an appropriate Docker-reachable address, for example `--host 0.0.0.0`, with
 local firewall rules restricting access. Keep the separate key in n8n credentials,
 send it as `X-API-Key`, and preserve the idempotency key for submission retries.
-Poll the returned `status_url` using the runner base URL. No schedules, automatic
-evaluation chaining, quality routing, notifications, or Jira actions are installed.
+Poll the returned `status_url` using the runner base URL.
 
-## Follow-up gaps
+The workflow in `automation/n8n/workflows/index-wordpress.json` includes manual
+and scheduled triggers, indexing submission and polling, evaluation chaining when
+content changes, retrieval-quality policy comparison, and Jira regression routing.
+The Jira route finds or creates an open regression issue and records new job
+findings without repeating an already recorded job. Workflow failures use explicit
+error branches. Keep runner credentials, Jira credentials, and the policy-file
+mount configured in n8n; the runner itself does not install or schedule workflows.
+See `automation/n8n/policies/README.md` for the policy files and Docker mount.
 
-- The public API caches its initialized BM25 retriever. It still needs a refresh
-  mechanism after indexing; a runner evaluation's fresh service does not refresh it.
+## Public API lexical refresh
+
+Keep the public API and operations runner as separate processes with access to the
+same configured `LEXICAL_CORPUS_PATH`. After indexing atomically replaces that
+file, each API process detects the change on its next search or answer request
+and builds a complete replacement BM25 index before using it. No API restart is
+required after indexing. Initialization remains lazy, and unchanged files reuse
+the existing in-memory index.
+
+Refresh and lexical searches are serialized within each API process. Requests
+wait for a rebuild, while a search already using the previous snapshot can finish
+with it. Refresh replaces only the in-memory lexical index; it does not replace
+or close provider clients. A missing, unreadable, invalid, or continuously changing
+corpus returns the existing controlled `configuration_error` response instead of
+serving stale lexical results. Later requests retry and recover once a valid
+corpus is available.
+
+Each API worker refreshes independently using file identity and metadata checks;
+there is no background watcher. Qdrant updates and corpus publication are not one
+transaction, so requests during indexing can observe different vector and lexical
+generations. Environment configuration changes still require a process restart.

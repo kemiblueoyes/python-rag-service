@@ -1,0 +1,39 @@
+{
+  "snapshot_id": "doc-landscape-v1.7-2026-10-22",
+  "assembled_on": "2026-10-22",
+  "dataset_id": "doc-landscape-baseline",
+  "dataset_version": "1.7",
+  "retrieval_generated_at": "2026-10-22T19:34:07.093014+00:00",
+  "answer_generated_at": "2026-10-22T19:39:06.033957+00:00",
+  "reviewed_at": null,
+  "answer_baseline_generated_at": null,
+  "implementation_commit": null,
+  "historical_corpus_snapshot": null,
+  "files": [
+    {
+      "name": "answer_baseline.json",
+      "size_bytes": 218077,
+      "sha256": "d5479706d2955d15fe42210eba8856dd78aa4ad86f41db22e1be07b72418710c"
+    },
+    {
+      "name": "answer_baseline.md",
+      "size_bytes": 97757,
+      "sha256": "8bfd9bcc25c86896e8096057486edbb9907581be71997aa9ca68a2a1668eaff5"
+    },
+    {
+      "name": "baseline.json",
+      "size_bytes": 74714,
+      "sha256": "17496cd67ddff4af1dd4ea5e1b1536dffa47e9f48b1a0c1279203c2a19d85c24"
+    },
+    {
+      "name": "retrieval_baseline.json",
+      "size_bytes": 161212,
+      "sha256": "d85fb39f1ca81c63d2b8218ed9b316bb2d8a6639b91f810fc4e8380c6b34c330"
+    },
+    {
+      "name": "retrieval_baseline.md",
+      "size_bytes": 96041,
+      "sha256": "dee70a210d1f789590764d21ed48ea8e26ecdc46fbacdb52db0707da160de188"
+    }
+  ]
+}

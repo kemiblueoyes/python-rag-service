@@ -8,7 +8,7 @@ The first implementation uses WordPress as both the content source and reference
 
 ## Project status
 
-The core indexing, search, grounded-answer, WordPress integration, and evaluation workflows are implemented and tested. Developer documentation is published. Operational automation for indexing, evaluation, and failure reporting is in progress.
+The core indexing, search, grounded-answer, WordPress integration, and evaluation workflows are implemented and tested. Developer documentation is published. A separate operations runner and n8n workflows support scheduled indexing, retrieval evaluation, quality checks, Jira regression reporting, and failure alerts.
 
 See the [implementation roadmap](docs/design/004-implementation-roadmap.md) for the remaining work and planned extensions.
 
@@ -21,6 +21,7 @@ See the [implementation roadmap](docs/design/004-implementation-roadmap.md) for 
 - **Expose search and answers through an API:** Authenticate requests with an API key and support metadata filters.
 - **Integrate with WordPress:** Provide Search and Ask interfaces through a reference plugin with source links, clickable citations, and loading and error states.
 - **Evaluate quality:** Measure retrieval, check answer structure and citation behavior, and review generated answers against versioned expectations.
+- **Automate operations:** Run indexing and retrieval evaluation through a separate authenticated runner, with n8n workflows for scheduling, quality routing, Jira regressions, and failure alerts.
 
 ## Get started
 
@@ -36,6 +37,7 @@ Search requires Python 3.12, [uv](https://docs.astral.sh/uv/), a Voyage AI API k
 | Generate answers from indexed content | [Generate grounded answers](https://python-rag-service.docs.buildwithfern.com/docs/search-and-answer/generate-grounded-answers) |
 | Add the WordPress client | [Integrate with WordPress](https://python-rag-service.docs.buildwithfern.com/docs/integrate/integrate-with-wordpress) |
 | Evaluate retrieval and answers | [Run the evaluation](https://python-rag-service.docs.buildwithfern.com/docs/evaluate/run-the-evaluation) |
+| Automate indexing and retrieval evaluation | [Operations guide](docs/operations/README.md) |
 
 ## API
 
@@ -45,7 +47,7 @@ Search requires Python 3.12, [uv](https://docs.astral.sh/uv/), a Voyage AI API k
 | `POST /v1/answer` | Retrieve documentation and generate an answer with source references. |
 | `GET /health` | Check whether the API is running. |
 
-Search and answer require an `X-API-Key` header. Both use the same retrieval pipeline. Indexing runs through internal commands rather than a public endpoint.
+Search and answer require an `X-API-Key` header. Both use the same retrieval pipeline. Indexing runs through CLI commands or the separate operations runner rather than a public search/answer endpoint.
 
 See the [API reference](https://python-rag-service.docs.buildwithfern.com/reference/search) for request schemas, filters, responses, and errors. A running local service also exposes interactive API documentation at `http://127.0.0.1:8000/docs`.
 
@@ -58,6 +60,14 @@ The answer workflow selects retrieved chunks within a context budget, constructs
 The WordPress connector imports content. The WordPress client consumes the API through a server-side proxy that keeps the service API key out of browser JavaScript. These components remain separate from the core RAG logic.
 
 Read the [system architecture](https://python-rag-service.docs.buildwithfern.com/docs/architecture/system-architecture) and [architecture decision records](docs/design/adr/) for the component boundaries and design choices.
+
+## Operations and automation
+
+The operations runner runs separately from the public API and uses its own authentication key. It accepts indexing and retrieval-evaluation jobs, tracks their status, and preserves job results for polling and recovery.
+
+The included n8n workflows schedule WordPress indexing, evaluate retrieval when content changes, compare results with quality policies, report regressions in Jira, and send failure alerts. Configure the runner connection, credentials, and policy files in your n8n environment. After indexing publishes updated chunks, the public API refreshes its in-memory BM25 index on the next search or answer request.
+
+See the [operations guide](docs/operations/README.md) for setup, manual verification, Docker connectivity, and recovery behavior. Workflow exports and quality policies are in [`automation/n8n/`](automation/n8n/).
 
 ## Evaluation
 
@@ -111,11 +121,13 @@ bash scripts/audit-locked-dependencies.sh
 | [`src/rag_service/`](src/rag_service/) | Connectors, indexing, retrieval, generation, API, and command implementations |
 | [`clients/wordpress/`](clients/wordpress/) | WordPress reference client and its tests |
 | [`tests/`](tests/) | Python service and documentation-tool tests |
+| [`automation/n8n/`](automation/n8n/) | Indexing, retrieval-quality, Jira regression, and failure-alert workflows and policies |
 | [`evaluation/`](evaluation/) | Evaluation datasets and recorded report snapshots |
 | [`fern/`](fern/) | Published documentation source and Fern configuration |
 | [`doc-infrastructure/`](doc-infrastructure/) | Content model, templates, style guidance, and page registry |
 | [`docs/design/`](docs/design/) | Project design, implementation roadmap, and architecture decisions |
 | [`docs/evaluation/`](docs/evaluation/) | Retrieval experiments, failure analysis, and evaluation findings |
+| [`docs/operations/`](docs/operations/) | Operations runner setup, automation integration, and recovery guidance |
 
 ## License
 

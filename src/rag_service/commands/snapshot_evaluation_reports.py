@@ -231,7 +231,9 @@ def main() -> None:
     parser.add_argument(
         "--dataset", type=Path, default=Path("evaluation/datasets/baseline.json")
     )
-    parser.add_argument("--source-dir", type=Path, default=Path("data/evaluation"))
+    parser.add_argument(
+        "--source-dir", type=Path, default=Path("data/evaluation/latest")
+    )
     parser.add_argument("--output-dir", type=Path, default=Path("evaluation/reports"))
     parser.add_argument("--name", help="Override the version-and-UTC-date folder name.")
     parser.add_argument(

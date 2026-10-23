@@ -9,7 +9,7 @@ topics: [topic-answer-evaluation, topic-evidence-sufficiency, topic-citations]
 components: [component-evaluation-framework, component-answer-generation-service]
 next_steps: [RecEvRes]
 related_pages: [AnsGenCit, EvArch, RtrvlEv, HowEv, EvalRef]
-last_modified: 2026-10-09
+last_modified: 2026-10-22
 audience: [secondary]
 ---
 
@@ -17,13 +17,13 @@ Answer evaluation checks the model-reported evidence-sufficiency flag and cited 
 Human review separately scores support, completeness, unsupported details, and focus. This page defines both sets
 of checks and their pass rules.
 
-To generate an answer report, see [Run the evaluation](/docs/evaluate/run-the-evaluation).
+To generate an answer report, run `rag_service.commands.evaluate_answers`. See [Run the evaluation](/docs/evaluate/run-the-evaluation).
 
-## How the command answers a case
+## How `rag_service.commands.evaluate_answers` answers a case
 
 ### Retrieve evidence
 
-The answer command sends each case's query and filters to the current retrieval pipeline and requests 5 chunks. Retrieval can
+The command sends each case's query and filters to the current retrieval pipeline and requests 5 chunks. Retrieval can
 return fewer chunks or none.
 
 The command uses these returned chunks, not the saved retrieval report. The answer report records the requested count as `retrieval_limit`.
@@ -162,11 +162,20 @@ and the Markdown report prints it as not applicable.
 
 ## Human review criteria
 
-A person reviews the saved answer-report cases whose `expected_answer.expected_sufficient_evidence` value is `true`, including
-cases that failed the structural checks. The reviewer compares each answer with the retrieved evidence and required points
-stored in that report.
+Review the answers saved in `data/evaluation/answer_baseline.json`. Include every case where
+`expected_answer.expected_sufficient_evidence` is `true`, even if it failed the automated structural checks.
 
-Each score is an integer from 0 through 2. A review passes only when every score is 2.
+For each answer, look at:
+
+- **The question:** What was being asked? Read the case’s `query`.
+- **The source passages:** Does the retrieved documentation support what the answer says? Read the passages saved
+in `retrieved_results` and `cited_sources`. Each passage’s `text` field contains the documentation text.
+- **The required points:** Did the answer cover what it needed to? Compare it with `expected_answer.required_points`.
+
+Then assign four scores: support / faithfulness, required-point completeness, unsupported details, and focus / relevance.
+Use the criteria in the table to choose each score: **2** means it meets the requirement, **1** means partly, and **0** means it doesn’t.
+
+Record the scores and any notes in `data/evaluation/answer_qualitative_review.json`. A review passes only when all four scores are **2**.
 
 | Criterion | 2 | 1 | 0 |
 | --- | --- | --- | --- |

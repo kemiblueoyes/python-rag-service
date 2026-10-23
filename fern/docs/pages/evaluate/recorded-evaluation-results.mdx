@@ -1,30 +1,32 @@
 ---
 id: RecEvRes
 title: Recorded evaluation results
-subtitle: Compare recorded retrieval, answer, and human-review results with your own runs.
+subtitle: Inspect the latest recorded retrieval and answer results, and find earlier snapshots.
 description: Review a published evaluation benchmark for The Doc Landscape corpus, inspect the saved reports, and compare your own runs using the same cases and scoring rules.
 content_type: eval_results
 lifecycle_status: published
 topics: [topic-retrieval-evaluation, topic-answer-evaluation, topic-support-detection]
 components: [component-evaluation-framework, component-retrieval-service, component-answer-generation-service]
-dataset_version: "1.5"
+dataset_version: "1.7"
 next_steps: [RnEv, KnLmt]
 related_pages: [RtrvlEv, AnsEv, EvArch, HowEv, EvalRef]
 last_modified: 2026-10-22
 audience: [secondary]
 ---
 
-This benchmark records how the Python RAG Service performed on [The Doc Landscape](https://doclandscape.com/) WordPress corpus using dataset
-version `1.5`. The published snapshots contain the test cases, retrieved evidence, generated answers, and review
-scores behind the results. Use them to inspect individual cases and compare your own evaluation runs.
+import { evaluationDatasetVersion, evaluationDatasetId } from "@/constants"
 
-Retrieval passed 21 of 22 cases. All 22 cases passed the answer structural checks, and the human review passed
-all 14 answers selected for review. Retrieval and answer evaluation ran separately on different dates; the human
-review identifies the saved answer run.
+This benchmark records how the Python RAG Service performed on [The Doc Landscape](https://doclandscape.com/) WordPress corpus using dataset
+version <code>{evaluationDatasetVersion}</code>. The October 22, 2026 snapshot contains the test cases, retrieved evidence, and generated answers
+behind the results. Use them to inspect individual cases and compare your own evaluation runs.
+
+Retrieval passed 21 of 22 cases. All 22 cases passed the answer structural checks. Retrieval and answer evaluation
+ran separately on October 22. This snapshot doesn't include qualitative review artifacts; the human-review status
+is described below.
 
 ## Evaluation dataset
 
-The dataset is `doc-landscape-baseline`, version `1.5`. It contains 22 cases: 14 expect relevant chunks and
+The dataset is <code>{evaluationDatasetId}</code>, version <code>{evaluationDatasetVersion}</code>. It contains 22 cases: 14 expect relevant chunks and
 sufficient evidence, and 8 expect no chunks and insufficient evidence. Every case filters retrieval to
 `source: wordpress`.
 
@@ -42,24 +44,23 @@ The reports record the following settings.
 Retrieval can return fewer than 5 chunks or none. [Evaluation architecture](/docs/architecture/evaluation-architecture)
 explains how retrieval, answer evaluation, and human review connect.
 
-## Published snapshots
+## Latest recorded snapshot
 
 Read the Markdown reports for individual case results. Use the JSON files to inspect fields or compare results
 programmatically. These snapshots preserve the recorded runs; later runs belong in a separate snapshot set.
 
 | Evaluation | Dataset version | Run or review time (UTC) | Markdown report | JSON source |
 | --- | --- | --- | --- | --- |
-| Retrieval | `1.5` | October 3, 2026, 18:41:27 | [Retrieval report](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/retrieval_baseline.md) | [Retrieval JSON](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/retrieval_baseline.json) |
-| Answer structure | `1.5` | August 28, 2026, 06:10:50 | [Answer report](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/answer_baseline.md) | [Answer JSON](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/answer_baseline.json) |
-| Human review | `1.5` | Reviewed August 28, 2026, 06:20:00 | [Human-review report](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/answer_qualitative_review.md) | [Human-review JSON](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/answer_qualitative_review.json) |
+| Retrieval | <code>{evaluationDatasetVersion}</code> | October 22, 2026, 19:34:07 | [Retrieval report](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.7-2026-10-22/retrieval_baseline.md) | [Retrieval JSON](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.7-2026-10-22/retrieval_baseline.json) |
+| Answer structure | <code>{evaluationDatasetVersion}</code> | October 22, 2026, 19:39:06 | [Answer report](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.7-2026-10-22/answer_baseline.md) | [Answer JSON](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.7-2026-10-22/answer_baseline.json) |
 
-The [dataset snapshot](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.5-2026-10-05/baseline.json) contains the queries, source judgments, and answer expectations.
-The human-review JSON identifies the August 28 answer run through its dataset ID, version, answer-run timestamp,
-and generation model. Full timestamps are preserved in the source files.
+The [dataset snapshot](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.7-2026-10-22/baseline.json) contains the queries, source judgments, and answer expectations.
+The [snapshot manifest](https://github.com/kemiblueoyes/python-rag-service/blob/main/evaluation/reports/doc-landscape-v1.7-2026-10-22/manifest.json)
+records run timestamps and artifact checksums. Full timestamps are preserved in the source files.
 
 ## Retrieval results
 
-Retrieval evaluation scored up to 5 returned chunks per case. These results come from the October 3 retrieval
+Retrieval evaluation scored up to 5 returned chunks per case. These results come from the October 22 retrieval
 run. [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines the metrics and pass rules.
 
 | Metric | Result |
@@ -71,10 +72,10 @@ run. [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines the met
 | Primary hit rate@5 | 100.0% (14/14) |
 | Mean precision@5 | 95.4% |
 | Precision-evaluable answerable cases | 13/14 |
-| Mean recall@5 | 76.5% |
+| Mean recall@5 | 75.8% |
 | Mean reciprocal rank | 0.907 |
 
-Mean precision covers 13 answerable cases. The remaining case, `context-001`, returned an unjudged chunk, so its
+Mean precision covers 13 answerable cases. The remaining case, `updated-content-001`, returned an unjudged chunk, so its
 precision is `null` and it's excluded from the mean. Read the precision value alongside the number of
 precision-evaluable cases.
 
@@ -98,7 +99,7 @@ explains how empty results are scored.
 
 ## Answer-structure results
 
-The August 28 answer run passed the structural checks for all 22 cases. A structural pass requires the
+The October 22 answer run passed the structural checks for all 22 cases. A structural pass requires the
 model-reported evidence-sufficiency flag to match the expectation and the cited sources to satisfy the case's
 citation rules. [Answer evaluation](/docs/evaluate/answer-evaluation) defines those checks.
 
@@ -114,24 +115,16 @@ citation rules. [Answer evaluation](/docs/evaluate/answer-evaluation) defines th
 The structural checks don't assess whether individual claims are supported, required points are covered, or
 the answer stays focused. Those criteria are assessed in the human review.
 
-## Human-review results
+## Human-review status
 
-The recorded review covers the 14 saved answers whose cases expect sufficient evidence. Each criterion uses a
-score from 0 through 2. A strict pass requires a score of 2 on all four criteria.
+The latest snapshot contains retrieval and answer-structure reports, but no qualitative review JSON or Markdown.
+An AI-assisted assessment of the October 22 answer run was reviewed and approved by the human reviewer locally:
+all 14 answerable cases received 2 on each of the four criteria. Those approved review artifacts haven't yet been
+included in the recorded snapshot, so its manifest doesn't establish a reproducible qualitative result.
 
-| Metric | Result |
-| --- | ---: |
-| Answers reviewed | 14 |
-| Strict passes | 14/14 |
-| Strict failures | 0 |
-| Strict qualitative pass rate | 100.0% |
-| Support / faithfulness average | 2.00 / 2 |
-| Required-point completeness average | 2.00 / 2 |
-| Unsupported details average | 2.00 / 2 |
-| Focus / relevance average | 2.00 / 2 |
-
-All 14 reviewed answers received 2 on every criterion. Cases that expect insufficient evidence are outside this
-review. [Answer evaluation](/docs/evaluate/answer-evaluation#human-review-criteria) defines the review criteria.
+The earlier dataset `1.5` snapshot includes a human review of its own saved answers. Those scores belong to that
+answer run and must not be applied to version <code>{evaluationDatasetVersion}</code>. See [Previous snapshots](#previous-snapshots) for the archive.
+[Answer evaluation](/docs/evaluate/answer-evaluation#human-review-criteria) defines the review criteria.
 
 ## Findings
 
@@ -157,19 +150,18 @@ chunks and matched 1 of those primary sources.
 The case failed because two designated primary sources were missing. A primary hit and high precision therefore
 coexist with incomplete source coverage.
 
-The August 28 answer for this case passed its structural checks and received 2 on every human-review criterion.
-Those outcomes use different rules: retrieval requires all designated primary sources for a `multi_section`
-case, while answer evaluation checks citation behavior and human review assesses support and required-point
-coverage. The answer and review results describe the earlier answer run.
+The October 22 answer for this case passed its structural checks. Retrieval requires all designated primary sources
+for a `multi_section` case, while answer evaluation checks citation behavior. Passing those structural checks
+doesn't by itself establish that all claims are supported or all required points are covered.
 
 ### An unjudged chunk makes precision unavailable
 
-The `context-001` case asks:
+The `updated-content-001` case asks:
 
-> How important is context in documentation?
+> How does documentation engineering connect the architecture and operations layers of a knowledge system?
 
-The retrieval run returned 5 chunks: 4 counted as relevant and 1 as unjudged. It matched all 3 primary sources,
-so the case passed. Precision was `null` because one chunk was unjudged; recall remained 0.667. This case explains
+The retrieval run returned 5 chunks: 4 counted as relevant and 1 as unjudged. It matched 4 of 5 primary sources,
+so the case passed under the rule requiring at least one primary hit. Precision was `null` because one chunk was unjudged; recall was 0.571. This case explains
 why the mean precision uses 13 of the 14 answerable cases.
 
 Inspect its returned evidence and the dataset's judgments when comparing a run that changes precision
@@ -177,7 +169,7 @@ availability. A change in the mean can reflect a change in which cases have calc
 
 ## Compare with your own runs
 
-1. **Check the benchmark inputs.** For a direct comparison, use the published version `1.5` dataset, the same
+1. **Check the benchmark inputs.** For a direct comparison, use the published version <code>{evaluationDatasetVersion}</code> dataset, the same
    corpus, and the same source judgments. Confirm that the indexed chunk IDs and content still correspond to
    those judgments. For another corpus, create expectations for its sources and identify the dataset separately.
 2. **Record the run conditions.** Follow [Run the evaluation](/docs/evaluate/run-the-evaluation). Record the
@@ -197,17 +189,26 @@ describe different benchmarks.
 
 - **Corpus and sample:** The benchmark covers 22 cases on The Doc Landscape WordPress corpus. Its rates describe
   those cases and their recorded expectations.
-- **Separate runs:** Retrieval was recorded on October 3, while answer generation and human review were recorded on
-  August 28. The dataset version matches, but the snapshots don't establish that the indexed content was
-  identical on both dates.
+- **Separate runs:** Retrieval and answer generation ran separately on October 22. Matching dataset versions and
+  nearby timestamps don't establish that the indexed content was identical for both runs.
 - **Incomplete coverage:** The `multi-section-001` retrieval case matched 1 of 3 primary sources and failed.
-- **Precision availability:** Mean precision excludes `context-001`. Its unjudged chunk requires attention when
+- **Precision availability:** Mean precision excludes `updated-content-001`. Its unjudged chunk requires attention when
   comparing precision across runs.
-- **One answer review:** Human scores describe one recorded set of 14 answers. They don't measure consistency
-  across repeated generation runs.
+- **Review artifacts:** The approved local qualitative review isn't included in this snapshot. One reviewed answer
+  run also doesn't measure consistency across repeated generation runs.
 - **Replay inputs:** The snapshots preserve returned evidence and expectations. They don't include the full
   historical index or an implementation commit. The baseline reports also omit the reranking model and candidate
   depths, so they don't record every retrieval setting.
+
+## Previous snapshots
+
+Earlier runs are preserved in the [evaluation reports directory](https://github.com/kemiblueoyes/python-rag-service/tree/main/evaluation/reports).
+Each snapshot identifies its dataset and recorded run times. The
+[dataset 1.5 snapshot](https://github.com/kemiblueoyes/python-rag-service/tree/main/evaluation/reports/doc-landscape-v1.5-2026-10-05)
+includes the earlier retrieval, answer, and human-review reports.
+
+Keep historical snapshots unchanged. Check dataset versions, source judgments, and run conditions before comparing
+results; differences between versions aren't necessarily changes in retrieval or generation quality.
 
 ## Next steps
 

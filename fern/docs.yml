@@ -17,6 +17,10 @@ metadata:
   og:url: "https://python-rag-service.docs.buildwithfern.com/"
   og:locale: "en_US"
 
+experimental:
+  mdx-components:
+    - ./constants.js
+
 theme:
   page-actions: toolbar
 
