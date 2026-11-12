@@ -63,6 +63,7 @@ audit = [
 
 [tool.uv]
 constraint-dependencies = [
+    "filelock>=4.2.1",
     "httpcore2>=2.13.1",
     "httpx2>=2.13.1",
     "multidict>=6.9.1,<7",
