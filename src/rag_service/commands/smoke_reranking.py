@@ -5,7 +5,7 @@ with, embeds it, and pulls the top 20 chunks from the vector store. It
 sends those chunks to Voyage's rerank model, then writes a Markdown
 report that shows the new order beside each chunk's original vector
 rank and score. The report is written to
-``data/evaluation/reranking_smoke.md``.
+``data/evaluation/smoke-test-results/reranking_smoke.md``.
 """
 
 from pathlib import Path
@@ -23,7 +23,7 @@ QUERY = QUERY = (
 CANDIDATE_DEPTH = 20
 RERANK_MODEL = "rerank-2.5"
 
-OUTPUT_PATH = Path("data/evaluation/reranking_smoke.md")
+OUTPUT_PATH = Path("data/evaluation/smoke-test-results/reranking_smoke.md")
 
 
 class _RerankingResult(Protocol):

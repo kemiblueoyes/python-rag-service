@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-evaluation]
 components: [component-evaluation-framework]
 next_steps: [RnEv]
 related_pages: [RtrvlEv, AnsEv, RecEvRes, HowEv, EvalRef]
-last_modified: 2026-10-07
+last_modified: 2026-11-12
 audience: [secondary]
 ---
 
@@ -43,7 +43,7 @@ request settings as retrieval evaluation. It doesn’t read the saved retrieval 
 
 It then compares those chunks with the case's retrieval expectation. The comparison records primary-source hits,
 precision, recall, reciprocal rank, and whether an expected-empty case returned no chunks. The command writes
-`data/evaluation/retrieval_baseline.json` and `data/evaluation/retrieval_baseline.md`.
+`data/evaluation/latest/retrieval_baseline.json` and `data/evaluation/latest/retrieval_baseline.md`.
 
 [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines those metrics and the case success rule.
 
@@ -58,7 +58,7 @@ The automated checks compare the model-reported `sufficient_evidence` value with
 check citation behavior against the case’s source judgments and expected evidence sufficiency. The command saves
 required points for human review; automated checks don’t assess whether the answer covers them.
 
-The command writes `data/evaluation/answer_baseline.json` and `data/evaluation/answer_baseline.md`. The JSON file
+The command writes `data/evaluation/latest/answer_baseline.json` and `data/evaluation/latest/answer_baseline.md`. The JSON file
 contains the saved answer run.
 
 [Answer evaluation](/docs/evaluate/answer-evaluation) defines the structural checks.
@@ -88,11 +88,11 @@ chunks, and checks for a model-reported `sufficient_evidence` value of false and
 A person reviews the saved answers for cases whose saved answer expectation sets expected_sufficient_evidence to true.
 The reviewer compares each answer with the retrieved evidence and required points stored in the answer report, then scores
 support and faithfulness, required-point completeness, unsupported details, and focus. Scores and notes are stored in
-`data/evaluation/answer_qualitative_review.json`.
+`data/evaluation/latest/answer_qualitative_review.json`.
 
 `rag_service.commands.report_qualitative_answers` doesn't score the answers. It validates that the review
 identifies the saved answer run and covers exactly the required cases, then summarizes the scores, then writes
-`data/evaluation/answer_qualitative_review.md`. The check compares dataset ID, dataset version, the answer report's
+`data/evaluation/latest/answer_qualitative_review.md`. The check compares dataset ID, dataset version, the answer report's
 `generated_at` timestamp, and the generation model. The reviewed case IDs must be exactly the cases whose
 `expected_sufficient_evidence` is `true`.
 
@@ -102,7 +102,7 @@ identifies the saved answer run and covers exactly the required cases, then summ
 
 These commands compare individual retrieval stages and experimental configurations using the same dataset and
 retrieval scoring function. They use the same dataset and the same retrieval scoring function. Each one writes
-its own JSON and Markdown files under `data/evaluation/`. Those files aren't `retrieval_baseline` or
+its own JSON and Markdown files under `data/evaluation/latest/`. Those files aren't `retrieval_baseline` or
 `answer_baseline`, and human review doesn't match them.
 
 - `evaluate_bm25` retrieves with BM25 only and keeps the top five matches.
@@ -125,7 +125,7 @@ to the indexed content, models, and retrieval settings.
 
 Each baseline command overwrites its report files. Save copies before rerunning if you need to retain anearlier
 run. A human review must match the saved answer report being checked. Reports and human-review files are stored
-under `data/evaluation/`. Git ignores `/data/`, so these files aren’t committed by default.
+under `data/evaluation/latest/`. Git ignores `/data/`, so these files aren’t committed by default.
 [Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists their fields.
 
 ## Next steps

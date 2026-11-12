@@ -35,7 +35,7 @@ from rag_service.models.chunk import DocumentChunk
 from rag_service.retrieval.models import RetrievalResult
 
 DATASET_PATH = Path("evaluation/datasets/baseline.json")
-OUTPUT_DIRECTORY = Path("data/evaluation")
+OUTPUT_DIRECTORY = Path("data/evaluation/retrieval-experiments")
 JSON_OUTPUT_PATH = OUTPUT_DIRECTORY / "bm25_evaluation.json"
 MARKDOWN_OUTPUT_PATH = OUTPUT_DIRECTORY / "bm25_evaluation.md"
 

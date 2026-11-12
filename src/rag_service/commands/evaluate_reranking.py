@@ -30,7 +30,7 @@ from rag_service.vectorstores import create_vector_store
 from rag_service.vectorstores.base import SearchResult
 
 DATASET_PATH = Path("evaluation/datasets/baseline.json")
-OUTPUT_DIRECTORY = Path("data/evaluation")
+OUTPUT_DIRECTORY = Path("data/evaluation/retrieval-experiments")
 JSON_OUTPUT_PATH = OUTPUT_DIRECTORY / "reranking_evaluation.json"
 MARKDOWN_OUTPUT_PATH = OUTPUT_DIRECTORY / "reranking_evaluation.md"
 
