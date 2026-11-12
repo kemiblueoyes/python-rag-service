@@ -131,10 +131,10 @@ dataset in a new folder:
     uv run python -m rag_service.commands.snapshot_evaluation_reports
     ```
 
-The command reads the dataset version and creates a folder under
-`evaluation/reports/`. For the Doc Landscape dataset, the folder name is
-`doc-landscape-v<version>-<UTC-date>`. It contains the dataset, the JSON and
-Markdown reports, a manifest with file checksums, and a README.
+The command uses the dataset version to name a new folder under `evaluation/reports/`. It copies
+the dataset and the reports from data/evaluation/latest/ into that folder. For the Doc Landscape
+dataset, the folder name is `doc-landscape-v<version>-<UTC-date>`. It contains the dataset, the
+JSON and Markdown reports, a manifest with file checksums, and a README.
 
 To include a completed human review, add `--include-review`. The command validates
 the review against the saved answer run before saving the set.

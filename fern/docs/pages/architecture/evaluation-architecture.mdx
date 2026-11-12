@@ -38,8 +38,8 @@ version, so a later run can use a different version of the same file.
 
 ## Retrieval evaluation
 
-`rag_service.commands.evaluate_answers` runs retrieval independently for each case, using the same pipeline and
-request settings as retrieval evaluation. It doesn’t read the saved retrieval report.
+`rag_service.commands.evaluate_retrieval` runs each case’s query through the service’s retrieval pipeline and
+requests up to 5 chunks.
 
 It then compares those chunks with the case's retrieval expectation. The comparison records primary-source hits,
 precision, recall, reciprocal rank, and whether an expected-empty case returned no chunks. The command writes
@@ -102,7 +102,7 @@ identifies the saved answer run and covers exactly the required cases, then summ
 
 These commands compare individual retrieval stages and experimental configurations using the same dataset and
 retrieval scoring function. They use the same dataset and the same retrieval scoring function. Each one writes
-its own JSON and Markdown files under `data/evaluation/latest/`. Those files aren't `retrieval_baseline` or
+its own JSON and Markdown files under `data/evaluation/retrieval-experiments/`. Those files aren't `retrieval_baseline` or
 `answer_baseline`, and human review doesn't match them.
 
 - `evaluate_bm25` retrieves with BM25 only and keeps the top five matches.
@@ -123,8 +123,8 @@ support cutoff, and requested chunk count. The answer report also records the ge
 can use different dataset versions. When comparing runs, use the same dataset version and account for changes
 to the indexed content, models, and retrieval settings.
 
-Each baseline command overwrites its report files. Save copies before rerunning if you need to retain anearlier
-run. A human review must match the saved answer report being checked. Reports and human-review files are stored
+Each baseline command overwrites its report files. Save copies before rerunning if you need to retain an earlier
+run. A human review must match the saved answer report being checked. Baseline reports and human-review files are stored
 under `data/evaluation/latest/`. Git ignores `/data/`, so these files aren’t committed by default.
 [Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists their fields.
 
