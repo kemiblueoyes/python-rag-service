@@ -72,4 +72,4 @@ Documentation validation requires Python and npm dependencies, Fern CLI, and Val
 If your changes move documentation, change how files are generated, or change validation commands, update the relevant guidance in this file. Whenever you change this file, tell the person you are working with what changed and why in your final response or handoff summary.
 
 Keep detailed procedures in their existing guides and reusable audit procedures in
-skills; keep this file focused on durable repository guidance.
+skills. Keep this file focused on durable repository guidance.

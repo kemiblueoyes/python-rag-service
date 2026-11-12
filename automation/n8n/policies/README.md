@@ -30,7 +30,7 @@ existing n8n service's Docker Compose `volumes` list, preserving its other mount
 
 ```yaml
 volumes:
-  - "/Users/abionta/.codex/worktrees/dd7a/python-rag-service/automation/n8n/policies:/opt/rag-policies:ro"
+  - "./automation/n8n/policies:/opt/rag-policies:ro"
 ```
 
 Recreate the n8n container through its existing deployment procedure to apply

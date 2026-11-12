@@ -1,0 +1,18 @@
+name: n8n-rag
+services:
+  n8n:
+    image: n8nio/n8n:2.42.6
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      TZ: America/Denver
+      GENERIC_TIMEZONE: America/Denver
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_RESTRICT_FILE_ACCESS_TO: /opt/rag-policies
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - "./automation/n8n/policies:/opt/rag-policies:ro"
+
+volumes:
+  n8n_data:
