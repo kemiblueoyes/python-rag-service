@@ -10,12 +10,12 @@ components: [component-evaluation-framework]
 prerequisites: [IndxWP]
 next_steps: [RecEvRes]
 related_pages: [RtrvlEv, AnsEv, EvArch, HowEv, EvalRef]
-last_modified: 2026-10-22
+last_modified: 2026-11-12
 audience: [secondary]
 ---
 
 Run retrieval and answer evaluation from the repository root. Each command reads `evaluation/datasets/baseline.json`,
-runs the service’s Python components against the live index, and writes JSON and Markdown reports under `data/evaluation/`.
+runs the service’s Python components against the live index, and writes JSON and Markdown reports under `data/evaluation/latest/`.
 
 Run retrieval evaluation to see whether the current index returns the expected chunks. Run answer evaluation when
 you also want a generated answer for each case. Answer evaluation retrieves again. It doesn't read the retrieval
@@ -49,17 +49,17 @@ The indexed collection must match `QDRANT_COLLECTION`. The local chunk file used
     Retrieval can return fewer than 5 chunks, including none. When the command finishes, it prints:
 
     ```text
-    PASS: Retrieval evaluation written to data/evaluation/retrieval_baseline.json and data/evaluation/retrieval_baseline.md
+    PASS: Retrieval evaluation written to data/evaluation/latest/retrieval_baseline.json and data/evaluation/latest/retrieval_baseline.md
     ```
 
     That line means the command saved the files. It doesn't mean every case passed.
 
     ## Read the retrieval report
 
-    Open `data/evaluation/retrieval_baseline.md`. The report header identifies the dataset, version, and run settings. The
+    Open `data/evaluation/latest/retrieval_baseline.md`. The report header identifies the dataset, version, and run settings. The
     Summary lists case counts and aggregate metrics. Each case heading ends with `PASS` or `FAIL`.
 
-    `data/evaluation/retrieval_baseline.json` stores the same run, including the retrieved chunks.
+    `data/evaluation/latest/retrieval_baseline.json` stores the same run, including the retrieved chunks.
     [Retrieval evaluation](/docs/evaluate/retrieval-evaluation) defines the metrics.
     [Evaluation framework reference](/docs/reference/evaluation-framework-reference) lists the JSON fields.
 
@@ -78,14 +78,14 @@ The indexed collection must match `QDRANT_COLLECTION`. The local chunk file used
     evidence-sufficiency flag and citation behavior against the case’s expectations. When the command finishes, it prints:
 
     ```text
-    PASS: Answer evaluation written to data/evaluation/answer_baseline.json and data/evaluation/answer_baseline.md
+    PASS: Answer evaluation written to data/evaluation/latest/answer_baseline.json and data/evaluation/latest/answer_baseline.md
     ```
 
     That line means the command saved the files. Case results are inside the report.
 
     ## Read the answer report
 
-    Open `data/evaluation/answer_baseline.md`. The Summary lists the structural pass rate, evidence-sufficiency
+    Open `data/evaluation/latest/answer_baseline.md`. The Summary lists the structural pass rate, evidence-sufficiency
     accuracy, and citation-behavior accuracy. Each case includes the expected and model-reported evidence-sufficiency
     values, required points, generated answer, and cited sources.
 
@@ -106,7 +106,7 @@ The command’s `PASS:` message confirms that it wrote the reports. Individual c
 
 ## Optional: Generate the human-review report
 
-Review the saved answers and record scores and notes in `data/evaluation/answer_qualitative_review.json`.
+Review the saved answers and record scores and notes in `data/evaluation/latest/answer_qualitative_review.json`.
 [Evaluation framework reference](/docs/reference/evaluation-framework-reference) defines the required fields.
 [Answer evaluation](/docs/evaluate/answer-evaluation) explains how to score the answers.
 
@@ -120,7 +120,7 @@ From the repository root, run:
     ```
 
 The command validates the review against `answer_baseline.json`, summarizes the recorded scores, and writes
-`data/evaluation/answer_qualitative_review.md`.
+`data/evaluation/latest/answer_qualitative_review.md`.
 
 ## Save a report snapshot
 
@@ -131,7 +131,7 @@ dataset in a new folder:
     uv run python -m rag_service.commands.snapshot_evaluation_reports
     ```
 
-The command reads the dataset version and creates a folder under
+The command copies the reports from `data/evaluation/latest/`, reads the dataset version, and creates a folder under
 `evaluation/reports/`. For the Doc Landscape dataset, the folder name is
 `doc-landscape-v<version>-<UTC-date>`. It contains the dataset, the JSON and
 Markdown reports, a manifest with file checksums, and a README.
