@@ -8,7 +8,7 @@ lifecycle_status: published
 topics: [topic-evaluation]
 components: [component-evaluation-framework]
 related_pages: [EvArch, HowEv, RtrvlEv, AnsEv]
-last_modified: 2026-10-07
+last_modified: 2026-11-12
 audience: [secondary]
 ---
 
@@ -181,9 +181,9 @@ retrieval success for that category requires every primary source. [Retrieval ev
 
 ## Report and review metadata
 
-Retrieval evaluation writes `data/evaluation/retrieval_baseline.json` and
-`data/evaluation/retrieval_baseline.md`. Answer evaluation writes `data/evaluation/answer_baseline.json` and
-`data/evaluation/answer_baseline.md`. The human-review check reads the answer JSON file.
+Retrieval evaluation writes `data/evaluation/latest/retrieval_baseline.json` and
+`data/evaluation/latest/retrieval_baseline.md`. Answer evaluation writes `data/evaluation/latest/answer_baseline.json` and
+`data/evaluation/latest/answer_baseline.md`. The human-review check reads the answer JSON file.
 
 Rate fields in JSON are ratios from 0 through 1. The Markdown reports print those rates as percentages. Reciprocal
 rank stays a decimal in both files.
@@ -285,8 +285,8 @@ sources for one test case.
 
 ### Human review
 
-The project stores a human review at `data/evaluation/answer_qualitative_review.json`. The report command reads
-that file, checks it against `data/evaluation/answer_baseline.json`, and writes `data/evaluation/answer_qualitative_review.md`.
+The project stores a human review at `data/evaluation/latest/answer_qualitative_review.json`. The report command reads
+that file, checks it against `data/evaluation/latest/answer_baseline.json`, and writes `data/evaluation/latest/answer_qualitative_review.md`.
 
 #### Human review run matching
 

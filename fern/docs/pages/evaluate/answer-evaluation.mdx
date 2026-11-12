@@ -9,7 +9,7 @@ topics: [topic-answer-evaluation, topic-evidence-sufficiency, topic-citations]
 components: [component-evaluation-framework, component-answer-generation-service]
 next_steps: [RecEvRes]
 related_pages: [AnsGenCit, EvArch, RtrvlEv, HowEv, EvalRef]
-last_modified: 2026-10-22
+last_modified: 2026-11-12
 audience: [secondary]
 ---
 
@@ -162,7 +162,7 @@ and the Markdown report prints it as not applicable.
 
 ## Human review criteria
 
-Review the answers saved in `data/evaluation/answer_baseline.json`. Include every case where
+Review the answers saved in `data/evaluation/latest/answer_baseline.json`. Include every case where
 `expected_answer.expected_sufficient_evidence` is `true`, even if it failed the automated structural checks.
 
 For each answer, look at:
@@ -175,7 +175,7 @@ in `retrieved_results` and `cited_sources`. Each passage’s `text` field contai
 Then assign four scores: support / faithfulness, required-point completeness, unsupported details, and focus / relevance.
 Use the criteria in the table to choose each score: **2** means it meets the requirement, **1** means partly, and **0** means it doesn’t.
 
-Record the scores and any notes in `data/evaluation/answer_qualitative_review.json`. A review passes only when all four scores are **2**.
+Record the scores and any notes in `data/evaluation/latest/answer_qualitative_review.json`. A review passes only when all four scores are **2**.
 
 | Criterion | 2 | 1 | 0 |
 | --- | --- | --- | --- |
@@ -186,10 +186,10 @@ Record the scores and any notes in `data/evaluation/answer_qualitative_review.js
 
 ### Review files
 
-Reviewers save their scores in `data/evaluation/answer_qualitative_review.json`.
+Reviewers save their scores in `data/evaluation/latest/answer_qualitative_review.json`.
 
 The `rag_service.commands.report_qualitative_answers` command validates that file against the saved answer run, then writes
-`data/evaluation/answer_qualitative_review.md`. It doesn't assign scores.
+`data/evaluation/latest/answer_qualitative_review.md`. It doesn't assign scores.
 
 ### Matching the review to the answer run
 
