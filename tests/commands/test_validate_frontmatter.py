@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pytest
+import yaml
+
 from rag_service.commands.documentation.validate_frontmatter import (
     ContentModel,
     PageRegistry,
@@ -28,6 +31,42 @@ PAGE_FIXTURES = [
     TEST_TEMPLATE_DIR / "evaluation-results_Recorded-evaluation-results.mdx",
     TEST_TEMPLATE_DIR / "release-note_Hybrid-retrieval.mdx",
 ]
+
+
+def test_descriptive_mappings_preserve_validation_contract(tmp_path: Path) -> None:
+    source = REPO_ROOT / "doc-infrastructure" / "content-model.yml"
+    raw = yaml.safe_load(source.read_text(encoding="utf-8"))
+    for field in ("topics", "components", "lifecycle_statuses", "audience"):
+        raw[field] = {
+            key: {"description": f"Context for {key}"} for key in raw[field]
+        }
+    for rules in raw["content_types"].values():
+        rules["description"] = "Authoring context, not a required field."
+    path = tmp_path / "content-model.yml"
+    path.write_text(yaml.safe_dump(raw), encoding="utf-8")
+
+    model = load_content_model(path)
+
+    assert model == load_content_model(source)
+    assert model.content_types["eval_results"] == frozenset({"dataset_version"})
+    assert validate_paths(PAGE_FIXTURES, model, load_page_registry(model)) == []
+
+
+@pytest.mark.parametrize(
+    "field", ["topics", "components", "lifecycle_statuses", "audience"]
+)
+@pytest.mark.parametrize("key", [42, ""])
+def test_vocabulary_mapping_rejects_invalid_keys(
+    tmp_path: Path, field: str, key: str | int,
+) -> None:
+    source = REPO_ROOT / "doc-infrastructure" / "content-model.yml"
+    raw = yaml.safe_load(source.read_text(encoding="utf-8"))
+    raw[field] = {key: {"description": "Context"}}
+    path = tmp_path / "content-model.yml"
+    path.write_text(yaml.safe_dump(raw), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="non-empty string keys"):
+        load_content_model(path)
 
 
 def test_realistic_page_templates_pass_frontmatter_validation() -> None:

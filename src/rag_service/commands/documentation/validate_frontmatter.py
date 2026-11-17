@@ -231,12 +231,24 @@ def load_content_model(path: Path = DEFAULT_MODEL_PATH) -> ContentModel:
     return ContentModel(
         required_base_fields=_string_set(raw, "required_base_fields"),
         content_types=content_types,
-        lifecycle_statuses=_string_set(raw, "lifecycle_statuses"),
-        audiences=_string_set(raw, "audience"),
+        lifecycle_statuses=_vocabulary_keys(raw, "lifecycle_statuses"),
+        audiences=_vocabulary_keys(raw, "audience"),
         list_fields=_string_set(raw, "list_fields"),
-        topics=_string_set(raw, "topics"),
-        components=_string_set(raw, "components"),
+        topics=_vocabulary_keys(raw, "topics"),
+        components=_vocabulary_keys(raw, "components"),
     )
+
+
+def _vocabulary_keys(raw: dict[str, Any], field: str) -> frozenset[str]:
+    """Read vocabulary IDs, leaving descriptive mapping values for authoring tools."""
+    value = raw.get(field)
+    if isinstance(value, dict):
+        if not all(isinstance(key, str) and key.strip() for key in value):
+            raise ValueError(f"'{field}' must have non-empty string keys.")
+        return frozenset(value)
+
+    # Keep existing list-based models compatible during the migration.
+    return _string_set(raw, field)
 
 
 def _string_set(raw: dict[str, Any], field: str) -> frozenset[str]:
