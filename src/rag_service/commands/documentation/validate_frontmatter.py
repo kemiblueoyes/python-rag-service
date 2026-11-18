@@ -234,7 +234,7 @@ def load_content_model(path: Path = DEFAULT_MODEL_PATH) -> ContentModel:
         lifecycle_statuses=_vocabulary_keys(raw, "lifecycle_statuses"),
         audiences=_vocabulary_keys(raw, "audience"),
         list_fields=_string_set(raw, "list_fields"),
-        topics=_vocabulary_keys(raw, "topics"),
+        topics=_topic_keys(raw),
         components=_vocabulary_keys(raw, "components"),
     )
 
@@ -250,6 +250,39 @@ def _vocabulary_keys(raw: dict[str, Any], field: str) -> frozenset[str]:
     # Keep existing list-based models compatible during the migration.
     return _string_set(raw, field)
 
+def _topic_keys(raw: dict[str, Any]) -> frozenset[str]:
+    """Collect topic IDs recursively, including nested children."""
+    topics = raw.get("topics")
+
+    # Preserve compatibility with older list-based models.
+    if isinstance(topics, list):
+        return _string_set(raw, "topics")
+
+    seen: set[str] = set()
+
+    def visit(entries: Any) -> None:
+        if not isinstance(entries, dict):
+            raise ValueError("Topics must be a mapping.")
+
+        for topic_id, rules in entries.items():
+            if not isinstance(topic_id, str) or not topic_id.strip():
+                raise ValueError("Topic IDs must be non-empty strings.")
+
+            if topic_id in seen:
+                raise ValueError(f"Duplicate topic ID: {topic_id}")
+
+            seen.add(topic_id)
+
+            if not isinstance(rules, dict):
+                raise ValueError(
+                    f"Rules for topic {topic_id!r} must be a mapping."
+                )
+
+            if "children" in rules:
+                visit(rules["children"])
+
+    visit(topics)
+    return frozenset(seen)
 
 def _string_set(raw: dict[str, Any], field: str) -> frozenset[str]:
     value = raw.get(field)

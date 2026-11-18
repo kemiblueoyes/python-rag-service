@@ -8,7 +8,7 @@ The first implementation uses WordPress as both the content source and reference
 
 ## Project status
 
-The core indexing, search, grounded-answer, WordPress integration, and evaluation workflows are implemented and tested. Developer documentation is published. A separate operations runner and n8n workflows support scheduled indexing, retrieval evaluation, quality checks, Jira regression reporting, and failure alerts.
+The core indexing, search, grounded-answer, WordPress integration, and evaluation workflows are implemented and tested. Developer documentation is published. A separate operations runner and n8n workflows support scheduled indexing, retrieval evaluation, quality checks, Jira regression reporting, and failure alerts (**Documentation pending for this new feature**).
 
 See the [implementation roadmap](docs/design/004-implementation-roadmap.md) for the remaining work and planned extensions.
 
@@ -124,10 +124,11 @@ bash scripts/audit-locked-dependencies.sh
 | [`automation/n8n/`](automation/n8n/) | Indexing, retrieval-quality, Jira regression, and failure-alert workflows and policies |
 | [`evaluation/`](evaluation/) | Evaluation datasets and recorded report snapshots |
 | [`fern/`](fern/) | Published documentation source and Fern configuration |
-| [`doc-infrastructure/`](doc-infrastructure/) | Content model, templates, style guidance, and page registry |
+| [`doc-infrastructure/`](doc-infrastructure/) | Content model, templates, style guidance, Optional AI prompts for authoring pages and reviewing style, rules for verifying documented behavior, and page registry |
 | [`docs/design/`](docs/design/) | Project design, implementation roadmap, and architecture decisions |
 | [`docs/evaluation/`](docs/evaluation/) | Retrieval experiments, failure analysis, and evaluation findings |
 | [`docs/operations/`](docs/operations/) | Operations runner setup, automation integration, and recovery guidance |
+| [`.agents/skills/`](.agents/skills/) | Agent skills for authoring documentation and auditing docs against code |
 
 ## License
 

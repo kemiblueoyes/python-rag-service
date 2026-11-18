@@ -33,23 +33,34 @@ PAGE_FIXTURES = [
 ]
 
 
-def test_descriptive_mappings_preserve_validation_contract(tmp_path: Path) -> None:
+def test_descriptive_mappings_preserve_validation_contract(
+    tmp_path: Path,
+) -> None:
     source = REPO_ROOT / "doc-infrastructure" / "content-model.yml"
     raw = yaml.safe_load(source.read_text(encoding="utf-8"))
-    for field in ("topics", "components", "lifecycle_statuses", "audience"):
+
+    for field in ("components", "lifecycle_statuses", "audience"):
         raw[field] = {
-            key: {"description": f"Context for {key}"} for key in raw[field]
+            key: {"description": f"Context for {key}"}
+            for key in raw[field]
         }
+
+    # Keep the nested topic hierarchy intact.
     for rules in raw["content_types"].values():
         rules["description"] = "Authoring context, not a required field."
+
     path = tmp_path / "content-model.yml"
     path.write_text(yaml.safe_dump(raw), encoding="utf-8")
 
     model = load_content_model(path)
 
     assert model == load_content_model(source)
-    assert model.content_types["eval_results"] == frozenset({"dataset_version"})
-    assert validate_paths(PAGE_FIXTURES, model, load_page_registry(model)) == []
+    assert model.content_types["eval_results"] == frozenset(
+        {"dataset_version"}
+    )
+    assert validate_paths(
+        PAGE_FIXTURES, model, load_page_registry(model)
+    ) == []
 
 
 @pytest.mark.parametrize(
@@ -65,9 +76,102 @@ def test_vocabulary_mapping_rejects_invalid_keys(
     path = tmp_path / "content-model.yml"
     path.write_text(yaml.safe_dump(raw), encoding="utf-8")
 
-    with pytest.raises(ValueError, match="non-empty string keys"):
+    expected_error = (
+        "Topic IDs must be non-empty strings"
+        if field == "topics"
+        else "non-empty string keys"
+    )
+
+    with pytest.raises(ValueError, match=expected_error):
         load_content_model(path)
 
+
+def test_nested_topic_ids_are_loaded() -> None:
+    model = load_content_model()
+
+    # Parent and child topics must both be recognized.
+    assert "topic-retrieval" in model.topics
+    assert "topic-hybrid-search" in model.topics
+    assert "topic-reranking" in model.topics
+    assert "topic-support-detection" in model.topics
+
+    # Children from other topic hierarchies must also be recognized.
+    assert "topic-evidence-sufficiency" in model.topics
+    assert "topic-job-management" in model.topics
+    assert "topic-retrieval-quality-policy" in model.topics
+
+    assert len(model.topics) == 31
+
+
+def test_child_topic_is_valid_in_frontmatter(tmp_path: Path) -> None:
+    page = tmp_path / "child-topic.mdx"
+    page.write_text(
+        """\
+---
+id: Test
+title: Hybrid retrieval
+subtitle: Understand hybrid retrieval.
+description: How hybrid retrieval works.
+content_type: explanation
+lifecycle_status: draft
+topics:
+  - topic-hybrid-search
+  - topic-reranking
+audience:
+  - secondary
+last_modified: 2026-11-17
+---
+
+Test content.
+""",
+        encoding="utf-8",
+    )
+
+    model, registry = load_validation_contracts()
+
+    errors = validate_document(page, model, registry)
+
+    assert errors == []
+
+
+def test_duplicate_nested_topic_id_is_rejected(
+    tmp_path: Path,
+) -> None:
+    source = REPO_ROOT / "doc-infrastructure" / "content-model.yml"
+    raw = yaml.safe_load(source.read_text(encoding="utf-8"))
+
+    # Repeat an existing child ID under a different parent.
+    raw["topics"]["topic-evaluation"]["children"][
+        "topic-hybrid-search"
+    ] = {
+        "description": "Duplicate topic."
+    }
+
+    path = tmp_path / "content-model.yml"
+    path.write_text(yaml.safe_dump(raw), encoding="utf-8")
+
+    with pytest.raises(
+        ValueError, match="Duplicate topic ID: topic-hybrid-search"
+    ):
+        load_content_model(path)
+
+
+def test_invalid_topic_children_are_rejected(
+    tmp_path: Path,
+) -> None:
+    source = REPO_ROOT / "doc-infrastructure" / "content-model.yml"
+    raw = yaml.safe_load(source.read_text(encoding="utf-8"))
+
+    # Children must be a mapping, not a list.
+    raw["topics"]["topic-retrieval"]["children"] = [
+        "topic-hybrid-search"
+    ]
+
+    path = tmp_path / "content-model.yml"
+    path.write_text(yaml.safe_dump(raw), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Topics must be a mapping"):
+        load_content_model(path)
 
 def test_realistic_page_templates_pass_frontmatter_validation() -> None:
     model, registry = load_validation_contracts()

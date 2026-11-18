@@ -4,6 +4,30 @@ version: 1
 
 # Terminology
 
+## Terminology governance
+
+Use one preferred term for each project-specific concept and apply it consistently across the documentation.
+
+Use [Terminology](terminology.md) to define terminology choices and distinctions, such as which term is preferred, which alternatives to avoid, and when similar terms have different meanings.
+
+Use the **glossary** to explain what important technical and project-specific terms mean for readers.
+
+Use **Vale** to enforce selected terminology rules automatically, such as preferred spellings, prohibited variants, and approved replacements.
+
+For example:
+
+* Terminology: Use **reranking**, not **re-ranking**.  
+* Glossary: Define what **reranking** means.  
+* Vale: Flag **re-ranking** and suggest **reranking**.
+
+Add a terminology rule when inconsistent wording could make the documentation less clear, technically inaccurate, or harder to maintain.
+
+Add a glossary term when readers are likely to need a definition to understand the documentation.
+
+Do not add every technical word to the terminology reference or glossary. Common industry terms do not need project-specific rules unless this project uses them in a particular way.
+
+When a new preferred term is needed, define the terminology decision first, then update the glossary and Vale rules where appropriate.
+
 ## System, source, and content model
 
 | Concept | Preferred term | Rule |

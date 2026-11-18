@@ -9,10 +9,10 @@ failures must never overwrite this baseline.
 
 ## Configuration verification
 
-Operations evaluation `874d4473-d85c-4dc3-b314-3225ff8755b5` succeeded in this
-worktree on October 14, 2026, using dataset 1.7. Its complete non-secret job result
-is preserved in `evidence/doc-landscape-v1.7-configuration-job.json`.
-The configuration matches every setting recorded by the original report:
+Operations evaluation `874d4473-d85c-4dc3-b314-3225ff8755b5` succeeded using
+dataset 1.7. Its complete non-secret job result is preserved in
+`evidence/doc-landscape-v1.7-configuration-job.json`. The configuration matches
+every setting recorded by the original report:
 collection `rag_chunks`, embedding model `voyage-4-lite`, cutoff `0.7`, and `k=5`.
 Dataset identity and case counts also match. The fresh summary happens to equal
 the original summary, with only `multi-section-001` failed; the fixed summary's
@@ -48,10 +48,10 @@ validation fails, stop comparison and report the specific error rather than pass
 When deploying another reviewed version, update the mounted files together while
 no new execution can load a partially updated pair. Retain prior versions in Git.
 
-This change creates policy data and evidence only. It does not modify the Docker
-configuration, n8n workflow, or activate automatic comparisons. Workflow integration
-and the Step 8 routing checks remain necessary. The proposed mount is the chosen
-delivery method, not a claim that it is already installed.
+The included indexing workflow loads these policy files, compares retrieval results,
+and routes confirmed regressions to Jira. Importing the workflow does not verify deployment
+configuration. Configure and verify the policy mount, credentials, Jira project and issue
+type, schedule, and failure-alert workflow in your n8n instance.
 
 ## Consumer rules
 
@@ -73,7 +73,8 @@ pass, including equality. Do not round the baseline or published metrics. In
 particular, binary floating-point subtraction must not turn an exact boundary into
 a failure; implement decimal-safe comparisons and test equality explicitly.
 Record all metric breaches and newly failed cases. A decline breach or new case
-qualifies for the planned Jira regression route; no Jira integration is installed.
+qualifies for the Jira regression route included in the indexing workflow.
+Configure and verify that integration before enabling scheduled runs.
 Known failure `multi-section-001` remains visible even when quality passes.
 
 Retain indexing/evaluation job IDs, n8n execution ID, policy/dataset versions,

@@ -1,9 +1,9 @@
 # Author documentation page
 
-Use this prompt to create or substantially update a documentation page for the
-Python RAG Service.
+Use this prompt to create or substantially update a documentation page for the Python RAG Service.
 
-Use the metadata supplied with the authoring request. Derive only metadata that the selected template explicitly determines, such as `content_type` and `subtitle`. Do not invent missing metadata. `last_modified` is generated automatically.
+Use the metadata supplied with the authoring request. Derive only metadata that the selected template explicitly determines,
+such as `content_type` and `subtitle`. Do not invent missing metadata. `last_modified` is generated automatically.
 
 Before writing:
 
@@ -21,11 +21,13 @@ When writing:
 * Use simple, clear language without removing necessary technical detail.
 * Use the project's warm, relaxed, crisp, and clear voice.
 * Describe actual system and component behavior rather than vague AI behavior.
-* Add enough local context for sections to remain understandable when retrieved independently, but do not make the page repetitive or unnatural for human readers.
+* Add enough local context for sections to remain understandable when retrieved independently, but do not make the page
+repetitive or unnatural for human readers.
 * Prefer canonical documentation over duplicating information that another page owns.
 * Do not invent product behavior, configuration, requirements, or examples that are not supported by the source material.
 
-Do not spend time manually reproducing checks handled by the documentation validators or Vale (src/rag_service/commands/documentation). The generated page will be run through those tools separately.
+Do not spend time manually reproducing checks handled by the documentation validators or Vale (src/rag_service/commands/documentation).
+The generated page will be run through those tools separately.
 
 Return a complete MDX page ready for validation.
 

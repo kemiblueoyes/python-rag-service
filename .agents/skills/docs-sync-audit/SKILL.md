@@ -2,6 +2,9 @@
 name: docs-sync-audit
 description: Run a read-only documentation drift audit for a feature, PR, branch, release, API, configuration change, workflow, CLI, package, or repository area. Use when the user asks whether docs are stale, missing, inconsistent with code, or need updates after code changes. Checks README files, setup guides, API docs, env docs, changelogs, examples, comments, generated docs, and user-facing instructions. This is not a general code review; it compares what the docs claim against what the code does.
 license: MIT
+metadata:
+  author: Awesome GitHub Copilot
+  url: https://github.com/github/awesome-copilot/tree/main/skills/docs-sync-audit
 ---
 
 # Docs Sync Audit

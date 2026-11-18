@@ -2,7 +2,7 @@
   "schema_version": 1,
   "policy_id": "doc-landscape-retrieval-quality",
   "policy_version": 1,
-  "status": "ready_for_workflow_integration",
+  "status": "workflow_integration_implemented",
   "scope": "Initial local portfolio limits; three reviewed runs do not establish long-term variability.",
   "baseline_file": "approved-retrieval-baseline.json",
   "metric_rules": {
@@ -139,7 +139,7 @@
   ],
   "planned_regression_route": {
     "destination": "jira",
-    "implemented": false,
+    "implemented": true,
     "qualifying_reasons": [
       "maximum_decline_breached",
       "new_failed_case"
@@ -195,7 +195,6 @@
   "activation": {
     "configuration_verification_required": true,
     "configuration_verified": true,
-    "automatic_comparisons_enabled": false,
-    "remaining_step": "Wire and validate n8n policy loading and outcome routing."
+    "remaining_step": "Configure and verify the policy-file mount, runner and Jira credentials, Jira project and issue type, schedule, and failure-alert workflow in the target n8n instance."
   }
 }

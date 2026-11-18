@@ -15,6 +15,7 @@ Run every command from the repository root. This README belongs in `doc-infrastr
 | [`prompts/`](prompts/) | Optional AI prompts for authoring pages and reviewing style, plus starter input lists |
 | [`content-model.yml`](content-model.yml) | Required metadata and allowed values |
 | [`style-guide.md`](style-guide.md), [`terminology.md`](terminology.md), and [`fern-platform-rules.md`](fern-platform-rules.md) | Writing, terminology, and Fern authoring conventions |
+| [`technical-accuracy-rules.md`](technical-accuracy-rules.md) | Rules for verifying documented behavior, requirements, examples, and limitations |
 | [`docs/data/glossary.yml`](../docs/data/glossary.yml) | Glossary definitions and aliases |
 | [`styles/`](../styles/) and [`.vale.ini`](../.vale.ini) | Vale prose rules and configuration |
 | [Documentation commands](../src/rag_service/commands/documentation/) | Page creation, metadata updates, and validation |
@@ -49,11 +50,13 @@ Local preview also requires pnpm on your `PATH`. See [Fern's preview prerequisit
 
 ## Create a page
 
+To have an agent create a new page, use the [author-doc-page skill](../.agents/skills/author-doc-page/SKILL.md). It follows the templates and guides in this directory through an outline, a draft, a final draft, and metadata finalization, and it waits for approval before each stage. The steps below are the same work when you create the page directly.
+
 ### 1. Choose the goal and template
 
 Check the documentation IA before adding a page. Define its user goal, stable page ID, content type, audience, and relationships to existing pages.
 
-Read the [style guide](style-guide.md), [terminology](terminology.md), [Fern rules](fern-platform-rules.md), and appropriate template:
+Read the [style guide](style-guide.md), [technical accuracy rules](technical-accuracy-rules.md) ,[terminology](terminology.md), [Fern rules](fern-platform-rules.md), and appropriate template:
 
 | Content type | Template |
 | --- | --- |
@@ -111,6 +114,8 @@ Regular validation allows draft and review pages. Before merging into `main`, fi
 
 Edit the MDX source and check the relevant product code or configuration before changing a behavior claim. Keep its page ID stable so metadata relationships continue to resolve.
 
+After a code or configuration change, an agent can compare the documentation with the implementation using the [docs-sync-audit skill](../.agents/skills/docs-sync-audit/SKILL.md). That audit reports drift and does not edit files unless you ask it to.
+
 If you change a filename, navigation location, or URL, update `fern/docs.yml` and affected links. If you change a page ID, update references to that ID as well.
 
 After editing, regenerate date metadata:
@@ -123,13 +128,22 @@ This updates authored pages under `fern/docs/pages/`. New pages and pages with s
 
 The glossary generator owns the glossary page's date. Rerun date generation if you make further edits or commit on a later date.
 
+## Work with an agent
+
+These skills live in `.agents/skills/` and use the guides, templates, and commands in this directory. This guide remains the source for those commands, validation, and publishing.
+
+| Skill | When to use it |
+| --- | --- |
+| [`author-doc-page`](../.agents/skills/author-doc-page/SKILL.md) | Create a new page in `fern/docs/pages/`. The agent works through an outline, draft, final draft, and metadata finalization, and waits for approval before each stage. |
+| [`docs-sync-audit`](../.agents/skills/docs-sync-audit/SKILL.md) | Check whether documentation still matches the code, configuration, API, commands, or examples. The audit is read-only unless you ask the agent to update the docs. |
+
 ## Optional AI authoring and review prompts
 
-The [prompts directory](prompts/) contains basic helpers for working with an AI assistant. Use them when useful; they are optional.
+The [prompts directory](prompts/) contains shorter helpers for a single assistant request. Use them when you do not need a full skill workflow.
 
 | File | When to use it |
 | --- | --- |
-| [`author-doc-page.md`](prompts/author-doc-page.md) | Create or substantially update a page using its template, project writing guidance, planned metadata, and relevant product sources. |
+| [`author-doc-page.md`](prompts/author-doc-page.md) | Create or substantially update a page in one request, using its template, project writing guidance, planned metadata, and relevant product sources. For a new page with review at each stage, use the author-doc-page skill instead. |
 | [`review-doc-style.md`](prompts/review-doc-style.md) | Request an advisory review of issues that need editorial judgment, such as clarity, audience fit, technical depth, unsupported guarantees, and duplication. |
 | [`copy-paste-inputs.md`](prompts/copy-paste-inputs.md) | Start an authoring or review request with reusable input lists. Adapt them to the page and the selected prompt. |
 
@@ -251,4 +265,3 @@ To republish without a new commit, open **Actions > CI > Run workflow** and sele
 The publish job needs the repository secret `FERN_TOKEN` for the `doc-landscape` organization. If it is missing, create a Fern token with `fern token` and store it under **Settings > Secrets and variables > Actions**.
 
 The [Documentation link check workflow](../.github/workflows/docs-link-check.yml) also runs every Monday and can be started manually. A link-check failure occurs after publication and does not roll it back; fix the reported links and push the correction.
-

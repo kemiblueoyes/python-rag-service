@@ -1,5 +1,5 @@
 ---
-version: 1
+version: 1.1
 ---
 
 # Style Guide
@@ -18,19 +18,36 @@ Warmth should come from clarity, helpfulness, and natural language rather than c
 
 Write directly and use plain language.
 
-Prefer short, concrete sentences over abstract or complicated wording. Use familiar words when they are accurate, and avoid filler, buzzwords, and unnecessary qualifiers.
+Prefer short, concrete sentences over abstract or complicated wording. Use familiar words when they are accurate, and avoid buzzwords.
 
 Be specific about what the reader should do, what the system does, and what result to expect.
 
+Avoid: 
+
+> The service may, under certain circumstances, determine that no sufficiently relevant content is available for return.
+
 Prefer:
 
-* The service returns no results when it can’t find sufficiently relevant content.
-
-Over:
-
-* The service may, under certain circumstances, determine that no sufficiently relevant content is available for return.
+> The service returns no results when it can’t find sufficiently relevant content.
 
 Do not simplify language so much that technical meaning becomes less precise.
+
+### Avoid filler and subjective language
+
+Avoid filler words and superfluous adjectives such as 'really nice feature', 'it may be that', 'and that's it'.
+
+Avoid subjective phrases. "You can easily...". "it's simple to...". "It's as easy as that!"
+
+Rather than say how simple it's to do something, show the developer through specific steps. Let the developer be the judge of whether something is simple or not.
+
+### Avoid unnecessary hedging
+
+Use direct, confident language when describing established behavior.
+
+Avoid vague qualifiers such as *might*, *maybe*, *probably*, and *should* when the behavior is known and can be stated precisely.
+
+Keep qualifiers when they communicate genuine uncertainty, conditional behavior, recommendations, or limitations. Do not make a
+statement more definite than the implementation supports.
 
 ### Active voice
 
@@ -38,15 +55,33 @@ Use active voice. Make the person, command, or component that performs the actio
 
 Passive voice hides that actor, so the reader has to infer who prints a message, writes a file, or updates a record. Name the actor in the main action and in any condition that has one.
 
+Avoid:
+
+> The same summary line is printed only after those vector records are upserted. 
+
+and
+
+> The document and chunk files are written only after vector synchronization returns.
+
 Prefer:
 
-* The command prints the same summary line only after it upserts those vector records.  
-* The command writes the document and chunk files only after vector synchronization returns.
+> The command prints the same summary line only after it upserts those vector records.  
+
+or
+
+> The command writes the document and chunk files only after vector synchronization returns.
+
+### Use present tense
+
+Use present tense. It's easier to read and translate.
 
 Avoid:
 
-* The same summary line is printed only after those vector records are upserted.  
-* The document and chunk files are written only after vector synchronization returns.
+> Command X will start the server.
+
+Prefer:
+
+> Command X starts the server.
 
 ### Contractions
 
@@ -58,23 +93,64 @@ Never form a contraction from a noun and a verb, such as "Microsoft’s developi
 
 Avoid ambiguous or awkward contractions, such as there’d, it’ll, and they’d.
 
-### Technical Depth
+### Use second person
 
-Write at the level of technical detail the reader needs to complete their goal without guessing.
+You should use 'you' rather than 'we' when referring to the reader, especially in task-based material such as tutorials.
 
-Use simple, clear language even when explaining technical concepts. Prefer precise terms over vague wording, but avoid jargon when a simpler term works just as well. When specialized terminology is necessary, use the correct term and explain it briefly when the audience may not already know it.
+The reason for generally avoiding 'we' is that it can potentially create confusion - who exactly is 'we'? 
 
-Do not remove important technical detail just to make the documentation easier to read. Simplify the language, not the information.
+It's always best to be explicit: if the developer needs to do something, tell them directly what they need to do and how.
 
-### Explaining technical concepts
+Avoid:
 
-Assume readers are technically capable, but do not assume they already know this project's architecture, retrieval approach, or terminology.
+> We now need to enter an API Key.
 
-Explain specialized concepts when understanding them is necessary to complete the task or understand the system. Keep explanations brief and place them close to where the concept is first needed.
+Prefer:
 
-Do not explain common developer concepts unless the explanation is necessary for the task. Avoid interrupting procedures with background information that the reader does not need to continue.
+> You must to enter your API Key in the terminal.
 
-For unfamiliar or project-specific terms, use the correct term rather than replacing it with vague language, and explain it in plain language when needed.
+or
+
+> Enter your API Key in the terminal.
+
+### Avoid Latin phrases and abbreviations
+
+Latin abbreviations can occasionally cause confusion if not used correctly. For example, people can get confused between the meaning of "i.e." and "e.g." (and sometimes use them as equivalent).
+
+Examples:
+
+* Use 'for example', instead of 'e.g.'
+* Use 'that is' rather than 'i.e.'
+
+Instead of using 'etc.', be specficic.
+
+Avoid:
+
+> The SDK supports common backend languages like Node.js, Python, Ruby, etc.
+
+Prefer:
+
+> The SDK supports Node.js, Python, Ruby, and other popular backend languages.
+
+or
+
+> The SDK supports backend languages like Node.js and Python.
+
+Sometimes writers create variations of Latin abbreviations, such as 'eg', 'e.g', 'eg.' and so on. It's best to avoid this. When automated spell checkers are run, these variations can stop the doc build. 
+
+Avoid Latin phrases such as "quid pro quo", "ad nauseum", "vis-a-vis". They can also be difficult to translate, and not everyone is familiar with their meaning.
+
+### Avoid slang
+
+Avoid slang as this can be hard for some developers to interpret.
+
+For example:
+
+* Don't use overly dramatic words like 'crash' or 'implode', use 'error'.
+* Use 'launch' or 'start' rather than 'fire up'.
+* Bear in mind the reader's daily language may not be English.
+* A mouse is clicked and a keyboard is pressed. Avoid terms such as 'hit' or 'punch' when referring to the keyboard. Avoid: "Now punch in any key to continue."
+* Avoid idiomatic language such as "You're good to go", "We'll run this by you", "You're all done".
 
 ## Audience focus
 
@@ -102,52 +178,6 @@ the Python RAG Service.
 Secondary-audience documentation can include deeper architectural, retrieval,
 evaluation, and implementation context.
 
-## AI and system behavior language
-
-### Describe actual system behavior
-
-Describe what the system, component, or model actually does.
-
-Name the responsible component when that distinction matters. Prefer specific descriptions such as **the retrieval pipeline retrieves**, **the model generates**, or **the application validates** over vague phrases such as **the AI knows**, **the AI decides**, or **the system understands**.
-
-Do not imply that a language model performs checks or guarantees that are actually handled by application logic. For example, the model may propose citations, but the application validates them before returning the answer.
-
-Use human-like language only when it is a harmless shorthand and does not misrepresent how the system works.
-
-Prefer:
-
-* The retrieval pipeline determines whether any results meet the support requirements.  
-* The model generates an answer from the supplied context.  
-* The application validates the model's proposed citations.
-
-Avoid:
-
-* The AI knows whether the documentation can answer the question.  
-* The model verifies its sources.  
-* The system understands that the query is unsupported.
-
-### Claims about certainty and guarantees
-
-Use absolute language only when the behavior is actually guaranteed by the implementation.
-
-Avoid words such as **always**, **never**, **ensures**, **guarantees**, and **prevents** unless the system enforces that behavior in all supported cases.
-
-When behavior depends on retrieval quality, model output, configuration, or external services, describe the condition or limitation instead of overstating certainty.
-
-Prefer:
-
-* The application validates citations before returning them.  
-* The model is instructed to answer only from the supplied context.  
-* The support gate can return no relevant results when the retrieved content does not adequately support the query.
-
-Avoid:
-
-* The model always answers from the documentation.  
-* Citation validation prevents hallucinations.  
-* Hybrid retrieval guarantees relevant results.
-
-Distinguish between **design intent**, **implemented checks**, and **guaranteed behavior**. Do not present an instruction to the model as a guarantee that the model will follow it.
-
 ## Headings and semantic structure
 
 ### Descriptive headings
@@ -164,19 +194,17 @@ Follow the standard section structure defined for the page's content type. Use c
 
 Use heading levels to show hierarchy. Do not skip levels or use headings only for visual styling.
 
-Avoid headings that depend on surrounding context to make sense.
+Avoid headings that depend on surrounding context to make sense, such as:
+
+* Configuration  
+* How it works  
+* Other considerations
 
 Prefer:
 
 * Configure the embedding provider  
 * How citation validation works  
 * Handle an empty search response
-
-Avoid:
-
-* Configuration  
-* How it works  
-* Other considerations
 
 ### Local context within sections
 
@@ -198,6 +226,10 @@ A useful test is:
 
 * If this section were retrieved without the rest of the page, would its main subject still be clear without adding unnecessary repetition?
 
+## Acronyms
+
+Define acronyms on first use on a page, in the form of "Oracle Cloud Infrastructure (OCI)". On subsequent use in a topic you don't need to redefine the acronym.
+
 ## Cross-references and duplication
 
 Link to the canonical page when information is already explained elsewhere instead of repeating the full explanation.
@@ -206,15 +238,21 @@ Keep repeated information brief and limited to the context the reader needs to c
 
 Use descriptive link text that tells the reader what they will find.
 
-Prefer:
-
-* See Configure the service for all supported environment variables.  
-* For the complete error schema, see Errors.
-
 Avoid:
 
-* See here for more information.  
-* Click this link.
+>  See here for more information.  
+
+and
+
+> Click this link.
+
+Prefer:
+
+> See Configure the service for all supported environment variables.  
+
+or
+
+> For the complete error schema, see Errors.
 
 When the same concept must appear in more than one place, keep one location authoritative and make the repeated version clearly secondary.
 
@@ -226,11 +264,6 @@ Do not use **above**, **below**, **following**, **next**, or **previous** to poi
 
 A phrase such as "in the section above," "the checks below," or "the following table" only works while the page stays in that order. Name the heading (and link to it), setting, or concept instead.
 
-Prefer:
-
-* Evidence sufficiency and citation validation must both succeed before the API returns a grounded answer.
-* See **Citation validation** for the checks the application runs on the proposed answer.
-
 Avoid:
 
 * The checks below must succeed.
@@ -238,43 +271,97 @@ Avoid:
 * The following table lists each setting.
 * The next section explains citation validation.
 
+Prefer:
+
+* Evidence sufficiency and citation validation must both succeed before the API returns a grounded answer.
+* See **Citation validation** for the checks the application runs on the proposed answer.
+
 **Next steps** stays the standard heading for that section. This rule applies when **next** points somewhere else on the page, such as "the next section."
 
-## Terminology governance
+## Avoid AI-generated content fingerprints
 
-Use one preferred term for each project-specific concept and apply it consistently across the documentation.
+Write naturally and directly. Avoid formulaic language, exaggerated claims, and repetitive patterns commonly found in AI-generated content.
 
-Use [Terminology](terminology.md) to define terminology choices and distinctions, such as which term is preferred, which alternatives to avoid, and when similar terms have different meanings.
+Apply these rules during editing. Don't sacrifice clarity, accuracy, or natural sentence flow simply to eliminate a particular pattern.
 
-Use the **glossary** to explain what important technical and project-specific terms mean for readers.
+### 1. Remove filler and unnecessary framing
 
-Use **Vale** to enforce selected terminology rules automatically, such as preferred spellings, prohibited variants, and approved replacements.
+Get to the point. Avoid introductions, transitions, and conclusions that announce or summarize information without adding value.
 
-For example:
+Common patterns to remove include:
 
-* Terminology: Use **reranking**, not **re-ranking**.  
-* Glossary: Define what **reranking** means.  
-* Vale: Flag **re-ranking** and suggest **reranking**.
+* "Let's explore..." or "Let's dive into..."
+* "It's important to note that..."
+* "Here's the thing..." or "Here's the catch..."
+* "Putting it all together..."
+* "In summary..." or "Ultimately..."
 
-Add a terminology rule when inconsistent wording could make the documentation less clear, technically inaccurate, or harder to maintain.
+Start with useful information. End when the explanation or task is complete.
 
-Add a glossary term when readers are likely to need a definition to understand the documentation.
+### 2. Avoid artificial contrasts and inflated claims
 
-Do not add every technical word to the terminology reference or glossary. Common industry terms do not need project-specific rules unless this project uses them in a particular way.
+Don't use dramatic contrasts to make ordinary observations sound insightful.
 
-When a new preferred term is needed, define the terminology decision first, then update the glossary and Vale rules where appropriate.
+Avoid patterns such as:
 
-## Code-sample rule
+* "It's not about X. It's about Y."
+* "X isn't just A. It's B."
+* "The real challenge is..."
 
-Format JSON for readability when displaying a response in the terminal. Match the formatting to the library used:
+State the relationship directly instead.
 
-| Sample type | Format |
-|---|---|
-| cURL, when Python is a prerequisite | Append `\| python3 -m json.tool` |
-| Python using `requests` or `httpx` | `print(json.dumps(response.json(), indent=2))` |
-| Python using `urllib` | `payload = json.loads(response.read().decode())`, followed by `print(json.dumps(payload, indent=2))` |
+Use contrast when it explains a meaningful technical distinction, such as the difference between relevance and evidence sufficiency.
 
-- Include `import json` in Python samples that use it.
-- Apply formatting when printing, while keeping parsed data available for further processing.
-- Skip JSON formatting when the sample already prints selected fields in a readable layout.
-- Don’t apply this pattern to streaming responses or responses without a JSON body.
+### 3. Use concrete language and examples
+
+Name the actual components, actions, and results instead of relying on vague descriptions or generic examples.
+
+Avoid:
+
+> The system intelligently processes information to deliver better results.
+
+Prefer:
+
+> The retrieval pipeline combines vector and BM25 retrieval, then reranks the candidate chunks.
+
+Use examples that demonstrate real behavior relevant to the documentation. Don't introduce hypothetical applications or scenarios unless they help explain the subject.
+
+### 4. Vary sentence structure naturally
+
+Avoid repetitive sentence patterns, excessive short sentences, and mechanical transitions.
+
+Avoid:
+
+> The service retrieves chunks. It ranks them. It filters them. It returns results.
+
+Prefer:
+
+> The retrieval pipeline finds and ranks candidate chunks, applies the support gate, and returns the selected results.
+
+Combine or separate sentences based on clarity and natural rhythm, not a fixed formula.
+
+### 5. Avoid unnecessary formatting
+
+Use formatting to clarify information, not to create artificial structure.
+
+* Don't use em dashes. Restructure the sentence or use appropriate punctuation.
+* Avoid repetitive bold-label bullet patterns such as "**Feature:** Description" when ordinary bullets would work.
+* Don't divide simple explanations into multiple headings, lists, or callouts without a clear reason.
+
+Keep formatting appropriate to the content type and the information being presented.
+
+### 6. Respect the reader's knowledge
+
+Don't overexplain familiar technical concepts or repeat information to make a page seem more comprehensive.
+
+Assume readers have the technical background described in the page's intended audience. Explain unfamiliar or project-specific concepts when necessary.
+
+Provide enough context to make the documentation useful without interrupting the reader with unnecessary background information.
+
+### Use judgment
+
+These rules identify patterns to review, not phrases to remove automatically in every context.
+
+Sentence fragments, occasional conversational phrasing, and varied sentence lengths are acceptable when they improve readability.
+
+Preserve useful contrasts, explanations, and formatting when they serve a clear purpose. The goal is natural, precise documentation, not rigid compliance with stylistic formulas.

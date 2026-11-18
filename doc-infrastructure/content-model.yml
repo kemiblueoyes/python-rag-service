@@ -11,35 +11,110 @@ required_base_fields:
   - last_modified
   - audience
 
+
 content_types:
-  overview: {}
-  how_to: {}
-  tutorial: {}
-  explanation: {}
-  general_reference: {}
+  overview:
+    description: >
+      An introduction to a product, capability, or documentation
+      section that helps readers understand what is available
+      and where to go next.
+    use_when: >
+      The page introduces a broad subject, summarizes key
+      capabilities, or helps readers navigate related documentation.
+
+  how_to:
+    description: >
+      Task-oriented instructions that guide readers through
+      completing a specific goal or solving a problem.
+    use_when: >
+      The reader has a specific task to accomplish and needs
+      actionable steps to complete it.
+
+  tutorial:
+    description: >
+      A guided learning experience that teaches readers how
+      something works through a practical activity.
+    use_when: >
+      The primary goal is learning by doing, with explanations
+      that help readers understand what they are doing and why.
+
+  explanation:
+    description: >
+      Conceptual documentation that deepens readers'
+      understanding of how or why something works.
+    use_when: >
+      The page explains concepts, architecture, design decisions,
+      or system behavior rather than guiding readers through
+      a specific task.
+
+  general_reference:
+    description: >
+      Structured factual information about the service,
+      its configuration, behavior, or technical specifications.
+    use_when: >
+      Readers need to look up specific information rather than
+      follow a procedure or learn a concept.
 
   eval_results:
+    description: >
+      Recorded results from evaluating retrieval or answer
+      generation quality.
+    use_when: >
+      The page presents evaluation findings, metrics, outcomes,
+      or comparisons from recorded evaluation runs.
     required_fields:
       - dataset_version
 
   release_note:
+    description: >
+      A record of changes to the service or its documentation
+      associated with a release.
+    use_when: >
+      The content announces or records new capabilities,
+      improvements, fixes, or other release changes.
     required_fields:
       - tags
 
   api_reference:
+    description: >
+      Technical reference information describing API endpoints,
+      parameters, requests, responses, and errors.
+    use_when: >
+      The content defines the contract and behavior of an API
+      endpoint rather than explaining how to use it to
+      accomplish a broader task.
     required_fields:
       - api_version
 
+
 audience:
-  - primary
-  - secondary
+  primary:
+    description: >
+      Developers integrating with or deploying the Python RAG Service.
+    use_when: >
+      The page primarily supports installing, configuring, indexing
+      content, using the API, or integrating the service into an
+      application.
+
+  secondary:
+    description: >
+      Developers and documentation engineers who want to understand,
+      evaluate, or extend the Python RAG Service.
+    use_when: >
+      The page primarily provides deeper architectural, retrieval,
+      evaluation, or implementation context.
 
 lifecycle_statuses:
-  - draft
-  - review
-  - published
-  - deprecated
-  - archived
+  draft:
+    description: Work in progress that is not ready for review.
+  review:
+    description: Content ready for editorial or technical review.
+  published:
+    description: Current documentation approved for publication.
+  deprecated:
+    description: Published documentation for behavior that is still available but no longer recommended.
+  archived:
+    description: Retired documentation excluded from the active documentation set.
 
 list_fields:
   - topics
@@ -51,44 +126,451 @@ list_fields:
   - tags
   - audience
 
+
 topics:
-  - topic-architecture
-  - topic-installation
-  - topic-configuration
-  - topic-provider-configuration
-  - topic-content-source-configuration
-  - topic-retrieval-configuration
-  - topic-authentication
-  - topic-indexing
-  - topic-incremental-indexing
-  - topic-retrieval
-  - topic-semantic-retrieval
-  - topic-lexical-retrieval
-  - topic-hybrid-search
-  - topic-reranking
-  - topic-support-detection
-  - topic-answer-generation
-  - topic-grounding
-  - topic-evidence-sufficiency
-  - topic-citations
-  - topic-api
-  - topic-error-handling
-  - topic-integration
-  - topic-evaluation
-  - topic-retrieval-evaluation
-  - topic-answer-evaluation
-  - topic-limitations
-  - topic-terminology
-  - topic-release-history
+  topic-architecture:
+    description: >
+      The overall structure of the RAG service, including its major
+      components, boundaries, and how they interact.
+    use_when: >
+      When the page explains the service's overall design, major
+      boundaries, or how multiple components interact.
+    status: active
+
+  topic-installation:
+    description: >
+      Setting up the RAG service and its local dependencies so it
+      can run.
+    use_when: >
+      When the page guides readers through installing the service,
+      preparing dependencies, or getting a local instance running.
+    status: active
+
+  topic-configuration:
+    description: >
+      Settings that control how the RAG service and its dependencies
+      are configured.
+    use_when: >
+      When the page covers general service settings or configuration
+      spanning multiple areas; prefer a specific configuration topic
+      when that is the main focus.
+    status: active
+    children:
+      topic-provider-configuration:
+        description: >
+          Configuration for external model and service providers
+          used by the RAG service.
+        use_when: >
+          When the page explains configuring external providers,
+          credentials, models, or provider-specific settings.
+        status: active
+
+      topic-content-source-configuration:
+        description: >
+          Configuration for connecting and identifying documentation
+          content sources such as WordPress.
+        use_when: >
+          When the page explains connecting or configuring a content
+          source, including source identifiers and connector settings.
+        status: active
+
+      topic-retrieval-configuration:
+        description: >
+          Configuration that controls retrieval behavior and
+          retrieval-related settings.
+        use_when: >
+          When the page explains settings that control retrieval
+          behavior, such as search strategies, filters, or reranking
+          settings.
+        status: active
+
+  topic-authentication:
+    description: >
+      API-key setup, credential handling, and access control for
+      protected RAG API endpoints.
+    use_when: >
+      When the page explains API-key configuration, protected endpoint
+      access, or safe credential handling.
+    status: active
+
+  topic-indexing:
+    description: >
+      Preparing source documentation for retrieval by normalizing,
+      chunking, embedding, and storing it in the index.
+    use_when: >
+      When the page explains preparing, transforming, chunking,
+      embedding, or storing source content for retrieval.
+    status: active
+    children:
+      topic-incremental-indexing:
+        description: >
+          Updating an existing index when source content is added,
+          changed, deleted, or unpublished.
+        use_when: >
+          When the page explains how additions, edits, deletions, or
+          unpublishing of source content are reflected in an
+          existing index.
+        aliases:
+          - incremental re-indexing
+        status: active
+
+  topic-retrieval:
+    description: >
+      Finding and ranking documentation chunks that are relevant
+      to a user's query.
+    use_when: >
+      When the page explains retrieval as a whole or behavior shared
+      across multiple retrieval stages; do not add automatically to
+      pages focused on one specific retrieval method.
+    status: active
+    children:
+      topic-semantic-retrieval:
+        description: >
+          Retrieval based on semantic similarity between query and
+          document embeddings.
+        use_when: >
+          When the page explains embedding-based similarity search
+          or how semantic retrieval is used or evaluated.
+        aliases:
+          - vector retrieval
+        status: active
+
+      topic-lexical-retrieval:
+        description: >
+          Retrieval based on matching words and terms in the query
+          and indexed content.
+        use_when: >
+          When the page explains term-based matching, BM25, or
+          lexical retrieval behavior.
+        aliases:
+          - BM25 retrieval
+        status: active
+
+      topic-hybrid-search:
+        description: >
+          Retrieval that combines semantic and lexical search signals.
+        use_when: >
+          When the page explains combining semantic and lexical
+          retrieval signals, including implementation, configuration,
+          or results.
+        aliases:
+          - hybrid retrieval
+        status: active
+
+      topic-reranking:
+        description: >
+          Reordering initially retrieved candidates using an
+          additional relevance model or scoring stage.
+        use_when: >
+          When the page explains the reranking stage, its
+          configuration, its scores, or its effects on retrieved
+          candidates.
+        status: active
+
+      topic-support-detection:
+        description: >
+          Determining whether retrieved content meaningfully supports
+          the user's query before results are returned or used for
+          generation.
+        use_when: >
+          When the page covers the retrieval-stage support gate:
+          deciding whether retrieved chunks meaningfully support
+          the query before returning or using them.
+        aliases:
+          - support gate
+        status: active
+
+  topic-answer-generation:
+    description: >
+      Generating a response from retrieved documentation context.
+    use_when: >
+      When the page explains creating responses from retrieved
+      documentation context or the overall answer-generation process.
+    status: active
+    children:
+      topic-grounding:
+        description: >
+          Constraining generated answers to information supported
+          by the supplied documentation evidence.
+        use_when: >
+          When the page explains how generated claims are restricted
+          to, or checked against, source documentation evidence.
+        status: active
+
+      topic-evidence-sufficiency:
+        description: >
+          Determining whether the retrieved evidence is sufficient
+          to support a grounded answer.
+        use_when: >
+          When the page covers the answer-generation decision about
+          whether retrieved evidence can support a grounded answer;
+          distinguish this from the retrieval support gate.
+        status: active
+
+      topic-citations:
+        description: >
+          Linking generated answers to trusted source content and
+          validating those source references.
+        use_when: >
+          When the page explains producing, validating, presenting,
+          or interpreting source references attached to generated
+          answers.
+        status: active
+
+  topic-api:
+    description: >
+      The public HTTP interface, including endpoints, requests,
+      responses, and API behavior.
+    use_when: >
+      When the page documents the public HTTP API, endpoint contracts,
+      requests, responses, or API usage.
+    aliases:
+      - application programming interface
+    status: active
+    children:
+      topic-error-handling:
+        description: >
+          API error formats, status codes, validation failures,
+          and how clients should handle failures.
+        use_when: >
+          When the page focuses on API errors, status codes,
+          validation failures, or client handling of failure
+          responses.
+        status: active
+
+  topic-integration:
+    description: >
+      Connecting external applications and clients to the RAG
+      service and its API.
+    use_when: >
+      When the page explains connecting an external application
+      or client to the RAG service.
+    status: active
+
+  topic-evaluation:
+    description: >
+      Measuring and reviewing the quality and behavior of retrieval
+      and generated answers.
+    use_when: >
+      When the page covers evaluation workflows or quality assessment
+      across retrieval and answer generation; use a narrower
+      evaluation topic for a page focused on one.
+    status: active
+    children:
+      topic-retrieval-evaluation:
+        description: >
+          Methods, judgments, metrics, and tests used to measure
+          retrieval quality.
+        use_when: >
+          When the page explains retrieval evaluation datasets,
+          judgments, metrics, procedures, or results.
+        status: active
+
+      topic-answer-evaluation:
+        description: >
+          Methods and criteria used to evaluate support, completeness,
+          focus, evidence sufficiency, and citation behavior in
+          generated answers.
+        use_when: >
+          When the page explains evaluating generated answers for
+          support, completeness, focus, evidence sufficiency,
+          or citations.
+        status: active
+
+  topic-workflow-automation:
+    description: >
+      Automating and coordinating operational workflows, including
+      scheduled or event-triggered indexing and evaluation.
+    use_when: >
+      When the page explains setting up or running scheduled and
+      triggered workflows, or coordinating indexing and evaluation
+      steps through automation.
+    status: active
+    children:
+      topic-job-management:
+        description: >
+          Managing the execution and lifecycle of jobs, including
+          submission, status tracking, concurrency limits, duplicate
+          prevention, and recovery from interruptions.
+        use_when: >
+          When the page explains submitting, tracking, retrying,
+          or recovering jobs, including polling, idempotency,
+          and limits on concurrent execution.
+        status: active
+
+      topic-retrieval-quality-policy:
+        description: >
+          Rules and criteria for assessing retrieval quality,
+          including approved baselines, comparable evaluation
+          results, metric thresholds, and quality outcomes.
+        use_when: >
+          When the page explains policies for judging retrieval
+          quality against approved baselines, comparable evaluation
+          runs, metric thresholds, or pass/fail outcomes.
+        status: active
+
+  topic-limitations:
+    description: >
+      Known constraints, unsupported behavior, and implementation
+      boundaries that affect how the service can be used.
+    use_when: >
+      When the page substantively documents known constraints,
+      unsupported behaviors, or design tradeoffs affecting use
+      of the service.
+    status: active
+
+  topic-terminology:
+    description: >
+      Terms, definitions, acronyms, and project-specific language
+      used throughout the documentation.
+    use_when: >
+      When the page's purpose is to define, distinguish, or explain
+      technical or project-specific terms; not for routine mentions
+      of terminology.
+    aliases:
+      - glossary terms
+    status: active
+
+  topic-release-history:
+    description: >
+      Changes to the RAG service and its documentation across
+      versions or releases.
+    use_when: >
+      When the page records changes by release or version,
+      including new capabilities, fixes, and documentation changes.
+    aliases:
+      - changelog
+    status: active
+
 
 components:
-  - component-wordpress-connector
-  - component-indexing-pipeline
-  - component-retrieval-service
-  - component-answer-generation-service
-  - component-public-api
-  - component-evaluation-framework
-  - component-wordpress-client
-  - component-vector-database
-  - component-embedding-provider
-  - component-language-model-provider
+  component-wordpress-connector:
+    description: >
+      The source connector that retrieves WordPress content and maps
+      it into the canonical document model.
+    use_when: >
+      When the page explains configuring, using, troubleshooting,
+      or extending the WordPress source connector or its mapping
+      into canonical documents.
+    status: active
+
+  component-indexing-pipeline:
+    description: >
+      The processing pipeline that normalizes, chunks, embeds,
+      stores, and updates source documentation for retrieval.
+    use_when: >
+      When the page explains how source content is normalized,
+      chunked, embedded, stored, or updated by the indexing pipeline.
+    status: active
+
+  component-retrieval-service:
+    description: >
+      The shared service that processes queries, runs retrieval
+      and ranking, applies filters, and returns relevant chunks.
+    use_when: >
+      When the page explains the service that handles retrieval
+      queries, filtering, ranking, or returning relevant chunks.
+    status: active
+
+  component-answer-generation-service:
+    description: >
+      The service that assembles retrieved context, calls the
+      language model, handles evidence sufficiency, and prepares
+      grounded answers.
+    use_when: >
+      When the page explains assembling evidence, invoking the
+      language model, deciding evidence sufficiency, or constructing
+      grounded answers.
+    aliases:
+      - answer service
+    status: active
+
+  component-public-api:
+    description: >
+      The public interface exposing the search, answer, and health
+      endpoints and their request and response contracts.
+    use_when: >
+      When the page documents endpoint behavior, request and response
+      contracts, authentication at the public interface, or use of
+      the search, answer, or health API.
+    aliases:
+      - RAG API
+    status: active
+
+  component-evaluation-framework:
+    description: >
+      The versioned datasets, commands, metrics, generated artifacts,
+      and review processes used to evaluate the service.
+    use_when: >
+      When the page explains evaluation datasets, commands, scoring,
+      reports, or the review process used to measure service quality.
+    aliases:
+      - evaluation system
+    status: active
+
+  component-wordpress-client:
+    description: >
+      The WordPress reference client that sends user requests to
+      the RAG API and renders search results, answers, and citations.
+    use_when: >
+      When the page explains how the WordPress reference client
+      calls the API or displays search results, answers, and citations.
+    aliases:
+      - WordPress reference client
+    status: active
+
+  component-vector-database:
+    description: >
+      The data store that holds retrieval-ready vector embeddings,
+      chunk content, and associated metadata.
+    use_when: >
+      When the page covers storage or querying of embeddings,
+      chunks, or metadata in the vector database, including its
+      configuration and operation.
+    aliases:
+      - vector store
+    status: active
+
+  component-embedding-provider:
+    description: >
+      The provider used to create embeddings for document chunks
+      and user queries.
+    use_when: >
+      When the page explains configuring or using the provider
+      that creates embeddings for indexed content and queries.
+    aliases:
+      - embedding model provider
+    status: active
+
+  component-language-model-provider:
+    description: >
+      The provider that supplies the language model used to
+      generate grounded answers.
+    use_when: >
+      When the page explains configuring or using the language
+      model provider involved in answer generation.
+    aliases:
+      - LLM provider
+    status: active
+
+  component-operations-runner:
+    description: >
+      The operations HTTP application that accepts and executes
+      jobs, persists job state, and supports recovery from
+      interrupted jobs.
+    use_when: >
+      When the page explains the operations HTTP app, submitting
+      or executing jobs, persisted job state, or recovery from
+      interrupted jobs.
+    status: active
+
+  component-n8n-workflows:
+    description: >
+      The n8n workflows that schedule and coordinate indexing
+      and evaluation, compare results against quality policies,
+      route findings to Jira, and send failure notifications.
+    use_when: >
+      When the page explains n8n workflow setup or execution for
+      scheduling, coordinating indexing and evaluation, comparing
+      quality policies, Jira routing, or failure notifications.
+    status: active
