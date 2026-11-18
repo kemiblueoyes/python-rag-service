@@ -9,7 +9,7 @@ topics: [topic-configuration]
 components: [component-wordpress-connector, component-retrieval-service, component-vector-database, component-embedding-provider, component-language-model-provider]
 next_steps: [IndxWP]
 related_pages: [ConfSrv, Auth, RtrvPipe, TmeOutRtr, IntWP]
-last_modified: 2026-10-09
+last_modified: 2026-11-13
 audience: [primary, secondary]
 ---
 
@@ -37,11 +37,13 @@ or credentials.
 
 ## API and authentication
 
-The service uses one shared API key. Clients send it on search and answer requests.
+The public API uses one shared API key. Clients send it on search and answer requests.
+The operations runner uses a separate key for its job endpoints.
 
 | Setting | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
 | `RAG_API_KEY` | string | Yes, for the API to start | none | A non-empty string | Clients send this value in the `X-API-Key` header. The API requires a non-empty value before it starts. `GET /health` doesn't check the key. If search or answer receives a request while the key is unset, the route returns `503` with `authentication_unavailable`. |
+| `OPERATIONS_API_KEY` | string | Yes, for operations runner jobs | none | A non-empty string different from `RAG_API_KEY` | Operations runner clients send this value in the `X-API-Key` header on `POST /jobs` and `GET /jobs/{job_id}`. The public API doesn't read it. When it's unset or empty, the runner starts but its job endpoints return `503` and start no work. The runner's `GET /health` doesn't check the key. See [Run indexing and evaluation with the operations runner](/docs/index-content/operations-runner). |
 
 ## Embedding
 

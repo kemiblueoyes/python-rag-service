@@ -73,6 +73,9 @@ pages:
   - id: KnLmt
     content_type: general_reference
 
+  - id: OpsRun
+    content_type: how_to
+
   - id: Qstrt
     content_type: how_to
 

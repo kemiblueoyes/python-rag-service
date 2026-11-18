@@ -8,7 +8,7 @@ lifecycle_status: published
 topics: [topic-limitations]
 components: [component-wordpress-connector, component-indexing-pipeline, component-retrieval-service, component-answer-generation-service, component-public-api, component-evaluation-framework]
 related_pages: [SysArch, RtrvPipe, AnsGenCit, RecEvRes]
-last_modified: 2026-10-22
+last_modified: 2026-11-13
 audience: [primary, secondary]
 ---
 
@@ -44,7 +44,7 @@ searches, wait for the build. A request already searching the previous snapshot 
 are replaced or closed during refresh. Invalid, missing, unreadable, or continuously changing corpora return the existing controlled
 configuration error instead of serving stale lexical results. A later request retries, allowing recovery after a valid publication.
 
-Keep the public API and operations runner as separate processes with access to the same corpus path. Every API worker refreshes
+Keep the public API and [operations runner](/docs/index-content/operations-runner) as separate processes with access to the same corpus path. Every API worker refreshes
 independently; there is no background watcher or cross-process notification. Publish complete files with atomic replacement, as the
 WordPress indexer does. Qdrant updates and lexical publication aren't one transaction, so requests during indexing can still observe
 different vector and lexical generations. File metadata checks avoid hashing the whole corpus on each request.

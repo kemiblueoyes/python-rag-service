@@ -10,7 +10,7 @@ components: [component-wordpress-connector, component-indexing-pipeline]
 prerequisites: [ConfSrv]
 next_steps: [Auth]
 related_pages: [IndxPipe, RIndxUpdt, TutIndx]
-last_modified: 2026-10-22
+last_modified: 2026-11-13
 audience: [primary, secondary]
 ---
 
@@ -168,7 +168,7 @@ before you query this index.
 
 After the indexer publishes the chunk file at `LEXICAL_CORPUS_PATH`, each API process rebuilds its in-memory BM25 index on its
 next search or answer request. No restart is required. That request waits for the rebuild; unchanged files reuse the existing index.
-The API and operations runner remain separate processes and must share access to the configured corpus file.
+The API and [operations runner](/docs/index-content/operations-runner) remain separate processes and must share access to the configured corpus file.
 
 A failed refresh returns a controlled configuration error and retries on later requests. See
 [Known limitations](/docs/reference/known-limitations) for concurrency and index consistency limits.
