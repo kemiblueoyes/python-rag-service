@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-answer-generation, topic-grounding, topic-evi
 components: [component-answer-generation-service]
 next_steps: [EvArch]
 related_pages: [GenAns, AnsAPI, AnsEv, RtrvPipe]
-last_modified: 2026-10-09
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
@@ -23,12 +23,67 @@ validation, citation normalization, and the source fields the API returns.
 
 The answer generation diagram shows that path. The dashed arrow is the call to OpenAI. Citation validation stays inside the service.
 
-<Frame caption="Python RAG Service answer generation and citations">
+{/*<Frame caption="Python RAG Service answer generation and citations">
   <img
     src="../../assets/images/answer-generation-citations-diagram.png"
     alt="Python RAG Service answer generation and citations diagram"
   />
-</Frame>
+</Frame>*/}
+
+<figure>
+
+```mermaid
+
+flowchart TD
+    CHUNKS["`**Retrieved chunks**
+    Ranked, filtered chunks and metadata`"]
+
+    CONTEXT["`**Context assembly**
+    Select and prepare retrieved sources`"]
+
+    PROMPT["`**Prompt construction**
+    Question + context + grounding rules`"]
+
+    GENERATE["`**Answer generation**
+    Generate structured proposed answer`"]
+
+    OPENAI["`**OpenAI**
+    LLM`"]
+
+    PROPOSED["`**Proposed answer**
+    Answer text
+    Citation IDs
+    Sufficient-evidence status`"]
+
+    VALIDATE["`**Citation validation**
+    Verify cited IDs against supplied sources`"]
+
+    NORMALIZE["`**Citation normalization**
+    Renumber cited sources by first appearance`"]
+
+    ANSWER["`**Generated answer**
+    Final answer text
+    Cited sources
+    Sufficient-evidence status`"]
+
+    CHUNKS --> CONTEXT
+    CONTEXT --> PROMPT
+    PROMPT --> GENERATE
+    OPENAI -.-> GENERATE
+    GENERATE --> PROPOSED
+    PROPOSED --> VALIDATE
+    VALIDATE --> NORMALIZE
+    NORMALIZE --> ANSWER
+
+    class CONTEXT,PROMPT,GENERATE,VALIDATE,NORMALIZE core
+    class CHUNKS,PROPOSED artifact
+    class ANSWER output
+    class OPENAI external
+
+```
+
+<figcaption>Python RAG Service answer generation and citations diagram</figcaption>
+</figure>
 
 ## Context assembly
 

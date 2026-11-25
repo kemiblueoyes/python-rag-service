@@ -41,7 +41,7 @@
   },
   "report_reference": {
     "path": "evidence/doc-landscape-v1.7-initial-retrieval.json",
-    "original_filename": "retrieval_baseline(5).json",
+    "original_filename": "retrieval_baseline.json",
     "sha256": "d026a07480ae2e29ab9f5061c7a0ce252d278afcecbcd8cd85607eeafad885da"
   },
   "configuration_evidence": {

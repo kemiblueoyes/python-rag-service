@@ -1,3 +1,6 @@
+import os
+import subprocess
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -399,3 +402,58 @@ pytest
         "Pydantic",
         "pytest",
     ]
+
+
+@pytest.mark.parametrize("staged", [False, True])
+def test_glossary_date_tracks_terms_only(tmp_path: Path, staged: bool) -> None:
+    def git(*args: str, commit_date: str = "2026-10-01T12:00:00+00:00") -> None:
+        subprocess.run(
+            ["git", *args], cwd=tmp_path, check=True, capture_output=True,
+            env={**os.environ, "GIT_AUTHOR_DATE": commit_date,
+                 "GIT_COMMITTER_DATE": commit_date},
+        )
+
+    git("init")
+    git("config", "user.email", "test@example.com")
+    git("config", "user.name", "Test")
+    original = "version: 1\nterms:\n  - id: search\n    definition: Find evidence.\n"
+    source = write_glossary(tmp_path, original)
+    git("add", ".")
+    git("commit", "-m", "Initial terms")
+
+    def modified() -> str:
+        return generate_glossary.glossary_last_modified_date(
+            source, repo_root=tmp_path,
+        )
+
+    # Comments inside and outside terms, formatting, and version are ignored.
+    source.write_text(
+        "# Instructions\n" + original.replace("version: 1", "version: 2")
+        .replace("terms:\n", "terms:\n  # Term comment\n")
+        .replace("Find evidence.", "'Find evidence.'"),
+    )
+    if staged:
+        git("add", ".")
+    assert modified() == "2026-10-01"
+    git("add", ".")
+    git("commit", "-m", "Metadata only", commit_date="2026-10-02T12:00:00+00:00")
+    assert modified() == "2026-10-01"
+
+    source.write_text(original.replace("Find evidence.", "Find relevant evidence."))
+    if staged:
+        git("add", ".")
+    assert modified() == date.today().isoformat()
+    git("add", ".")
+    git("commit", "-m", "Change definition", commit_date="2026-10-03T12:00:00+00:00")
+    assert modified() == "2026-10-03"
+
+    source.write_text("# New comment\n" + source.read_text())
+    assert modified() == "2026-10-03"
+
+
+def test_glossary_date_for_new_source(tmp_path: Path) -> None:
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    source = write_glossary(tmp_path, "version: 1\nterms: []\n")
+    assert generate_glossary.glossary_last_modified_date(
+        source, repo_root=tmp_path,
+    ) == date.today().isoformat()

@@ -1,0 +1,370 @@
+---
+id: OpsRunr
+title: Run the operations runner
+subtitle: Start the runner, submit jobs, and recover from failures.
+description: Start the authenticated operations runner, submit indexing and retrieval evaluation jobs, poll their status, and handle failures and recovery.
+content_type: how_to
+lifecycle_status: published
+topics: [topic-job-management, topic-incremental-indexing, topic-retrieval-evaluation, topic-authentication]
+components: [component-operations-runner, component-indexing-pipeline, component-evaluation-framework]
+prerequisites: [RIndxUpdt, RnEv]
+next_steps: [StUpN8nWkflw]
+related_pages: [OpsOvrvw, CnfgRef, KnLmt, RtrvlEv]
+audience: [primary]
+last_modified: 2026-11-25
+---
+
+Run the Python RAG Service operations runner to submit incremental WordPress indexing
+and retrieval evaluation jobs over HTTP. The runner is a separate FastAPI application
+from the public search and answer API.
+
+The project includes an n8n workflow for scheduled indexing and automatic retrieval
+evaluation after content changes. n8n is a workflow automation tool. The provided
+workflow submits jobs to the runner and polls their status. This guide submits jobs
+directly with curl, so you don't need n8n to follow it. See
+[Operations overview](/docs/operations/overview) for how the runner and n8n work together.
+
+## Prerequisites
+
+- **[Re-index and update content](/docs/index-content/re-index-and-update-content)**:
+  Prepare the initial index and understand incremental updates, the saved document snapshot
+  used to detect changes, and when a full rebuild is required.
+- **[Run the evaluation](/docs/evaluate/run-the-evaluation)**:
+  Complete the retrieval evaluation setup and review how to interpret its reports.
+  The configured Qdrant collection and local lexical corpus must be available.
+  You don't need answer evaluation or OpenAI configuration for these runner jobs.
+
+Use the checkout where you installed the project dependencies and configured WordPress,
+Voyage, Qdrant, and retrieval settings. The examples require curl, Python 3, and a Bash-compatible shell.
+
+<Steps toc={true}>
+## Configure authentication
+
+Set `OPERATIONS_API_KEY` in the `.env` file to a secret value distinct from
+`RAG_API_KEY`. Don't commit the file or a real key. The operations API expects this
+key in the `X-API-Key` header on submission requests and polling requests (repeated status checks).
+
+<Warning>A missing or empty configured key causes job endpoints to return HTTP 503 without
+starting work. A missing or incorrect client key returns HTTP 401 when authentication
+is configured. The public API key doesn't grant access to operations jobs.</Warning>
+
+## Start the runner and check health
+
+From the repository root, start the runner:
+
+```bash
+uv run uvicorn rag_service.operations.app:app --host 127.0.0.1 --port 8001
+```
+
+Run only one copy of the runner with this Uvicorn command. Don't add extra Uvicorn
+workers or `--reload`, which automatically restarts the server when code changes.
+The runner needs a single server process to manage its jobs.
+
+The runner saves job status and history in `data/operations/jobs.sqlite3`, a SQLite
+database stored as a file. While running, it uses `data/operations/jobs.lock` to
+reserve that database so another runner can't use it at the same time. This
+file-locking mechanism requires a Unix-compatible operating system, such as macOS
+or Linux. Keep the database on the computer running the runner, rather than on a
+network drive.
+
+Run the process with an account that can create and update the job database,
+lock file, evaluation reports under `data/operations/runs/`, and indexing outputs.
+Indexing writes `data/wordpress-documents.json` and the file configured by
+`LEXICAL_CORPUS_PATH`, which defaults to `data/wordpress-chunks.json`.
+
+Keep the public API and runner in separate processes with access to the same configured
+lexical corpus file. Don't run manual indexing or evaluation commands concurrently
+with runner jobs because the runner's reservation doesn't coordinate those commands.
+Restart the runner after changing its environment configuration.
+
+In a second terminal at the same repository root, load the configured key into the
+shell without displaying it, then check health:
+
+```bash
+export OPERATIONS_API_KEY="$(uv run python -c 'from rag_service.config import settings; print(settings.operations_api_key.get_secret_value() if settings.operations_api_key else "")')"
+RUNNER_URL=http://127.0.0.1:8001
+curl -fsS "$RUNNER_URL/health" | python3 -m json.tool
+```
+
+A successful response is:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+`GET /health` doesn't require authentication. It checks runner availability and access
+to the job store. It doesn't verify the operations key, WordPress, Voyage, Qdrant,
+the lexical corpus, or retrieval quality.
+
+## Submit incremental indexing
+
+In the second terminal, submit an indexing job and display the response. The command
+creates a unique key so retrying the request doesn't create a duplicate job:
+
+```bash
+IDEMPOTENCY_KEY="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+SUBMISSION="$(curl -fsS "$RUNNER_URL/jobs" \
+  -H "X-API-Key: $OPERATIONS_API_KEY" \
+  -H "Idempotency-Key: $IDEMPOTENCY_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"operation":"index_wordpress"}')" &&
+printf '%s\n' "$SUBMISSION" | python3 -m json.tool
+```
+
+If the request fails, resolve the error before continuing. To retry this same submission,
+rerun the request using the existing `IDEMPOTENCY_KEY`; don't regenerate the key.
+After a successful response, capture its job ID:
+
+```bash
+JOB_ID="$(printf '%s' "$SUBMISSION" | python3 -c 'import json,sys; print(json.load(sys.stdin)["job_id"])')"
+```
+
+HTTP 202 means the runner accepted the job. Indexing happens in the background,
+so you receive this response before you know whether indexing succeeded or failed.
+The response shows the initial status, `queued`. The job may already be running
+by the time you read it.
+
+The response also gives you two values for checking progress:
+
+- `job_id` identifies this job. The ID extraction command stores it in the `JOB_ID`
+  shell variable for use in polling requests.
+- `status_url` is the path to this job's status, such as `/jobs/{job_id}` with
+  the actual ID filled in. Add the runner's address before that path to make a
+  complete URL: `http://127.0.0.1:8001/jobs/{job_id}`.
+
+Follow [Poll status and inspect indexing results](#poll-status-and-inspect-indexing-results)
+to find out when indexing finishes and whether it succeeded.
+
+The runner performs the normal incremental synchronization described in
+[Re-index and update content](/docs/index-content/re-index-and-update-content).
+It doesn't accept a rebuild flag. Perform required full rebuilds through the CLI
+while no runner job is active.
+
+## Poll status and inspect indexing results
+
+Check the job's status periodically to find out when indexing finishes. Once the job
+finishes, its record contains either the indexing results or an error explaining why it failed.
+
+Run this polling command to check the current status of the job saved in `JOB_ID`:
+
+```bash
+curl -fsS "$RUNNER_URL/jobs/$JOB_ID" \
+  -H "X-API-Key: $OPERATIONS_API_KEY" | python3 -m json.tool
+```
+
+Each run checks the status once. If `status` is `queued` or `running`, wait a few
+seconds and run the same command again. Stop polling when it’s `succeeded` or `failed`.
+
+| Status | Meaning and action |
+| --- | --- |
+| `queued` | The runner accepted the job but hasn’t recorded its start yet. Continue polling. |
+| `running` | The runner started the job. Continue polling. |
+| `succeeded` | Execution and required output writes finished. Inspect `result`. |
+| `failed` | The runner couldn’t start or finish the job, save its outcome, or continue after an interruption. Inspect `error`. |
+
+The record includes `created_at`, `started_at`, and `completed_at` timestamps.
+Start and completion timestamps are null until those events are recorded.
+An interruption before execution can leave `started_at` null in a failed record.
+Successful jobs have a result and no error, while failed jobs have an error code and message
+and no successful result.
+
+The **document checkpoint** is `data/wordpress-documents.json`, a saved snapshot of
+WordPress documents that the next indexing run uses to detect new, changed, and
+removed content. The runner updates it only after synchronizing vectors and saving the lexical
+chunk file.
+
+For successful indexing, inspect these fields inside `result`:
+
+| Field | Meaning |
+| --- | --- |
+| `new`, `updated`, `unchanged`, `removed` | Document counts compared with the previous checkpoint. |
+| `changes_detected` | True when any documents are new, updated, or removed. |
+| `documents_indexed`, `chunks_indexed` | Counts written through vector indexing for this job. |
+| `documents_cleared` | Count of documents whose previous vectors were removed, including updated documents. |
+| `artifact_paths` | Paths to the document checkpoint and lexical chunk file. |
+
+### How indexing updates are saved
+
+The runner finishes synchronizing vectors before it saves the chunk file, then saves
+the document checkpoint last. It replaces each file in a single step after writing
+its new contents in full, so readers don't see partially written JSON. The runner
+updates the two files and Qdrant separately.
+
+If vector synchronization fails, the previous JSON files remain. If publishing the
+chunk file fails, the document checkpoint remains unchanged. If publishing the document
+checkpoint fails after the chunk file was replaced, the chunk file can contain the new
+corpus while the checkpoint still represents the previous run. The next indexing job compares
+against that checkpoint and detects the pending changes again. The runner may already
+have changed vectors in Qdrant; a failed job doesn't undo those changes.
+
+The public API refreshes its lexical index on its next request after the chunk file
+changes. Requests during indexing can use vector and lexical indexes from different updates.
+See [Known limitations](/docs/reference/known-limitations#lexical-refresh-happens-on-the-next-request).
+
+## Submit retrieval evaluation and inspect reports
+
+After indexing succeeds, submit evaluation using a fresh idempotency key:
+
+```bash
+IDEMPOTENCY_KEY="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+SUBMISSION="$(curl -fsS "$RUNNER_URL/jobs" \
+  -H "X-API-Key: $OPERATIONS_API_KEY" \
+  -H "Idempotency-Key: $IDEMPOTENCY_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"operation":"evaluate_retrieval"}')" &&
+printf '%s\n' "$SUBMISSION" | python3 -m json.tool
+```
+
+After a successful submission, capture the evaluation job ID and poll it:
+
+```bash
+JOB_ID="$(printf '%s' "$SUBMISSION" | python3 -c 'import json,sys; print(json.load(sys.stdin)["job_id"])')"
+curl -fsS "$RUNNER_URL/jobs/$JOB_ID" \
+  -H "X-API-Key: $OPERATIONS_API_KEY" | python3 -m json.tool
+```
+
+Repeat polling until the job `status` is `succeeded` or `failed`: either value means the job has
+finished and won't do any more work. For `succeeded`, inspect `result`; for
+`failed`, inspect `error` to find out what went wrong.
+
+Each evaluation creates a fresh retrieval service and reads
+`evaluation/datasets/baseline.json`. On success, `result` contains:
+
+- `dataset_id`, `dataset_version`, and `generated_at`, identifying the evaluated dataset and report time.
+- `summary`, containing aggregate metrics, and `failed_case_ids`, identifying cases that failed.
+- `retrieval_configuration`, recording the collection, retrieval depth, models, candidate depths,
+  fusion setting, support cutoff, and lexical corpus path without credentials.
+- `report_paths`, identifying JSON and Markdown reports on the runner's filesystem.
+
+The runner writes reports to `data/operations/runs/{job_id}/retrieval_baseline.json` and
+`data/operations/runs/{job_id}/retrieval_baseline.md`. Open the paths from this job's
+result on the runner's computer. These are filesystem paths, not HTTP download URLs.
+Full case text appears in the report files, not in the HTTP result. A metric with a
+value of `null` has no measurement; it doesn't mean the score is zero.
+
+A `succeeded` evaluation job means the runner finished evaluation and saved the reports.
+However, cases can still fail. Review the summary and failed cases using
+[Retrieval evaluation](/docs/evaluate/retrieval-evaluation); the runner doesn't apply
+a retrieval quality policy or approve a baseline. Its reports don't overwrite CLI
+reports under `data/evaluation/latest/` or the approved baseline. If evaluation or
+report writing fails, the job fails instead of returning an older report's result.
+
+</Steps>
+
+## Handle retries, concurrency, and errors
+
+### Retry submissions without creating duplicate jobs
+
+An idempotency key identifies one intended submission. It can't be blank or longer
+than 128 characters. Repeating the same key and operation returns the existing job
+with HTTP 200, including after completion or a restart with the same database.
+It doesn't execute the operation again. Use a fresh key for a new intended job.
+
+### Handle a busy runner or conflicting key
+
+Only one job can be active at a time. A different submission while work is active
+returns HTTP 409 with `detail.code: runner_busy` and `detail.job_id` identifying the
+active job. Poll that job and retry after it finishes. The initial `queued` status
+doesn't imply a waiting queue. Reusing a key for a different operation returns
+HTTP 409 with `detail.code: idempotency_conflict` and the original job ID.
+
+### Check HTTP responses
+
+| HTTP status | Meaning and action |
+| --- | --- |
+| 200 | Health or polling succeeded, or submission returned an existing job. Check job `status` separately. |
+| 202 | A new job was accepted. Poll its returned ID. |
+| 401 | The supplied operations key is missing or incorrect. Check `X-API-Key`. |
+| 404 | The job ID is unknown to this database. Check the ID and runner address. |
+| 409 | The runner is busy or the key belongs to another operation. Inspect `detail.code` and `detail.job_id`. |
+| 422 | The body or idempotency header is invalid. Use one supported operation, no extra fields, and a valid key. |
+| 503 | Authentication is unconfigured or the runner is unavailable. Check configuration and local storage before retrying. |
+
+The request body accepts only `operation`, set to `index_wordpress` or
+`evaluate_retrieval`. The runner rejects extra fields, including source URLs, paths,
+provider settings, shell commands, dataset selections, and rebuild flags.
+
+The examples use curl's `-f` option, which hides HTTP error bodies. To inspect an
+error, repeat the request with `-sS -i` instead of `-fsS` and omit JSON formatting so
+headers and body are visible. Preserve the idempotency key for submission retries.
+Authentication and not-found errors use `detail`; conflict details contain the code
+and job ID. Request-validation failures use `error.code: invalid_request`, except a
+blank idempotency key uses `detail`. Runner unavailability uses `error.code: runner_unavailable`.
+
+### Inspect job failure codes
+
+Polling a failed job still returns HTTP 200. Its top-level `error` contains one of
+these job failure codes:
+
+| Job error code | Action |
+| --- | --- |
+| `operation_failed` | Check local provider configuration, service availability, output paths, and diagnostics. Correct the cause before a new job. |
+| `dispatch_failed` | The runner couldn't start execution. Inspect runner availability before submitting a new job. |
+| `storage_failed` | The runner couldn’t save the job status or outcome. Correct the storage problem and inspect possible external writes. |
+| `runner_interrupted` | Restart recovery found unfinished work. Review its effects before submitting a new job. |
+
+## Recover interrupted jobs
+
+### Stop the runner normally
+
+To stop the runner, press Ctrl+C in its terminal and let shutdown finish. The runner
+stops accepting work and waits for the active job to finish and close its connections
+to external services. Forcing the process to stop can interrupt a job.
+
+### Review interrupted work before submitting a new job
+
+When you restart it, the runner marks saved `queued` or `running` jobs as `failed`
+with `runner_interrupted`. It doesn't resume or automatically retry them. Poll the
+original job ID and inspect the index, checkpoint, or report directory for effects
+that occurred before termination. An interrupted evaluation can leave incomplete
+report files. Don't treat their presence as proof of a successful job.
+
+After addressing the cause and reviewing those effects, submit a new job with a new
+idempotency key. Reusing the old key returns the failed record. For indexing, keep
+the document checkpoint so the next incremental run can detect pending changes.
+A forced stop during file publication can leave a hidden temporary file beside an
+output file; the next indexing job reads the destination files, not that temporary file.
+
+### Resolve storage failures
+
+If the runner can't save a job’s final result or error, it tries to record `storage_failed`.
+If that write also fails, the runner blocks new jobs and returns HTTP 503 for job
+and health requests until you restart it. Fix the local storage problem
+before restarting because repeating submissions can't repair it.
+
+### Keep job history and reports
+
+Keep `data/operations/jobs.sqlite3` so you can look up past jobs and retry submissions
+with the same keys. Keep the report directories for evaluation details. The runner
+doesn't automatically delete job history or reports. Removing the database loses
+those job records and idempotency keys.
+
+## Verification
+
+Confirm that each submitted job reaches `succeeded` and inspect its result. For indexing,
+check the reported change counts and artifact paths. For evaluation, open the reports
+for the returned job ID, verify dataset identity and generation time, and review the
+summary and failed case IDs. A successful health response or submission alone
+doesn't verify these outcomes.
+
+Review [Operations runner limitations](/docs/reference/known-limitations#operations-runner)
+when planning concurrency, recovery, or storage retention.
+
+## Next steps
+
+**[Set up n8n workflow](/docs/operations/set-up-n8n-workflow)**: Automate
+scheduled indexing, retrieval evaluation after content changes, and quality checks
+with the workflow included in the project.
+
+## Related pages
+
+- **[Operations overview](/docs/operations/overview)**: Understand how the runner
+  and the n8n workflow work together.
+- **[Configuration reference](/docs/reference/configuration-reference)**: Look up
+  authentication, provider, and retrieval settings used by the runner.
+- **[Known limitations](/docs/reference/known-limitations#operations-runner)**: Review
+  constraints on concurrent jobs, recovery, and storage retention.
+- **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation)**: Interpret the
+  metrics and case outcomes in evaluation reports.

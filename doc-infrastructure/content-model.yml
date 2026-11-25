@@ -186,11 +186,11 @@ topics:
 
   topic-authentication:
     description: >
-      API-key setup, credential handling, and access control for
-      protected RAG API endpoints.
+      API-key authentication, credential handling, and access control
+      for the RAG service's public API and operations runner.
     use_when: >
-      When the page explains API-key configuration, protected endpoint
-      access, or safe credential handling.
+      When the page explains configuring API keys, authenticating
+      requests to protected endpoints, or handling credentials securely.
     status: active
 
   topic-indexing:
@@ -377,14 +377,15 @@ topics:
           or citations.
         status: active
 
-  topic-workflow-automation:
+  topic-operational-automation:
     description: >
-      Automating and coordinating operational workflows, including
-      scheduled or event-triggered indexing and evaluation.
+      Running and automating operational tasks around the RAG service,
+      including indexing, retrieval evaluation, job management, quality
+      checks, and failure reporting.
     use_when: >
-      When the page explains setting up or running scheduled and
-      triggered workflows, or coordinating indexing and evaluation
-      steps through automation.
+      When the page explains running or coordinating operational tasks
+      through the operations runner or an external orchestration tool
+      such as n8n.
     status: active
     children:
       topic-job-management:
@@ -407,6 +408,16 @@ topics:
           When the page explains policies for judging retrieval
           quality against approved baselines, comparable evaluation
           runs, metric thresholds, or pass/fail outcomes.
+        status: active
+
+      topic-workflow-automation:
+        description: >
+          Automating and coordinating operational tasks through external
+          workflow tools such as n8n, including scheduled indexing,
+          retrieval evaluation, quality checks, and failure reporting.
+        use_when: >
+          The page explains configuring, scheduling, or running automated
+          workflows that coordinate operations around the RAG service.
         status: active
 
   topic-limitations:
@@ -574,3 +585,49 @@ components:
       scheduling, coordinating indexing and evaluation, comparing
       quality policies, Jira routing, or failure notifications.
     status: active
+
+page_relationships:
+  prerequisites:
+    description: >
+      Documentation pages containing a task, setup requirement,
+      or knowledge the reader needs before successfully using
+      the current page.
+    use_when: >
+      The reader would be blocked or materially confused without
+      completing or understanding the referenced page.
+    rules:
+      - Include only direct dependencies.
+      - Do not include merely helpful background reading.
+      - A prerequisite can apply to any content type.
+
+  next_steps:
+    description: >
+      Documentation pages representing the most useful or logical
+      progression after completing or understanding the current page.
+    use_when: >
+      There is a clear task, learning, or decision progression
+      from the current page to another page.
+    rules:
+      - Select intentional progressions, not navigation order.
+      - Do not include pages that only provide additional context.
+      - Multiple paths are acceptable when each is useful.
+      - Do not assume the relationship is reciprocal.
+      - Leave empty when no clear progression exists.
+
+  related_pages:
+    description: >
+      Documentation pages providing useful additional context,
+      deeper explanation, reference information, or closely
+      related tasks that are not required for the current page.
+    use_when: >
+      A reader would benefit from the referenced page because
+      it expands on, complements, or provides context for
+      something meaningfully covered in the current page.
+    rules:
+      - Select pages based on their relationship to the current page.
+      - Sharing a topic or component is insufficient by itself.
+      - Prefer prerequisites or next_steps when those relationships
+        describe the connection more precisely.
+      - Do not automatically create reciprocal relationships.
+      - Prefer a small curated set, ideally two to four pages.
+      - Do not add pages solely to reach a target count.

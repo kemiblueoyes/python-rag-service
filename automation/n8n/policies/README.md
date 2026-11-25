@@ -1,85 +1,101 @@
 # Retrieval quality policy v1
 
-`retrieval-quality-policy.json` declares the comparison contract.
-`approved-retrieval-baseline.json` fixes dataset 1.7's initial report, generated at
-`2026-10-14T01:54:03.845276+00:00`. Its summary is copied exactly from the supplied
-`retrieval_baseline(5).json`, preserved byte-for-byte under `evidence/` with a
-SHA-256 digest. Successful runs, retries, improvements, and resolution of known
-failures must never overwrite this baseline.
+`retrieval-quality-policy.json` defines how you compare a retrieval evaluation
+with the approved baseline. `approved-retrieval-baseline.json` records dataset
+1.7's initial report, generated at `2026-10-14T01:54:03.845276+00:00`. The
+baseline `summary` matches the supplied `retrieval_baseline.json`, stored
+unchanged at `evidence/doc-landscape-v1.7-initial-retrieval.json`. The baseline
+records that file's SHA-256 digest. Don't replace this baseline after a
+successful run, a retry, an improvement, or resolution of a known failure.
+Replace it only after an explicit baseline review.
 
-## Configuration verification
+## Verified configuration for dataset 1.7
 
-Operations evaluation `874d4473-d85c-4dc3-b314-3225ff8755b5` succeeded using
-dataset 1.7. Its complete non-secret job result is preserved in
-`evidence/doc-landscape-v1.7-configuration-job.json`. The configuration matches
-every setting recorded by the original report:
-collection `rag_chunks`, embedding model `voyage-4-lite`, cutoff `0.7`, and `k=5`.
-Dataset identity and case counts also match. The fresh summary happens to equal
-the original summary, with only `multi-section-001` failed; the fixed summary's
-source remains the original attachment.
+Operations evaluation job `874d4473-d85c-4dc3-b314-3225ff8755b5` succeeded for
+dataset 1.7. `evidence/doc-landscape-v1.7-configuration-job.json` stores the
+complete job result, without secrets. The recorded settings match the original
+report: collection `rag_chunks`, embedding model `voyage-4-lite`, support
+cutoff `0.7`, and `k=5`. Dataset identity and case counts match as well. The
+fresh summary equals the original summary, and only `multi-section-001` failed.
+The fixed summary still comes from the original retrieval report that was supplied
+with the baseline.
 
-The remaining configuration fields come from this fresh operations job, not from
-the historical attachment. That attachment cannot prove those historical values.
-No settings were changed. Future missing metadata or configuration mismatches
-must produce `needs_review` before any metric-based quality decision.
+The fresh operations job supplies the remaining configuration fields. The
+original retrieval report records only collection, embedding model, support cutoff,
+and `k`, so it can't establish the other historical values. The verification
+job didn't change any settings. When required metadata is missing or the
+configuration doesn't match, return `needs_review` before you make a
+metric-based quality decision.
 
-## Delivering the files to Docker n8n
+## Mount the policy files in Docker n8n
 
-Use a read-only bind mount of this directory. For example, add this entry to the
-existing n8n service's Docker Compose `volumes` list, preserving its other mounts:
+Mount `automation/n8n/policies` read-only into the n8n container so the workflow
+can access the policy files. For example, add this entry to the existing n8n
+service's Docker Compose `volumes` list, keeping the service's other mounts:
 
 ```yaml
 volumes:
   - "./automation/n8n/policies:/opt/rag-policies:ro"
 ```
 
-Recreate the n8n container through its existing deployment procedure to apply
-the mount. The workflow must read and parse these two files from the container:
+Recreate the n8n container through its existing deployment procedure so the
+mount takes effect. Read and parse these two files from the container:
 
 - `/opt/rag-policies/retrieval-quality-policy.json`
 - `/opt/rag-policies/approved-retrieval-baseline.json`
 
-Use the deployment's permitted local-file reading mechanism, then JSON parsing;
-verify file-access restrictions permit `/opt/rag-policies`. Docker cannot see the
-host checkout without this explicit mount. Load both files once at the beginning
-of each execution and retain that snapshot for retries. Check `schema_version`,
-`policy_version`, and configuration verification before comparing. If loading or
-validation fails, stop comparison and report the specific error rather than pass.
-When deploying another reviewed version, update the mounted files together while
-no new execution can load a partially updated pair. Retain prior versions in Git.
+Read them with the deployment's permitted local-file mechanism, then parse the
+JSON. Confirm that file-access restrictions allow `/opt/rag-policies`. Without
+this mount, the n8n container doesn't include the repository checkout. Load
+both files once at the start of each execution, and keep that snapshot for
+retries. Check `schema_version`, `policy_version`, and configuration
+verification before you compare results. If loading or validation fails, stop
+the comparison and report the specific error. Don't record that run as passed.
 
-The included indexing workflow loads these policy files, compares retrieval results,
-and routes confirmed regressions to Jira. Importing the workflow does not verify deployment
-configuration. Configure and verify the policy mount, credentials, Jira project and issue
-type, schedule, and failure-alert workflow in your n8n instance.
+When you deploy another reviewed version, update the mounted policy and
+baseline together, while no new execution can load a partially updated pair.
+Keep earlier versions in Git.
 
-## Consumer rules
+The RAG Indexing workflow (`automation/n8n/workflows/rag-indexing-workflow.json`)
+loads these policy files, compares retrieval results, and routes confirmed
+regressions to Jira. Importing the workflow doesn't verify your deployment
+configuration. In your n8n instance, configure and verify the policy-file
+mount, runner and Jira credentials, Jira project and issue type, schedule, and
+failure-alert workflow.
 
-Normalize runner results and report metadata to the field names in the policy.
-For runner results, obtain top-level `k` from `retrieval_configuration.k`; the
-stored report uses top-level `k`. A CLI report alone lacks full configuration and
-must not silently inherit the baseline's configuration. Associate configuration
-with the actual evaluation job before comparison.
+## Compare retrieval results with the baseline
 
-Apply outcome precedence: operational failure, needs review, quality failed,
-passed. A missing/null required metric is unavailable (`needs_review`); a supplied
-non-number, non-finite value, or value outside [0, 1] is malformed
-(`operational_failure`). Missing case-count/coverage metadata needs review;
-contradictory counts or case outcomes are malformed. Require either complete case
-outcomes or the runner's explicit failed-case list to identify new failures.
+Normalize runner results and report metadata to the field names in
+`retrieval-quality-policy.json`. For runner results, read top-level `k` from
+`retrieval_configuration.k`. The stored report already uses top-level `k`. A
+command-line report doesn't include the full retrieval configuration. Don't
+copy the baseline configuration into that report. Associate the configuration
+with the evaluation job that produced the report before you compare.
 
-Compare unrounded decimal values. Both absolute floors and maximum declines must
-pass, including equality. Do not round the baseline or published metrics. In
-particular, binary floating-point subtraction must not turn an exact boundary into
-a failure; implement decimal-safe comparisons and test equality explicitly.
-Record all metric breaches and newly failed cases. A decline breach or new case
-qualifies for the Jira regression route included in the indexing workflow.
-Configure and verify that integration before enabling scheduled runs.
-Known failure `multi-section-001` remains visible even when quality passes.
+Use the first matching outcome, in this order: `operational_failure`,
+`needs_review`, `quality_failed`, then `passed`. A missing or null required
+metric is unavailable, so the outcome is `needs_review`. A supplied non-number,
+non-finite value, or value outside the inclusive range 0 to 1 is malformed, so
+the outcome is `operational_failure`. When case-count or coverage metadata is
+missing, return `needs_review`. When counts or case outcomes contradict each
+other, return `operational_failure`. To identify new failures, require either
+complete case outcomes (`case_id` and a boolean `passed`) or the runner's
+`failed_case_ids` list.
 
-Retain indexing/evaluation job IDs, n8n execution ID, policy/dataset versions,
-report paths, and specific reasons in every outcome, as declared in the policy.
-An unavailable context field remains null with a reason. Never invent an ID.
-No corpus fingerprint is required for comparability: indexing is expected to
-change source content. Reviewed label/reference changes require a new dataset
-version and baseline review.
+Compare the unrounded decimal values. A metric passes when it meets its minimum
+and its maximum decline, including exact equality. Don't round the baseline or
+the published metrics. Use decimal-safe comparisons so binary floating-point
+subtraction doesn't turn an exact boundary into a failure, and test equality
+explicitly. Record every metric breach and every newly failed case. A
+maximum-decline breach or a newly failed case qualifies for the Jira regression
+route in the RAG Indexing workflow. Configure and verify that integration
+before you enable scheduled runs. Include known failure `multi-section-001` in
+the outcome when quality passes.
+
+Record these fields in every outcome, as the policy declares:
+`indexing_job_id`, `evaluation_job_id`, `n8n_execution_id`, `policy_version`,
+`dataset_version`, `report_paths`, and `reasons`. When a context field is
+unavailable, leave it null and record a reason. Don't invent an ID.
+Comparability doesn't require a corpus fingerprint, because indexing is
+expected to change source content. A reviewed change to labels or references
+requires a new dataset version and a baseline review.

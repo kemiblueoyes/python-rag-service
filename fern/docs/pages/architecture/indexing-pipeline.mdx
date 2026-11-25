@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-indexing]
 components: [component-wordpress-connector, component-indexing-pipeline, component-vector-database, component-embedding-provider]
 next_steps: [RtrvPipe]
 related_pages: [IndxWP, RIndxUpdt, TutIndx, SysArch]
-last_modified: 2026-10-22
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
@@ -23,12 +23,54 @@ processing, embeddings, and storage, and explains what a full rebuild changes co
 The indexing pipeline diagram shows that path. The same retrieval-ready chunks feed two stores. The lexical corpus
 keeps the chunk text for BM25 retrieval, while Qdrant stores a Voyage embedding for each chunk with its metadata.
 
-<Frame caption="Python RAG Service indexing pipeline">
+{/*<Frame caption="Python RAG Service indexing pipeline">
   <img
     src="../../assets/images/indexing-pipeline-diagram.png"
     alt="Python RAG Service indexing pipeline diagram"
   />
-</Frame>
+</Frame>*/}
+<figure>
+
+```mermaid
+
+flowchart TD
+    WP["`**WordPress**
+    Content source`"]
+    CON["`**WordPress connector**
+    Fetch and normalize content`"]
+    DOC["`**Canonical documents**
+    Standardized format`"]
+    PROC["`**Content processing**
+    Normalize content
+    Extract headings
+    Create chunks
+    Attach metadata`"]
+    CHUNKS["`**Retrieval-ready chunks**`"]
+    LEX["`**Lexical corpus**
+    WordPress chunks`"]
+    EMB["`**Embeddings**
+    Convert chunks to vectors`"]
+    QD["`**Qdrant**
+    Vectors, chunks, and metadata`"]
+    VOY["`**Voyage AI**
+    Embedding model`"]
+
+    WP --> CON --> DOC --> PROC --> CHUNKS
+    CHUNKS --> LEX
+    CHUNKS --> EMB
+    EMB --> QD
+    VOY -.->|Generate embeddings| EMB
+
+    class WP,CON,DOC,PROC core
+    class CHUNKS artifact
+    class LEX lexical
+    class EMB,QD vector
+    class VOY external
+
+```
+
+<figcaption>Python RAG Service indexing pipeline diagram</figcaption>
+</figure>
 
 ## WordPress connector
 

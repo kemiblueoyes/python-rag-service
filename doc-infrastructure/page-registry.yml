@@ -55,6 +55,9 @@ pages:
   - id: HowEv
     content_type: explanation
 
+  - id: HowN8nWkflw
+    content_type: explanation
+
   - id: IndxPipe
     content_type: explanation
 
@@ -72,6 +75,12 @@ pages:
 
   - id: KnLmt
     content_type: general_reference
+
+  - id: OpsOvrvw
+    content_type: overview
+
+  - id: OpsRunr
+    content_type: how_to
 
   - id: Qstrt
     content_type: how_to
@@ -104,6 +113,9 @@ pages:
     content_type: overview
 
   - id: SrchDoc
+    content_type: how_to
+
+  - id: StUpN8nWkflw
     content_type: how_to
 
   - id: SysArch

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "classes": {
+    "core": {
+      "fill": "#EAF4FF",
+      "stroke": "#79BCEB",
+      "color": "#123A75"
+    },
+    "vector": {
+      "fill": "#E8F7EE",
+      "stroke": "#69C08D",
+      "color": "#116B46"
+    },
+    "lexical": {
+      "fill": "#FFF7D9",
+      "stroke": "#E3C24C",
+      "color": "#7A5C00"
+    },
+    "artifact": {
+      "fill": "#F2EEFF",
+      "stroke": "#C6A6F7",
+      "color": "#5C4299"
+    },
+    "output": {
+      "fill": "#EAF8EF",
+      "stroke": "#79C792",
+      "color": "#1F6C45"
+    },
+    "external": {
+      "fill": "#ffffff",
+      "stroke": "#000000",
+      "color": "#2E4B68",
+      "stroke-dasharray": "5 5"
+    },
+    "failure": {
+      "fill": "#FDECEC",
+      "stroke": "#E49090",
+      "color": "#8A2F2F"
+    },
+    "automation": {
+      "fill": "#fce1fa",
+      "stroke": "#ca9ad9",
+      "color": "#67336d"
+    }
+  }
+}

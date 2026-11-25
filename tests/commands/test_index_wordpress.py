@@ -55,6 +55,8 @@ def test_writes_canonical_documents_and_processed_chunks(
         "wordpress_profile",
         "doc_landscape",
     )
+    monkeypatch.setattr(settings, "wordpress_request_timeout", 10.0)
+    monkeypatch.setattr(settings, "wordpress_page_size", 100)
     profile = WordPressConnectorProfile(
         preserved_block_classes=frozenset({"wp-block-accordion"}),
         excluded_section_headings=frozenset({"Related Terms"}),

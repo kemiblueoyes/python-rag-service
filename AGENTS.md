@@ -33,7 +33,7 @@ as guarantees about the current corpus or configuration.
 
 - Read `doc-infrastructure/README.md` before authoring or restructuring published docs. It describes setup, page creation, metadata, generation, and validation.
 - Follow `doc-infrastructure/content-model.yml`, the applicable template in
-  `doc-infrastructure/templates/`, and the style, terminology, and Fern platform guides in that directory.
+  `doc-infrastructure/templates/`, and the style, technical accuracty, terminology, and Fern platform guides in that directory.
 - Fern creates the page H1: start MDX bodies at H2. Use published site paths for
   inter-page MDX links. Keep page IDs stable and update navigation and affected
   links when moving a page.
@@ -53,7 +53,9 @@ outputs directly. The following commands write files. For an audit, use their
 
 For authored page date metadata, use
 `uv run python -m rag_service.commands.documentation.update_last_modified`.
-The glossary generator owns the glossary page's date.
+The glossary generator owns the glossary page's date, based on changes to the
+parsed `terms` data in `docs/data/glossary.yml`. Comments and top-level metadata
+do not advance that date; source schema validation still applies.
 
 ## Validation
 

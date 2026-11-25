@@ -18,6 +18,8 @@ Run every command from the repository root. This README belongs in `doc-infrastr
 | [`technical-accuracy-rules.md`](technical-accuracy-rules.md) | Rules for verifying documented behavior, requirements, examples, and limitations |
 | [`docs/data/glossary.yml`](../docs/data/glossary.yml) | Glossary definitions and aliases |
 | [`styles/`](../styles/) and [`.vale.ini`](../.vale.ini) | Vale prose rules and configuration |
+| [`diagram-styles/mermaid-theme.json`](diagram-styles/mermaid-theme.json) | Shared Mermaid class colors for flowcharts |
+| [`scripts/fern_mermaid.py`](scripts/fern_mermaid.py) | Copies `fern/` and inserts those colors into the staged site |
 | [Documentation commands](../src/rag_service/commands/documentation/) | Page creation, metadata updates, and validation |
 
 ## Set up the tools
@@ -194,6 +196,42 @@ uv run python -m rag_service.commands.generate_openapi
 
 This writes `fern/openapi.yml`, which Fern uses to generate endpoint reference pages. Update related guides and error documentation when the API behavior changes.
 
+## Style Mermaid diagrams
+
+Flowchart colors come from [`diagram-styles/mermaid-theme.json`](diagram-styles/mermaid-theme.json). [`scripts/fern_mermaid.py`](scripts/fern_mermaid.py) copies `fern/` to `.generated/fern/` and inserts `classDef` rules from that file. Pages under `fern/` stay as authored. `.generated/` is gitignored.
+
+Assign a theme class in the diagram and leave the color values in the JSON. The [style guide](style-guide.md#mermaid-diagram-color-conventions) describes which role each class represents. The class names are `core`, `vector`, `lexical`, `artifact`, `output`, `external`, `failure`, and `automation`.
+
+````mdx
+```mermaid
+flowchart TD
+    A["`**Gold evaluation dataset**`"] --> B["`**Run retrieval evaluation**`"]
+    class A artifact
+    class B core
+```
+````
+
+The script adds class definitions only to `flowchart` and `graph` blocks. Sequence diagrams and other Mermaid types are copied unchanged. A `class` line stays in the source. An existing palette `classDef` in a page is removed from the staged copy and replaced with the theme. Edit the JSON to change a color.
+
+The dashed border for `external` nodes comes from the `.node.external` rule in [`fern/styles.css`](../fern/styles.css).
+
+From the repository root:
+
+```bash
+# Styled copy for inspection
+python3 doc-infrastructure/scripts/fern_mermaid.py prepare
+
+# Local preview; syncs MDX and theme edits until Ctrl+C
+python3 doc-infrastructure/scripts/fern_mermaid.py dev
+
+# Styled publish, hosted preview, or fern check
+python3 doc-infrastructure/scripts/fern_mermaid.py publish
+python3 doc-infrastructure/scripts/fern_mermaid.py preview
+python3 doc-infrastructure/scripts/fern_mermaid.py check
+```
+
+`prepare` writes `.generated/fern/`. The other commands run Fern from that copy. For any other Fern command, run `prepare`, then run the command inside `.generated/fern`. Review styled diagrams in Fern light and dark modes.
+
 ## Preview and validate
 
 Start the local preview:
@@ -202,7 +240,7 @@ Start the local preview:
 fern docs dev
 ```
 
-Open the URL printed in the terminal. Review navigation, layout, tables, components, code examples, and links.
+Open the URL printed in the terminal. Review navigation, layout, tables, components, code examples, and links. This previews `fern/` directly. Use the commands in [Style Mermaid diagrams](#style-mermaid-diagrams) when the page should show shared flowchart colors.
 
 Run the complete validation command:
 

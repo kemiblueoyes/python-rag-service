@@ -1,3 +1,24 @@
+# Source for the published glossary and the Vale accept list.
+#
+# Edit terms here. Do not edit these generated files:
+# - fern/docs/pages/reference/glossary.mdx
+# - styles/config/vocabularies/RAGService/accept.txt
+#
+# Each term needs id, term, and definition.
+# id is a unique lowercase kebab-case value, such as hybrid-search.
+# term is the canonical name and must start with a letter.
+# Optional fields:
+# - example: a short illustration
+# - aliases: other names Vale should accept for this term
+# - related_terms: ids of other terms in this file
+#
+# Keep version at 1. After editing, regenerate from the repository root:
+#   uv run python scripts/generate_glossary.py
+#
+# To let Vale accept a word that is not a glossary term, edit
+# styles/config/vocabularies/RAGService/manual-accept.txt and run the
+# same command.
+
 version: 1
 
 terms:

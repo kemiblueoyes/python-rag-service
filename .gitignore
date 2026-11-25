@@ -213,6 +213,9 @@ __marimo__/
 
 
 # Other
+# Staged Fern site produced by doc-infrastructure/scripts/fern_mermaid.py
+.generated/
+
 Notes.md
 # Local index and evaluation artifacts at the repo root only.
 # Use a leading slash so docs/data/ (glossary source) stays tracked.
@@ -224,3 +227,6 @@ node_modules/
 
 # SQLite files created by the WordPress plugin tests
 clients/wordpress/python-rag-service-client/tests/tmp/
+
+# n8n import testing for documentation
+n8n-import-test/

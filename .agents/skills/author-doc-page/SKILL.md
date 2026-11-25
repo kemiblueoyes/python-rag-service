@@ -1,181 +1,159 @@
 ---
 name: author-doc-page
 description: >
-  Create new Python RAG Service documentation pages through a four-step
-  authoring workflow: outline, draft, final draft, and metadata finalization.
-  Use when asked to author a new documentation page in fern/docs/pages,
-  including tutorials, how-to guides, explanations, overviews, and reference
-  pages. Follow the project's content model, documentation templates,
-  technical accuracy rules, Fern conventions, and editorial standards.
+  Author new Python RAG Service documentation pages in fern/docs/pages,
+  including pages already initialized using create_doc_page. Use when
+  asked to outline, draft, refine, or finalize a new documentation page.
+  Do not use for updating existing authored documentation.
 ---
 
 # Author Documentation Page
 
-Create a new documentation page for the Python RAG Service using the project's
-content model, documentation standards, and approved source material.
+Create new documentation pages using the project's content model, templates, documentation standards, and authoritative sources.
 
-Work collaboratively with the user through four stages, from the initial outline
-to a completed, validated page.
-
-## Workflow
-
-1. **Outline:** Create a section-by-section outline using the appropriate
-   content-type template and the user's documentation plan.
-2. **Draft:** Write the page based on the approved outline, following the
-   project's technical accuracy, terminology, and Fern requirements.
-3. **Final draft:** Edit for structure, clarity, voice, tone, and style.
-   Run documentation checks and obtain approval.
-4. **Finalize metadata:** Review controlled metadata, page relationships,
-   and navigation. Validate the completed page.
-
-Obtain user approval before proceeding to the next step.
-
-After Step 3 approval, set `lifecycle_status: review`. After Step 4 approval,
-set `lifecycle_status: published` and run production validation.
-
-Do not commit or push changes unless explicitly requested.
-
-## Project context
-
-Before starting, review `AGENTS.md`, particularly its Documentation map,
-to locate documentation files and authoritative implementation sources.
-
-Use the following files as needed throughout the workflow:
-
-| File | Purpose |
-| --- | --- |
-| `doc-infrastructure/content-model.yml` | Required metadata, controlled vocabulary, definitions, and selection guidance |
-| `doc-infrastructure/templates/` | Page structure based on `content_type` |
-| `doc-infrastructure/technical-accuracy-rules.md` | Technical accuracy and verification requirements |
-| `doc-infrastructure/terminology.md` | Approved terminology and usage |
-| `doc-infrastructure/fern-platform-rules.md` | Fern and MDX authoring requirements |
-| `doc-infrastructure/style-guide.md` | Voice, tone, clarity, and editorial standards |
-| `doc-infrastructure/README.md` | Documentation commands, validation, and maintenance procedures |
-| `doc-infrastructure/page-registry.yml` | Registered page IDs and content types |
-
-Consult each reference at the stage where it's needed. Do not assume that
-existing documentation accurately reflects current implementation behavior.
+Work collaboratively with the user through four steps: outline, draft, final draft, and metadata finalization.
 
 ## General instructions
 
-- Follow the four steps in order. Do not skip approval checkpoints.
-- Use authoritative sources to establish documented behavior. Flag missing
-  or conflicting evidence rather than inventing technical details.
-- Use the definitions and `use_when` guidance in `content-model.yml` when
-  selecting metadata values.
-- Preserve previously approved decisions unless new evidence or user feedback
+- Use the Documentation map in `AGENTS.md` to locate documentation
+  resources and authoritative sources.
+- Consult the project standards and references specified in each step.
+- Verify technical claims against authoritative sources. Flag missing
+  or conflicting evidence rather than inventing details.
+- Follow the four steps in order and obtain user approval at each
+  approval checkpoint.
+- Preserve approved decisions unless new evidence or user feedback
   requires revisiting them.
-- Explain significant recommendations and unresolved questions before
-  making changes that depend on user judgment.
-- Keep the page's lifecycle status aligned with its current workflow stage.
+- Maintain `lifecycle_status: draft` through Step 3. After Step 3
+  approval, set it to `review`. After Step 4 approval, set it to
+  `published` and run production validation.
+- Do not commit or push changes unless explicitly requested.
 
 ## Step 1: Write the outline
 
-Create a section-by-section outline for a new documentation page in `fern/docs/pages/`, following the template associated with its `content_type` in `doc-infrastructure/templates/`.
+Create a section-by-section outline for a new documentation page or previously initialized documentation page (with frontmatter only)
+in `fern/docs/pages/`.
 
 ### Required user input
 
-- **Page information:** `id`, `title`, `description`, and `content_type`.
-- **Page summary:** What the page should cover, expanding on the frontmatter `description`.
-- **Context sources:** Relevant source code, specifications, existing documentation, or other authoritative references.
+- **Page information:** `id`, `title`, `description`, and `content_type`,
+  or the path to a page already created using `create_doc_page`.
+- **Prerequisites (if applicable):** Page IDs from
+  `doc-infrastructure/page-registry.yml` identifying documentation
+  the reader needs before successfully using the new page.
+- **Page summary:** What the page should cover, expanding on the
+  frontmatter `description`.
+- **Context sources:** Relevant source code, specifications, existing
+  documentation, or other authoritative references.
 
-You should:
+If a page path is provided, read its existing frontmatter.
 
-- Propose a `subtitle` based on the page's purpose and intended readers.
-- Recommend `audience`, `topics`, and `components` using the definitions and selection guidance in `content-model.yml`.
-- Refine the `description` during outlining or drafting when appropriate, subject to user approval.
-- Automatically populate `last_modified` when creating the page.
-- Ask for clarification if essential information is missing or the intended scope is unclear.
+Ask for clarification if essential information is missing or unclear.
 
 ### Review project context
 
-Before creating the outline:
-
-1. Read the Documentation map in `AGENTS.md` to identify relevant source code, documentation, specifications, and other sources of truth.
-2. Read `doc-infrastructure/content-model.yml` to understand the required metadata, allowed values, and selection guidance.
-3. Review the template associated with the selected `content_type` in `doc-infrastructure/templates/`.
-4. Review relevant existing documentation to establish context, maintain consistent terminology, and avoid duplicating content.
-
-Use authoritative sources to determine what the page should cover. Distinguish implemented behavior from planned functionality. Do not invent technical details.
+1. Use the Documentation map in `AGENTS.md` to locate relevant
+   authoritative sources.
+2. Read `doc-infrastructure/content-model.yml` for metadata
+   requirements and selection guidance.
+3. Review the template associated with the selected `content_type`
+   in `doc-infrastructure/templates/`.
+4. Review relevant existing documentation to establish context
+   and avoid duplicating content.
+5. Read the prerequisite pages, if provided, to establish what
+   the reader is expected to know or have completed. If no
+   prerequisites are provided, identify any direct dependencies
+   using the relationship selection rules in `content-model.yml`.
 
 ### Select initial metadata
 
-Recommend `audience`, `topics`, and `components` based on the page's purpose, intended readers, summary, context sources, and proposed outline.
+Recommend missing metadata values and review existing values
+against the page's intended purpose, audience, and scope.
 
-Use each value's `description` and `use_when` guidance in `content-model.yml`.
+- Propose a `subtitle` if one has not been provided.
+- Refine the `description` when appropriate.
+- Select `audience`, `topics`, and `components` using the
+  `description` and `use_when` guidance in `content-model.yml`.
+- Select the most specific relevant topics. Include parent topics
+  only when the page substantially covers the broader subject.
+- Select components the page meaningfully describes, configures,
+  operates, evaluates, or integrates with.
+- Do not assign metadata values based solely on passing references.
 
-Apply these rules:
-
-- **Audience:** Select `primary`, `secondary`, or both when the page meaningfully serves those audiences.
-- **Topics:** Select the most specific relevant topics. Do not automatically include parent topics when selecting their children. Include a parent topic only if the page also substantially covers the broader subject.
-- **Components:** Select components the page meaningfully describes, configures, operates, evaluates, or integrates with.
-- **Relevance:** Do not select topics, components, or audiences based solely on passing references.
-- **Controlled values:** Use only approved values from `content-model.yml`. Do not invent metadata values.
-
-Treat the selections as provisional. Revisit them in Step 4 against the completed page.
+Use only approved controlled values. Treat selections as provisional until Step 4.
 
 ### Create the outline
 
-Draft a section-by-section outline that:
+Create an outline that:
 
-1. Follows the selected content-type template and its required structure.
-2. Uses descriptive headings appropriate to the page's purpose.
-3. Briefly identifies what each section will cover.
-4. Identifies planned procedures, examples, code samples, or other supporting material when relevant.
-5. Identifies unresolved questions, missing evidence, or technical details that require verification.
+- Follows the selected content-type template.
+- Uses descriptive headings and briefly identifies what each
+  section will cover.
+- Identifies planned procedures, examples, code samples, and
+  supporting material where relevant.
+- Identifies missing evidence, unresolved questions, and technical
+  details requiring verification.
+- Account for the reader's prerequisite knowledge and completed
+  tasks without unnecessarily repeating prerequisite content.
 
-Keep the outline focused on the page's intended purpose. Do not write the full content during this step.
+Keep the outline focused on the page's purpose. Do not write the full content during this step.
 
-### Review and create the page
+### Review and prepare the page
 
-Present the following for user review:
+Present the outline, proposed metadata, recommended changes to existing metadata, and unresolved questions for user approval.
 
-- Proposed outline.
-- Initial `audience`, `topics`, and `components` values.
-- Questions or information gaps requiring resolution.
+After approval:
 
-After approval, run `create_doc_page` to:
+- If the page does not exist, run `create_doc_page` with the
+  approved metadata.
+- If the page already exists, confirm that it was initialized
+  for authoring and has `lifecycle_status: draft`. Preserve its
+  ID and file path.
 
-1. Create the MDX file in `fern/docs/pages/` using the selected content-type template.
-2. Populate the initial frontmatter with approved values.
-3. Set `lifecycle_status: draft`.
-4. Set `last_modified` to the current date.
-5. Update `doc-infrastructure/page-registry.yml`.
-6. Add the approved outline to the new page.
+For either starting point:
 
-Leave `prerequisites`, `next_steps`, and `related_pages` for Step 4.
+1. Populate or update frontmatter with approved metadata.
+2. Confirm that `lifecycle_status` is `draft`.
+3. Populate or regenerate `last_modified` using the documented
+   command in `doc-infrastructure/README.md`.
+4. Confirm that the page is registered in
+   `doc-infrastructure/page-registry.yml`.
+5. Add the approved outline using the selected template.
 
-**Stop after creating the page.** Wait for the user to request Step 2: Draft.
+Do not rerun `create_doc_page` for an existing page.
+
+Populate `prerequisites` with approved page IDs, if applicable. Leave `next_steps` and `related_pages` for Step 4.
+
+**Stop after preparing the page.** Wait for the user to request
+Step 2: Create the draft.
 
 ## Step 2: Create the draft
 
-Using the approved outline from Step 1, write the first draft in the existing MDX file.
-
-Focus on technical accuracy, completeness, and correct documentation structure. Follow the approved outline and the template associated with the page's `content_type`.
+Expand the approved outline into a complete draft in the existing MDX
+file. Focus on technical accuracy, completeness, and appropriate technical depth.
 
 ### Review project context
 
 Before drafting:
 
-1. Read `doc-infrastructure/technical-accuracy-rules.md` for technical accuracy, completeness, and verification requirements.
-2. Read `doc-infrastructure/fern-platform-rules.md` for MDX formatting, internal links, and Fern components.
-3. Read `doc-infrastructure/terminology.md` for preferred terminology and distinctions between project-specific concepts.
+1. Read `doc-infrastructure/technical-accuracy-rules.md`.
+2. Read `doc-infrastructure/fern-platform-rules.md`.
+3. Read `doc-infrastructure/terminology.md`.
 4. Review the authoritative context sources identified in Step 1. Consult additional sources when necessary to verify implementation details.
-5. Review relevant existing documentation to maintain consistency and avoid duplicating information.
+5. Review relevant existing documentation to maintain consistency and avoid duplicating content.
 
 Use the Documentation map in `AGENTS.md` to locate additional sources of truth when needed.
 
 ### Write the draft
 
-- Expand the approved outline into complete content.
-- Follow the structure and requirements of the selected content-type template.
-- Explain concepts, procedures, and system behavior at the level of detail needed by the intended audience.
-- Base technical claims on authoritative sources. Distinguish implemented behavior from planned functionality.
-- Apply the technical accuracy rules, including requirements for procedures, code examples, API details, and expected outcomes.
-- Use preferred terminology consistently.
-- Follow Fern platform rules for headings, links, code blocks, and reusable components.
-- Include accurate code samples, commands, expected results, and examples where appropriate.
-- Link to existing documentation when a subject is already covered in detail elsewhere.
+- Follow the approved outline and content-type template.
+- Apply the technical accuracy, terminology, and Fern platform rules.
+- Explain concepts, procedures, and system behavior at the level
+  of detail appropriate for the intended audience.
+- Include procedures, examples, commands, and expected results
+  where appropriate.
+- Link to existing documentation when a subject is already covered
+  in detail elsewhere.
 
 Do not invent commands, configuration options, API behavior, implementation details, or example output.
 
@@ -197,214 +175,188 @@ If information cannot be verified, record the specific question or gap rather th
 
 ### Review the draft
 
-Present the completed draft for user review.
+Present the completed draft for user review, identifying:
 
-Summarize:
-
-- Unverified technical claims or examples.
+- Unverified claims or examples.
 - Missing information and unresolved questions.
-- Significant changes from the approved outline that require approval.
+- Significant deviations from the approved outline.
 
 Keep `lifecycle_status: draft`.
 
-Do not perform the full editorial review during this step. Apply the writing style guide, including voice and tone and AI-generated content fingerprints, in Step 3.
+Reserve the full editorial review, including voice, tone, and AI-generated content fingerprints, for Step 3.
 
-**Stop and wait for user approval before proceeding to Step 3: Final draft.**
+**Stop and wait for user approval before proceeding to Step 3: Create the final draft.**
 
 ## Step 3: Create the final draft
 
-Review and refine the approved draft from Step 2 to improve clarity, readability, consistency, and editorial quality.
-
-Focus on producing documentation that follows the project's writing standards while preserving technical accuracy and the intended meaning.
+Refine the approved draft for clarity, readability, consistency,
+and editorial quality while preserving technical accuracy and
+the intended meaning.
 
 ### Review project standards
 
-Before editing:
+1. Read `doc-infrastructure/style-guide.md`.
+2. Read `doc-infrastructure/terminology.md`.
+3. Refer to `doc-infrastructure/technical-accuracy-rules.md`
+   when editing technical explanations or resolving accuracy concerns.
 
-1. Read `doc-infrastructure/style-guide.md` for voice, tone, readability, structure, and editorial standards.
-2. Read the **Avoid AI-generated content fingerprints** section of the style guide and apply its guidance throughout the review.
-3. Review `doc-infrastructure/terminology.md` for preferred terminology and distinctions between project-specific concepts.
-4. Refer to `doc-infrastructure/technical-accuracy-rules.md` when editing technical explanations or resolving accuracy concerns.
+Apply all applicable style guide rules throughout the editorial
+review, including those not explicitly referenced in the passes.
 
 ### Edit the draft
 
-Review and edit the draft in the following sequence. Complete each pass before moving to the next, but revisit earlier decisions when necessary.
+Complete the following editorial passes in order. Revisit earlier
+decisions when necessary.
 
 #### Pass 1: Review structure and flow
 
-Review the page as a whole before editing individual sentences.
+- Confirm that the page follows the approved outline and
+  content-type template.
+- Review section order, headings, hierarchy, and coherence.
+- Identify missing, misplaced, duplicated, or unnecessary content.
+- Ensure sections contain enough context to remain understandable
+  when retrieved independently.
+- Apply the style guide's Cross-references and duplication rules,
+  including positional cross-references.
+- Review existing diagrams and determine whether additional
+  visualizations would improve understanding, following the
+  style guide's Diagrams and visualizations guidance.
 
-- Confirm that the content follows the approved outline and the appropriate content-type template.
-- Check that sections follow a logical progression and support the page's purpose.
-- Review headings for clarity, specificity, and proper hierarchy.
-- Remove unnecessary sections and identify information that is missing or misplaced.
-- Check that sections contain enough local context to remain understandable when retrieved independently, without unnecessary repetition.
-- Review cross-references and remove duplicated explanations when an authoritative page already covers the subject.
-
-Preserve the approved scope. Flag substantial structural changes for user review.
+Flag substantial changes to the approved scope for user review.
 
 #### Pass 2: Edit for clarity and conciseness
 
-Make the content easier to understand without removing necessary technical detail.
+Apply the style guide's plain language, readability, and Audience
+focus rules.
 
-- Replace vague or abstract wording with concrete descriptions.
-- Simplify unnecessarily complicated sentences.
-- Remove filler, subjective claims, and redundant explanations.
-- Eliminate unnecessary hedging while preserving meaningful conditions and uncertainty.
-- Check that procedures, explanations, and examples provide enough information for the intended audience.
-- Remove background information that does not help the reader accomplish the page's purpose.
+Remove unnecessary complexity, filler, repetition, and vague
+language without sacrificing technical detail or meaningful
+conditions and limitations.
+
+Ensure explanations, procedures, and examples provide sufficient
+information for the intended audience.
 
 #### Pass 3: Apply voice and tone
 
-Apply the Voice and Tone rules in `doc-infrastructure/style-guide.md`.
+Apply the Voice and Tone rules in `style-guide.md`.
 
-- Use the project's warm, relaxed, knowledgeable voice.
-- Prefer active voice and present tense.
-- Address the reader directly when appropriate, especially in task-based documentation.
-- Use common contractions naturally.
-- Remove slang, unnecessary idioms, and Latin abbreviations.
-- Vary sentence length and structure to maintain a natural reading flow.
+#### Pass 4: Review terminology and acronyms
 
-Keep the tone appropriate to the page's content type and intended audience.
+Apply the rules in `terminology.md` and the Acronyms section
+of `style-guide.md`.
 
-#### Pass 4: Review terminology
-
-Apply the rules in `doc-infrastructure/terminology.md`.
-
-- Replace nonpreferred terminology with approved terms.
-- Preserve distinctions between related technical concepts.
-- Check that project-specific terms are used consistently.
-- Define acronyms on first use when required.
-- Identify terminology gaps or conflicts that need a decision.
-
-Do not introduce alternative terms merely to vary the language.
+Check preferred terminology, distinctions between related
+concepts, acronym usage, and consistency. Identify terminology
+gaps or conflicts requiring user input.
 
 #### Pass 5: Remove AI-generated content fingerprints
 
-Review the complete page against **Avoid AI-generated content fingerprints** in `doc-infrastructure/style-guide.md`.
+Review the complete page against **Avoid AI-generated content
+fingerprints** in `style-guide.md`.
 
-Pay particular attention to:
-
-- Formulaic introductions, transitions, and conclusions.
-- Artificial contrasts and exaggerated claims.
-- Generic examples and vague descriptions.
-- Repetitive sentence patterns.
-- Unnecessary formatting and excessive structure.
-- Explanations that repeat information the intended audience already understands.
-
-Revise passages that exhibit these patterns without making the writing less natural or technically precise.
-
-Do not remove useful language solely because it resembles a listed pattern. Apply the style guide's **Use judgment** guidance.
+Apply the section's **Use judgment** guidance. Do not remove
+useful language solely because it resembles a listed pattern.
 
 #### Pass 6: Perform a final accuracy and consistency check
 
-Read the revised page from beginning to end.
-
 - Confirm that editorial changes have preserved technical meaning.
-- Recheck technical claims that were substantially rewritten.
+- Recheck substantially rewritten claims and verify newly
+  introduced technical information and examples.
 - Resolve outstanding accuracy questions from Step 2 where possible.
-- Verify any new technical information introduced during editing.
-- Confirm that conditions, limitations, warnings, examples, and expected outcomes remain accurate.
-- Check for inconsistent wording or unintended repetition introduced during editing.
+- Confirm that conditions, limitations, warnings, and expected
+  outcomes remain accurate.
+- Check for unintended repetition or inconsistency introduced
+  during editing.
+- Do not automatically rewrite technically accurate content solely
+to satisfy a stylistic suggestion when doing so would reduce
+clarity or precision.
+- Confirm that the completed page follows all applicable rules
+  in `style-guide.md`, including those not explicitly addressed
+  in earlier passes.
 
-Do not repeat technical verification already completed in Step 2 unless a claim has changed or new uncertainty has been introduced.
+Do not repeat verification completed in Step 2 unless information
+has changed or new uncertainty has been introduced.
 
 Record unresolved issues for user review.
 
-### Review technical accuracy
+### Run documentation checks
 
-Confirm that editorial changes have not altered technical meaning.
+Run the regular documentation validation command documented in
+`doc-infrastructure/README.md`.
 
-- Recheck technical claims that were substantially rewritten.
-- Resolve outstanding accuracy questions from Step 2.
-- Verify any new examples, commands, or factual information introduced during editing.
-- Preserve important conditions, limitations, warnings, and expected outcomes.
-
-Do not repeat verification already completed in Step 2 unless the underlying information has changed or new uncertainty has been introduced.
-
-If an accuracy issue remains unresolved, identify it for user review rather than presenting the claim as verified.
-
-### Run editorial and documentation checks
-
-Run the documentation validation command described in `doc-infrastructure/README.md`. Resolve issues introduced by your changes and report any remaining failures.
-
-Review the results and correct issues within the scope of the page.
-
-Do not automatically rewrite technically accurate content solely to satisfy a stylistic suggestion when doing so would reduce clarity or precision.
-
-Report checks that could not be completed.
+Resolve issues introduced by your changes. Report remaining
+failures and checks that could not be completed.
 
 ### Review the final draft
 
-Present the revised page for user review.
-
-Summarize:
+Present the revised page for user review, summarizing:
 
 - Significant editorial changes.
-- Any remaining technical questions or unresolved issues.
-- Validation results, including checks that could not be completed.
+- Remaining technical questions or unresolved issues.
+- Validation results.
 
-Keep `lifecycle_status: draft`.
+Keep `lifecycle_status: draft` until the user approves the final
+draft, then set it to `review`.
 
-**Stop and wait for user approval before proceeding to Step 4: Finalize metadata.**
+**Stop and wait for the user to request Step 4: Finalize metadata
+and page relationships.**
 
 ## Step 4: Finalize metadata and page relationships
 
-After the final draft is approved, finalize the page's metadata, relationships, and navigation.
+Finalize the approved page's metadata, relationships, and navigation.
 
 ### Review metadata
 
-1. Review `doc-infrastructure/content-model.yml`, including the definitions and `use_when` guidance.
-2. Review the `audience`, `topics`, and `components` selected in Step 1 against the completed page.
-3. Add, remove, or change values as needed to accurately reflect the page's content.
-4. Review the `description` and `subtitle` to ensure they represent the finished page.
-5. Preserve the page's `id` and `content_type` unless a change is approved.
+1. Read `doc-infrastructure/content-model.yml`, including its selection guidance.
+2. Review the existing `audience`, `topics`, and `components` against the completed page. Recommend additions or changes where appropriate.
+3. Review the `description` and `subtitle` for accuracy and clarity.
+4. Preserve the page's `id` and `content_type` unless a change is approved.
+5. Reassess the prerequisites established in Step 1 against the completed page. Add, remove, or change them as appropriate.
 
-Use only allowed values from the content model. Assign topics and components based on the page's substantive coverage, not passing mentions.
+Use only approved controlled values. Base metadata decisions on substantive content, not passing references.
 
 ### Finalize page relationships
 
-Review the documentation IA, `page-registry.yml`, and existing documentation to identify:
+1. Read the `page_relationships` definitions and selection rules in `content-model.yml`.
+2. Review `fern/docs.yml` to understand the documentation structure and discover candidate pages.
+3. Use `doc-infrastructure/page-registry.yml` to identify registered page IDs.
+4. Examine relevant existing pages to evaluate their content, purpose, and relationship to the current page.
 
-- `prerequisites`: Pages readers should understand or complete before using this page.
-- `next_steps`: Pages that provide a logical continuation or next action.
-- `related_pages`: Pages covering complementary information.
+Consider candidates across the documentation set, not just within the same navigation section.
 
-Use registered page IDs for all relationships.
+For each candidate:
 
-Add only relationships that serve a clear purpose. Avoid assigning the same page to multiple relationship fields unless justified.
+- Determine how it supports the current page.
+- Classify it as a prerequisite, next step, or related page using the content model.
+- Prefer direct, useful connections over broadly related pages.
+- Exclude weak, redundant, or merely topic-related recommendations.
 
-For existing pages that should reference the new page:
+Present the proposed relationships with each page's title, ID, relationship type, and a brief justification. Prefer a small, curated set.
 
-1. Identify the affected pages and explain the proposed changes.
-2. Present the changes for user approval.
-3. Update existing pages only after approval.
+Identify existing pages that would benefit from linking to the new page. Propose those changes for user approval before modifying existing pages.
+Do not automatically create reciprocal relationships.
 
 ### Update and validate
 
-1. Update the new page's frontmatter with the finalized metadata and relationships.
-2. Apply approved changes to existing pages.
-3. Add the new page to the appropriate location in `fern/docs.yml`, if it isn't already included.
-4. Update `last_modified` using the command documented in `doc-infrastructure/README.md`.
-5. Run the regular documentation validation command documented in `doc-infrastructure/README.md`.
-6. Resolve issues introduced by your changes and report any remaining failures.
+After approval of the proposed metadata and relationships:
 
-Keep `lifecycle_status: review` until the completed page and metadata receive user approval.
+1. Update the page's frontmatter and add approved relationship links following the template and Fern rules.
+2. Apply separately approved changes to existing pages. Apply the relevant style guide rules to any content added or
+modified during this step.
+3. Add the new page to `fern/docs.yml` if it isn't already included.
+4. Regenerate `last_modified` using the command in `doc-infrastructure/README.md`.
+5. Run the regular documentation validation command and resolve issues introduced by your changes.
+
+Keep `lifecycle_status: review` until final approval.
 
 ### Final approval
 
-Present a summary of:
+Present the completed metadata, relationship and navigation changes, validation results, and any unresolved issues for user approval.
 
-- Final metadata values.
-- Added or updated page relationships.
-- Navigation changes.
-- Validation results.
-- Any unresolved questions.
-
-After user approval:
+After approval:
 
 1. Set `lifecycle_status: published`.
-2. Run the production documentation validation command documented in `doc-infrastructure/README.md`.
-3. Resolve any failures and report the final validation results.
+2. Run production validation using the command in `doc-infrastructure/README.md`.
+3. Resolve failures and report the results.
 
-Do not commit or push changes unless explicitly requested. GitHub Actions handles publishing when changes are pushed to the publishing branch.
+Do not commit or push unless explicitly requested. GitHub Actions handles publishing when changes are pushed to the publishing branch.

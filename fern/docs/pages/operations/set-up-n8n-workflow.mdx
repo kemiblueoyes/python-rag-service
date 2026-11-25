@@ -1,0 +1,504 @@
+---
+id: StUpN8nWkflw
+title: Set up n8n workflow
+subtitle: Connect n8n to the operations runner and verify scheduled indexing and quality alerts.
+description: Set up n8n automation for your own evaluation dataset, including runner credentials, an approved baseline, quality policies, schedules, alerts, and recovery.
+content_type: how_to
+lifecycle_status: published
+topics: [topic-workflow-automation, topic-retrieval-quality-policy, topic-configuration, topic-job-management]
+components: [component-n8n-workflows, component-operations-runner, component-evaluation-framework]
+prerequisites: [OpsRunr, HowN8nWkflw, HowEv, RtrvlEv]
+related_pages: [CnfgRef, EvalRef, KnLmt]
+audience: [primary]
+last_modified: 2026-11-25
+---
+
+Set up the Python RAG Service n8n workflows to schedule WordPress indexing, evaluate
+retrieval after content changes, and report failures. This guide uses Docker Desktop
+for n8n and an operations runner on the same computer. Keep the runner available
+while n8n submits jobs and checks their status.
+
+For the sequence, quality decisions, and routing rules, read
+[How the n8n workflow works](/docs/operations/how-n8n-workflow-works).
+
+## Prerequisites
+
+- **[How evaluation works](/docs/evaluate/how-evaluation-works#the-versioned-evaluation-dataset)**:
+  Use the dataset structure to prepare `evaluation/datasets/baseline.json` for
+  your own indexed content, with your own dataset ID, version, and queries.
+  The runner reads this fixed path. Job requests can't select another dataset.
+- **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation#relevance-judgments)**:
+  Label your content and review the metrics used to approve your baseline.
+  Include answerable and expected-empty cases so the evaluator can measure
+  all required policy metrics.
+- **[Run the operations runner](/docs/operations/run-operations-runner)**:
+  Configure the service and operations key, start the runner, and verify indexing
+  and retrieval evaluation. Retain the successful job response and reports from
+  your own dataset to prepare the approved baseline.
+- **[How the n8n workflow works](/docs/operations/how-n8n-workflow-works)**:
+  Review the workflow's decisions and expected outcomes.
+- Install Docker Desktop with Docker Compose. The commands use a Bash-compatible
+  shell, Python 3, curl, and the repository checkout on the runner's computer.
+- Have a Jira project and an account that can read issues and comments, create
+  issues, and add comments. Have an email account and a recipient for alerts.
+
+<Steps toc={true}>
+## Configure n8n with Docker Compose
+
+For a new local n8n installation, create `compose.yml` in the repository root:
+
+```yaml
+services:
+  n8n:
+    image: n8nio/n8n:${N8N_VERSION:?Set N8N_VERSION to your chosen n8n version}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      GENERIC_TIMEZONE: America/Denver
+      TZ: America/Denver
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_RESTRICT_FILE_ACCESS_TO: /opt/rag-policies
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./automation/n8n/policies:/opt/rag-policies:ro
+
+volumes:
+  n8n_data:
+```
+
+Choose an n8n release from the [official releases](https://github.com/n8n-io/n8n/releases)
+and replace `YOUR_N8N_VERSION` with its numeric version. Use an explicit version
+so recreating the container uses the same release. Replace both timezone
+values if needed. From the repository root, run:
+
+```bash
+export N8N_VERSION='YOUR_N8N_VERSION'
+docker compose config --quiet
+docker compose up -d
+docker compose ps
+```
+
+Confirm that `docker compose ps` lists the n8n service as running.
+Open [local n8n](http://localhost:5678) and complete its account setup. If startup fails, inspect `docker compose logs n8n`.
+The persistent volume holds n8n data, including credentials. Keep it when recreating
+the container. See n8n's [Docker installation documentation](https://docs.n8n.io/hosting/installation/docker/)
+for storage and timezone settings.
+
+For an existing deployment, add the policy mount and permitted path to its existing
+`compose.yml`, preserving its image version, storage, and other settings. If that
+Compose file is outside the repository, use the absolute path to
+`automation/n8n/policies` for the mount source. Keep other permitted directories
+when extending `N8N_RESTRICT_FILE_ACCESS_TO`. Separate multiple paths with semicolons.
+Recreate the service with `docker compose up -d n8n` so changes take effect.
+See [n8n file-access settings](https://docs.n8n.io/hosting/configuration/environment-variables/security/).
+
+These Compose commands use the service name `n8n`. Run them from the directory
+containing its `compose.yml`. Set `N8N_VERSION` again if you open a new terminal.
+Keep the runner's API key in n8n credentials, rather than adding the repository's `.env` as a container environment file.
+
+## Verify connectivity to the local runner
+
+The imported workflows use `http://host.docker.internal:8001` to reach the runner.
+Inside the n8n container, `localhost` refers to that container.
+[Docker Desktop provides `host.docker.internal`](https://docs.docker.com/desktop/features/networking/)
+for reaching services on the host.
+
+Check connectivity from n8n's container:
+
+```bash
+docker compose exec -T n8n node -e '
+fetch("http://host.docker.internal:8001/health")
+  .then(async response => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    console.log(JSON.stringify(await response.json(), null, 2));
+  })
+  .catch(error => { console.error(error.message); process.exit(1); });
+'
+```
+
+Expect `{"status": "ok"}`. This verifies runner availability, not authentication,
+provider access, or retrieval quality.
+
+If the container can't reach the runner's loopback listener, stop that runner
+normally and restart it from the repository root with a Docker-reachable address:
+
+```bash
+uv run uvicorn rag_service.operations.app:app --host 0.0.0.0 --port 8001
+```
+
+This listens on all host interfaces. Restrict access with your local firewall and
+keep operations authentication enabled. Run one runner process without reload or
+extra workers. Repeat the container health check. For deployments outside Docker
+Desktop, supply the appropriate host address and update all four workflow HTTP
+nodes described in [Connect the runner requests](#connect-the-runner-requests).
+
+## Import both workflows
+
+Create a workflow in n8n and open the three-dot workflow menu. Select **Import
+from File** and import `automation/n8n/workflows/failure-alerts.json`. Save it as
+**RAG failure alerts**. Create another workflow and import
+`automation/n8n/workflows/rag-indexing-workflow.json`, then save it as **RAG Indexing**.
+See [n8n import instructions](https://docs.n8n.io/workflows/export-import/).
+
+Keep RAG Indexing unpublished or inactive while configuring it. Check its state
+after import because the exports contain settings from another instance. Select
+your own credentials and error workflow during setup.
+
+## Configure runner and Jira credentials
+
+### Connect the runner requests
+
+Open **Start indexing**. Under authentication, use **Generic Credential Type**
+and **Header Auth**, then create a credential with these values:
+
+| Field | Value |
+| --- | --- |
+| Credential name | A recognizable name, such as `Local RAG operations` |
+| Header name | `X-API-Key` |
+| Header value | Your runner's `OPERATIONS_API_KEY` |
+
+Select that same credential in all four nodes:
+
+- **Start indexing**
+- **Check indexing**
+- **Start evaluation**
+- **Check evaluation**
+
+The public API's `RAG_API_KEY` isn't the operations key. Leave the imported
+`Idempotency-Key` expressions in both submission nodes unchanged.
+
+If your runner uses a different address or port, update the URL in each node.
+The two **Check** nodes must still append `$json.status_url` to the runner's base
+URL. Save the workflow after changing credentials or expressions.
+
+### Connect Jira reporting
+
+Create a Jira Software Cloud credential using your Jira account email, site domain,
+and API token, following [n8n's Jira credential instructions](https://docs.n8n.io/integrations/builtin/credentials/jira/).
+Select it in **Find open regression**, **Create regression issue**, **Get existing
+regression**, **Get regression comments**, and **Add regression findings**.
+
+In **Find open regression**, replace `N8NRAG` in the Jira Query Language (JQL)
+expression with your project key. Preserve the label filters, baseline expression, and status filter.
+In **Create regression issue**, select that same project and a valid issue type.
+The exported project and issue-type IDs belong to the original instance. Select
+values from your own Jira site. Keep the label expressions consistent between
+search and creation.
+
+## Configure the failure-alert email
+
+Open **Send a message** in RAG failure alerts. If using Gmail, create or select a
+Gmail OAuth2 credential and replace `user@gmail.com` with the intended recipient.
+For self-hosted n8n, follow the
+[Google OAuth2 setup](https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/),
+including enabling the Gmail API and registering the redirect URL shown by n8n.
+
+If using another mail service, replace the Gmail node with that service's sending
+node or a Send Email node using Simple Mail Transfer Protocol (SMTP).
+Connect **Error Trigger** to the replacement, configure its credentials and recipient, and transfer the subject and plain-text
+message expressions. Preserve the expressions' handling of unavailable execution
+or trigger details. Save the alert workflow.
+
+## Configure settings for both workflows
+
+Open the three-dot menu beside the workflow name and select **Settings**. Repeat
+for both workflows:
+
+| Setting | RAG Indexing | RAG failure alerts |
+| --- | --- | --- |
+| Error Workflow (to notify when this one errors) | Select your imported RAG failure alerts workflow | Leave unset |
+| Timezone | Select your intended timezone | Select your intended timezone |
+| Save failed production executions | Save | Save |
+| Save successful production executions | Save | Save |
+| Save manual executions | Save | Save |
+| Timeout Workflow | Enable | Enable |
+| Timeout After | Initially 0 hours, 10 minutes, 0 seconds | Initially 0 hours, 10 minutes, 0 seconds |
+
+Select **Save** in each dialog. Selecting the error workflow replaces the exported
+instance-specific association. Saved executions let you inspect job IDs, node
+outputs, and failures. See [n8n workflow settings](https://docs.n8n.io/workflows/settings/).
+
+The ten-minute timeout matches the exports and is configurable. If a run times
+out, inspect the last completed submission or polling node for its `job_id`.
+[Poll that existing runner job](/docs/operations/run-operations-runner#submit-retrieval-evaluation-and-inspect-reports)
+before retrying. Stopping n8n doesn’t necessarily cancel the Python job. Wait for
+an active job to finish, then inspect its result. If n8n received no submission
+response, retry with the original operation and idempotency key to recover the
+job record. Create a new key only when you need a replacement job.
+
+## Prepare and verify your policy and baseline
+
+The supplied policy and baseline describe The Doc Landscape dataset. Use their
+file structure as a starting point, but replace the dataset-specific values,
+results, limits, and evidence with your own. Keep scheduled execution disabled
+while preparing these files.
+
+### Prepare your approved baseline
+
+Review the successful operations evaluation of your dataset before approving it
+as a baseline. A successful job alone doesn't establish acceptable retrieval
+quality. Retain its JSON report and complete job response under
+`automation/n8n/policies/evidence/` using names that identify your dataset and run.
+
+Update `automation/n8n/policies/approved-retrieval-baseline.json`:
+
+| Field | Value to use |
+| --- | --- |
+| `baseline_id` | A unique identifier for your approved dataset and run, such as `product-docs-v1-baseline-001` |
+| `dataset_id`, `dataset_version`, `generated_at` | Values from the approved job's `result` |
+| `summary` | The complete, unrounded `result.summary` from that job |
+| `retrieval_configuration` | That job's complete `result.retrieval_configuration` |
+| `k` | That job's `result.retrieval_configuration.k` |
+| `known_failed_case_ids` | Failures you reviewed and accepted for this baseline, or an empty list if none |
+| `report_reference` | Your saved report's path, original filename, and 256-bit Secure Hash Algorithm (SHA) digest |
+| `configuration_evidence` | An object recording the saved job response's path, actual job ID, dataset, report paths, and configuration checks |
+
+Use `result.failed_case_ids` to identify failures for review. Don't carry over
+`multi-section-001` or automatically accept every failed case. Correct unacceptable
+failures and evaluate again before approving the baseline. The runner doesn't
+create the approved-baseline file for you.
+
+Replace the example evidence paths, workstation path, timestamps, comparison
+results, and provenance note with records of your own run. You can calculate the
+saved report's digest with `shasum -a 256` followed by its file path. Keep the
+source report unchanged so the digest continues to identify that evidence.
+
+### Configure your quality policy
+
+In `automation/n8n/policies/retrieval-quality-policy.json`, set `policy_id` to an
+identifier for your deployment, such as `product-docs-retrieval-quality`. Update
+`scope` to describe your evaluation coverage and choose a `minimum` and
+`maximum_decline` for each metric in `metric_rules` based on your reviewed results
+and quality requirements. The supplied limits are examples, not recommended
+thresholds for every dataset. Retain the required metrics, completeness checks,
+and comparison fields used by the included comparator.
+
+Keep `baseline_file` set to `approved-retrieval-baseline.json`. Keep
+`schema_version: 1` and `policy_version: 1` in both files: the included comparator
+supports that format and policy version. A new policy ID doesn't require a new
+policy version.
+
+Update the matching identifier in the workflow too. Open **Prepare quality rules**
+and replace `doc-landscape-retrieval-quality` with exactly the same `policy_id`.
+For the example identifier, the filter becomes:
+
+```javascript
+const policies = documents.filter(
+  doc => doc?.policy_id === 'product-docs-retrieval-quality'
+);
+```
+
+Leave the rest of the node's code in place and save the workflow. Renaming the
+JSON value alone causes policy loading to fail. The baseline loader accepts your
+new `baseline_id` without a matching code change.
+
+After checking the saved evidence against your approved dataset and configuration,
+set the baseline's `configuration_evidence.verification_status` to
+`"recorded_settings_match"` and the policy's `activation.configuration_verified`
+to `true`. Update the status and verification notes to describe your checks. Don't retain the example's verification claims or set these values
+merely to bypass the workflow's checks.
+
+### Verify the prepared files
+
+Check that the container can read and parse both mounted files:
+
+```bash
+docker compose exec -T n8n node -e '
+const fs = require("node:fs");
+for (const name of ["retrieval-quality-policy.json", "approved-retrieval-baseline.json"]) {
+  const data = JSON.parse(fs.readFileSync(`/opt/rag-policies/${name}`, "utf8"));
+  console.log(JSON.stringify({file: name, schema_version: data.schema_version,
+    policy_version: data.policy_version}, null, 2));
+}
+'
+```
+
+Confirm that the command reports schema and policy version 1 for both files.
+Then check that the workflow can read them:
+
+1. In the n8n editor, run **Prepare quality rules** and the nodes leading to it.
+   Don't run the indexing nodes yet.
+2. Check that **Read policy files** and **Parse policy files** finish successfully.
+3. Check that **Prepare quality rules** produces one output item with both
+   `policy` and `baseline`.
+
+The imported file selector is `/opt/rag-policies/*.json`. Keep only the policy
+and baseline JSON files at that directory's top level. If loading fails, check
+the mount source, file permissions, permitted path, JSON syntax, and reported
+version or verification error. The evidence files remain in the `evidence`
+subdirectory.
+
+Confirm the loaded baseline identifies your dataset and approved run, and the
+loaded policy has your chosen `policy_id` and metric limits. Don't copy baseline
+settings into an evaluation result to make it appear comparable.
+
+Changing the approved baseline requires review and approval. When deploying an
+approved pair of files, pause scheduled executions, replace the policy and baseline
+together, and verify them before resuming. See
+[Establish whether results can be compared](/docs/operations/how-n8n-workflow-works#establish-whether-results-can-be-compared)
+for the comparison process and non-comparable results.
+
+## Configure the indexing schedule
+
+Open **Daily Job Trigger** and set the intended interval and time. The export uses
+a daily trigger at 14:00. Confirm the timezone in RAG Indexing's settings. The
+workflow timezone overrides the instance timezone. Save the schedule,
+but leave automatic execution disabled until verification is complete.
+See [Schedule Trigger settings](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.scheduletrigger/).
+
+In **Local Time Success**, change `America/Denver` in the three timestamp expressions
+if you want another display timezone. These expressions format recorded timestamps.
+They don’t set the schedule. Choose a schedule that leaves enough time for indexing
+and evaluation, and avoid overlapping manual operations against the same index.
+
+## Run manually and inspect the outcome
+
+Select **Execute workflow** in RAG Indexing. This performs real incremental indexing
+and can run evaluation and write to Jira. Inspect the execution's node outputs:
+
+1. Confirm the policy-loading nodes succeeded.
+2. In **Check indexing**, confirm the final `status` is `succeeded` and inspect
+   `result.changes_detected`. Record the indexing `job_id`.
+3. If `changes_detected` is `false`, expect the workflow to finish without evaluation
+   or a quality decision. This run verifies indexing, but not evaluation or Jira.
+4. If `changes_detected` is `true`, confirm **Check evaluation** reaches `succeeded`.
+   Record its `job_id` and open the JSON and Markdown files listed in `result.report_paths`
+   on the runner's computer. They're filesystem paths, not download URLs.
+5. Inspect `quality.outcome` and `quality.reasons` in **Compare retrieval quality**.
+   A successful evaluation job doesn't necessarily mean retrieval quality passed.
+6. If the execution took the Jira branch, check the selected or created issue and
+   its recorded evaluation job ID. After reporting, the workflow
+   intentionally raises an error in **Quality check stopped**. That error alone
+   doesn’t indicate broken Jira configuration. Investigate errors inside Jira nodes.
+
+Manual executions don't trigger the failure-alert workflow. Verify automatic
+notifications separately. For outcome meanings and routing, see
+[What each quality outcome means](/docs/operations/how-n8n-workflow-works#what-each-quality-outcome-means).
+
+For request failures, check the failing node's response: HTTP 401 indicates an
+incorrect or missing operations key. HTTP 409 can indicate an active job or an
+idempotency conflict. Inspect the response before resubmitting. See
+[Check HTTP responses](/docs/operations/run-operations-runner#check-http-responses)
+for the complete response handling procedure.
+
+## Recover when evaluation is skipped or later handling fails
+
+### Run evaluation when indexing finds no changes
+
+Submit evaluation independently through the operations runner. Run these commands
+from the repository root on the runner's computer, while no other job is active.
+Load the key without printing it:
+
+```bash
+export OPERATIONS_API_KEY="$(uv run python -c 'from rag_service.config import settings; print(settings.operations_api_key.get_secret_value() if settings.operations_api_key else "")')"
+RUNNER_URL=http://127.0.0.1:8001
+IDEMPOTENCY_KEY="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+SUBMISSION="$(curl -fsS "$RUNNER_URL/jobs" \
+  -H "X-API-Key: $OPERATIONS_API_KEY" \
+  -H "Idempotency-Key: $IDEMPOTENCY_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"operation":"evaluate_retrieval"}')" &&
+printf '%s\n' "$SUBMISSION" | python3 -m json.tool
+```
+
+After a successful submission, capture its job ID and poll:
+
+```bash
+JOB_ID="$(printf '%s' "$SUBMISSION" | python3 -c 'import json,sys; print(json.load(sys.stdin)["job_id"])')"
+curl -fsS "$RUNNER_URL/jobs/$JOB_ID" \
+  -H "X-API-Key: $OPERATIONS_API_KEY" | python3 -m json.tool
+```
+
+Repeat polling until `status` is `succeeded` or `failed`. On success, inspect this
+job's reports and summary. On failure, inspect `error` and correct the cause
+before submitting replacement work. If submission fails with an uncertain outcome,
+retry using the same key. A missing response alone isn't a reason to create a new key.
+
+Independent evaluation produces reports but doesn't automatically run n8n's
+policy comparison or notification branches. Review the results using
+[Retrieval evaluation](/docs/evaluate/retrieval-evaluation).
+
+### Recover after indexing succeeded but later work failed
+
+Inspect the failed workflow execution before restarting it. Locate the evaluation
+job ID in **Start evaluation** or **Check evaluation**. Load `OPERATIONS_API_KEY`
+and set `RUNNER_URL` as shown in
+[Run evaluation when indexing finds no changes](#run-evaluation-when-indexing-finds-no-changes).
+Set `JOB_ID` to the existing ID and run only the polling command. Don’t submit
+a new job while checking the original.
+
+- If it's still queued or running, wait for it to finish.
+- If it succeeded, inspect its reports and the failing n8n step. A policy-comparison
+  or Jira failure doesn't by itself require repeating the evaluation. Correct
+  that step's configuration and review any existing Jira findings before retrying
+  reporting or creating a follow-up task manually.
+- If it failed, address its reported error, then submit replacement evaluation
+  with a fresh key using
+  [Run evaluation when indexing finds no changes](#run-evaluation-when-indexing-finds-no-changes).
+
+A fresh workflow execution may find no further content changes and skip evaluation,
+because the earlier indexing job already saved its checkpoint. Reusing the original
+workflow's evaluation key returns the original job, even if it failed. See
+[Job submissions and retries](/docs/operations/how-n8n-workflow-works#job-submissions-and-retries).
+Don't delete the indexing checkpoint or alter source content just to force evaluation.
+
+## Verify routing and activate scheduling
+
+### Verify mail delivery and automatic error routing
+
+A test email checks the sending credential and recipient. To also verify that an
+automatic failure starts the selected error workflow, use a temporary scheduled
+workflow. This test sends real email but doesn’t run indexing:
+
+1. Create a workflow named **RAG alert verification** with a **Schedule Trigger**
+   connected to **Stop And Error**. Set the schedule to every minute and the error
+   message to `RAG alert verification: intentional test failure`.
+2. In its settings, select the same RAG failure alerts workflow as its **Error
+   Workflow**, set the intended timezone, and save failed production executions.
+3. Save the alert workflow and make it available for automatic error handling.
+   Follow n8n’s
+   [Error Trigger publishing instructions](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.errortrigger/)
+   for your version.
+4. Publish or activate the temporary test workflow, then wait for its scheduled
+   execution. Don't use **Execute workflow** for this check.
+5. After the first scheduled failure, unpublish or deactivate the temporary workflow
+   so it stops sending repeated alerts. Check for the email and its intentional
+   test message, workflow name, and execution link.
+6. If no email arrives, inspect RAG failure alerts' execution. If no alert execution
+   exists, check the test workflow's association and automatic execution. If the
+   sending node failed, check its credentials, recipient, and mail-service response.
+
+This procedure uses n8n's [Stop And Error node](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.stopanderror/)
+and [Error Trigger behavior](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.errortrigger/).
+After the test, confirm RAG Indexing selects the same verified alert workflow.
+Leave the temporary test workflow inactive.
+
+### Enable the recurring indexing schedule
+
+Confirm runner connectivity, credentials, policy-file access, workflow settings,
+and the manual indexing outcome. If the manual run skipped evaluation, complete
+the independent evaluation check and record that the n8n comparison branch remains
+unverified by that run.
+
+A successful evaluation doesn’t verify Jira routing. Only a qualifying regression
+exercises that branch. Record whether you observed Jira reporting during setup.
+Don’t weaken the approved baseline to manufacture a regression. When the workflow
+reports a genuine regression, verify its issue or comment and investigate the
+quality problem.
+
+Save and publish or activate RAG Indexing with its intended schedule. Observe the
+first scheduled execution in **Executions**, confirm the expected indexing and
+conditional evaluation results, and inspect any resulting alert or Jira activity.
+Keep the runner, n8n container, and host available at scheduled times.
+
+</Steps>
+
+## Related pages
+
+- **[Configuration reference](/docs/reference/configuration-reference)**:
+  Look up operations authentication and retrieval settings used by the runner.
+- **[Evaluation framework reference](/docs/reference/evaluation-framework-reference)**:
+  Look up dataset and report fields when preparing your baseline evidence.
+- **[Known limitations](/docs/reference/known-limitations#n8n-automation)**:
+  Review constraints on automated evaluation, timeouts, and policy compatibility.

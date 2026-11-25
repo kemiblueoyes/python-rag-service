@@ -365,3 +365,40 @@ These rules identify patterns to review, not phrases to remove automatically in 
 Sentence fragments, occasional conversational phrasing, and varied sentence lengths are acceptable when they improve readability.
 
 Preserve useful contrasts, explanations, and formatting when they serve a clear purpose. The goal is natural, precise documentation, not rigid compliance with stylistic formulas.
+
+## Diagrams and visualizations
+
+Use diagrams when they help readers understand system architecture, processes, relationships, or behavior more clearly than text alone.
+
+Choose the diagram format based on what it needs to communicate:
+
+- **Mermaid:** Prefer Mermaid for diagrams that primarily explain flow, sequence, or decisions, such as pipelines, workflows, and state transitions.
+- **Designed static diagrams:** Use designed diagrams for high-level architecture when visual grouping, system boundaries, or multiple simultaneous relationships are important to understanding the system.
+
+Keep diagrams focused on their purpose. Avoid unnecessary complexity, and use consistent terminology that matches the documentation.
+
+Include a brief introduction or explanation so readers can understand the diagram's purpose without relying on the visual alone.
+
+
+### Mermaid diagram color conventions
+
+Use a consistent color scheme across Mermaid diagrams so readers can recognize the same types of components throughout the documentation.
+
+Assign colors based on the component's role, not the diagram or page it appears on.
+
+| Category | Color | Use for |
+|---|---|---|
+| Core workflow components | Light blue | Processing steps, service components, and workflow actions |
+| Vector database and storage | Green | Qdrant and vector storage |
+| Lexical data | Yellow | Lexical corpus and lexical data stores |
+| Structured artifacts | Purple | Retrieved chunks, evaluation datasets, proposed answers, and other intermediate artifacts |
+| Final outputs | Green | Generated answers, completed reports, and successful outcomes |
+| External providers | White with black dashed border | OpenAI, Voyage AI, and other external services |
+| Failures and alerts | Red | Failed operations, rejected results, and alerts |
+| Automation and orchestration | Muted blue-purple | n8n workflows, job coordination, and automation components |
+
+Use the same category colors across all diagrams. Avoid introducing new colors unless an existing category cannot adequately represent a component.
+
+Colors should reinforce meaning, not be the only way information is communicated. Use clear labels and distinguish components through grouping, borders, or other visual elements where appropriate.
+
+The shared Mermaid theme configuration defines the exact color values. Do not hardcode colors in individual diagrams.

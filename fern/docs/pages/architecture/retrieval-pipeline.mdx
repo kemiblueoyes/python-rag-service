@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-semantic-retrieval, topic-lexical-retrieval, 
 components: [component-retrieval-service]
 next_steps: [AnsGenCit]
 related_pages: [SrchDoc, RtrvlEv, RecEvRes, SysArch, IndxPipe]
-last_modified: 2026-10-08
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
@@ -24,12 +24,72 @@ unsupported query can come back with no chunks.
 The retrieval pipeline diagram shows the main retrieval stages. Vector retrieval includes query embedding and Qdrant search;
 the dashed arrow shows the separate Voyage reranking call.
 
-<Frame caption="Python RAG Service retrieval pipeline">
+{/*<Frame caption="Python RAG Service retrieval pipeline">
   <img
     src="../../assets/images/retrieval-pipeline-diagram.png"
     alt="Python RAG Service retrieval pipeline diagram"
   />
-</Frame>
+</Frame>*/}
+
+<figure>
+
+```mermaid
+
+flowchart TD
+    QUERY["`**User query**`"]
+
+    QD["`**Qdrant**
+    Vector database`"]
+    VECTOR["`**Vector retrieval**
+    Semantic search`"]
+
+    LEX["`**Lexical corpus**
+    WordPress chunks`"]
+    BM25["`**BM25 retrieval**
+    Lexical search`"]
+
+    RRF["`**Reciprocal rank fusion (RRF)**
+    Combine and rank results`"]
+    RERANK["`**Reranking**
+    Rerank with Voyage`"]
+    VOY["`**Voyage AI**
+    Rerank model`"]
+
+    GATE["`**Support gate**
+    Filter low-relevance results`"]
+
+    RESULTS["`**Retrieved chunks**
+    Ranked, filtered results`"]
+    EMPTY["`**No relevant results**`"]
+
+    QUERY --> VECTOR
+    QUERY --> BM25
+
+    QD --> VECTOR
+    LEX --> BM25
+
+    VECTOR --> RRF
+    BM25 --> RRF
+
+    RRF --> RERANK
+    VOY -.-> RERANK
+    RERANK --> GATE
+
+    GATE --> RESULTS
+    GATE --> EMPTY
+
+    class QUERY,VECTOR,BM25,GATE core
+    class QD vector
+    class LEX lexical
+    class RRF,RERANK artifact
+    class RESULTS output
+    class EMPTY failure
+    class VOY external
+
+```
+
+<figcaption>Python RAG Service retrieval pipeline diagram</figcaption>
+</figure>
 
 ## Why the pipeline uses hybrid retrieval
 

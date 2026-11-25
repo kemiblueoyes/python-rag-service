@@ -107,6 +107,18 @@ Choose between `<CodeBlocks>` and `<Tabs>` based on what varies between the grou
 Additional conventions:
 - Don't wrap a single snippet in `<CodeBlocks>` just for styling; use a plain fenced code block.
 
+## Tables
+
+Use regular markdown for tables with 20 or fewer rows.
+
+For tables with over 20 rows, use a searchable table:
+
+```html
+<SearchableTable>
+...
+</SearchableTable>
+```
+
 ### Callouts: important caveat
 
 ```html

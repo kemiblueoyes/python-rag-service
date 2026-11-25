@@ -133,3 +133,26 @@ Casual use of the following is discouraged:
 | Evaluation case that does not meet its expected result | **failure** | Use when an evaluation test case does not produce the expected result. A failure is not automatically a **regression** or a **known limitation**; those terms require additional context. |
 | Known gap or constraint in the current system | **known limitation** | Use for behavior or capability that is currently constrained, incomplete, or known not to work in some situations. Do not use for every failed test; a failure becomes a known limitation only when it represents an understood current constraint. |
 | Previously working or acceptable behavior that becomes worse | **regression** | Use when a change causes previously acceptable retrieval or answer behavior to degrade. A newly discovered weakness is not automatically a regression. |
+
+## Operations and automation
+
+Use these terms to distinguish work performed by the Python runner from orchestration and quality decisions in n8n. See the [operations guide](../docs/operations/README.md) and [retrieval quality policy guide](../automation/n8n/policies/README.md) for procedures and policy details.
+
+| Concept | Preferred term | Rule |
+| :---- | :---- | :---- |
+| Python component that accepts and executes operations jobs | **operations runner** | Use **runner** after the context is established. Keep distinct from the public search/answer API and from n8n, which can optionally orchestrate jobs through the runner. |
+| Authenticated HTTP interface for runner jobs | **operations API** | Use for job submission and status endpoints. Do not call these public search/answer API endpoints; the operations API runs in a separate app with a separate API key. |
+| Supported kind of work | **operation** | Use for `index_wordpress` or `evaluate_retrieval`. An operation identifies what to do; a **job** is one submitted instance of that work. |
+| One recorded instance of an operation | **job** | Use **indexing job** or **evaluation job** when the distinction matters. Use **job ID** for the runner's `job_id`; do not confuse it with an n8n execution ID. |
+| Reusable orchestration definition in n8n | **workflow** | Use **n8n workflow** when needed for clarity. A workflow can submit and poll multiple jobs; it is not itself a runner job or the retrieval pipeline. |
+| One run of an n8n workflow | **workflow execution** | Use **n8n execution ID** for its identifier. Qualify **run** as a job or workflow execution when the scope would otherwise be ambiguous. |
+| Key that identifies one intended job submission | **idempotency key** | Use for the `Idempotency-Key` header. Reuse it when retrying the same submission; use a fresh key for new intended work. It is neither an API key nor a job ID. |
+| Runner execution state | **job status** | Preserve the exact values `queued`, `running`, `succeeded`, and `failed`. A `queued` status does not imply a waiting queue: the runner accepts only one active job at a time. |
+| Completed operation and its required output writes | **job success** | Use for `status: succeeded`. An evaluation job can succeed while test cases fail or the quality policy returns `quality_failed`. Do not describe job success as a quality pass. |
+| Rules for comparing retrieval results with an approved baseline | **retrieval quality policy** | Use for the versioned comparison rules, including required metadata, metric minimums, allowed declines, and newly failed cases. Keep distinct from the retrieval **support gate**, which acts on individual queries. |
+| Reviewed reference used by the quality policy | **approved baseline** | Use **approved retrieval baseline** when needed for clarity. It is not the latest report and is not replaced automatically after a successful or improved run. A report filename such as `retrieval_baseline.json` does not establish approval. |
+| Decision produced by applying the quality policy | **quality outcome** | Preserve the exact values `operational_failure`, `needs_review`, `quality_failed`, and `passed`. These are policy outcomes, not runner job statuses. |
+| Results that cannot support a quality decision yet | **needs review** | Use for `needs_review`, such as missing required metrics or a dataset/configuration mismatch. Do not call this a quality pass or a confirmed regression. |
+| Comparable results that breach a metric rule or include a newly failed case | **quality failure** | Use for `quality_failed`. A minimum-only breach is a quality failure but does not by itself qualify for the Jira regression route. |
+| Complete, comparable results that satisfy the policy | **quality pass** | Use for `passed`. It does not mean every evaluation case passed; known failures recorded in the approved baseline can remain. |
+| Baseline-relative degradation that qualifies for Jira routing | **confirmed regression** | In automation prose, use when a comparable, complete result breaches a maximum-decline rule or contains a newly failed case. Keep distinct from an operational failure, a review outcome, or a minimum-only quality failure. |

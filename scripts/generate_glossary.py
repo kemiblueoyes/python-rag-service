@@ -37,8 +37,10 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -46,7 +48,6 @@ import yaml
 
 from rag_service.commands.documentation.update_last_modified import (
     LastModifiedError,
-    git_last_modified_date,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -565,6 +566,50 @@ def write_outputs(
 
     return glossary_status, vale_status
 
+def glossary_last_modified_date(path: Path, *, repo_root: Path) -> str:
+    """Date the parsed terms changed, ignoring comments and source metadata.
+
+    Walk first-parent source history so metadata-only commits retain the date
+    of the preceding terms change. Uncommitted terms changes use today's date.
+    Schema validation remains the responsibility of load_glossary.
+    """
+    relative = path.resolve().relative_to(repo_root.resolve()).as_posix()
+
+    def git(*args: str) -> str:
+        result = subprocess.run(
+            ["git", *args], cwd=repo_root, capture_output=True, text=True,
+        )
+        if result.returncode:
+            raise LastModifiedError(result.stderr.strip())
+        return result.stdout
+
+    def terms(content: str) -> object:
+        try:
+            data = yaml.safe_load(content)
+        except yaml.YAMLError:
+            # A historical invalid source cannot match valid current terms.
+            return None
+        return data.get("terms") if isinstance(data, dict) else None
+
+    current_terms = terms(path.read_text(encoding="utf-8"))
+    if not git("ls-files", "--", relative).strip():
+        return date.today().isoformat()
+    history = git(
+        "log", "--first-parent", "--format=%H%x09%cs", "--", relative,
+    ).splitlines()
+    if not history:
+        return date.today().isoformat()
+
+    previous_date = date.today().isoformat()
+    for entry in history:
+        commit, commit_date = entry.split("\t", maxsplit=1)
+        historical_terms = terms(git("show", f"{commit}:{relative}"))
+        if historical_terms != current_terms:
+            return previous_date
+        previous_date = commit_date
+    return previous_date
+
+
 def check_generated_file(
     path: Path,
     expected_content: str,
@@ -633,7 +678,7 @@ def main() -> int:
             VALE_ACCEPT_SOURCE_PATH
         )
 
-        glossary_last_modified = git_last_modified_date(
+        glossary_last_modified = glossary_last_modified_date(
             SOURCE_PATH,
             repo_root=REPO_ROOT,
         )

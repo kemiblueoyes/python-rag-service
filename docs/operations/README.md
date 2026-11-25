@@ -142,7 +142,7 @@ local firewall rules restricting access. Keep the separate key in n8n credential
 send it as `X-API-Key`, and preserve the idempotency key for submission retries.
 Poll the returned `status_url` using the runner base URL.
 
-The workflow in `automation/n8n/workflows/index-wordpress.json` includes manual
+The workflow in `automation/n8n/workflows/rag-indexing-workflow.json` includes manual
 and scheduled triggers, indexing submission and polling, evaluation chaining when
 content changes, retrieval-quality policy comparison, and Jira regression routing.
 The Jira route finds or creates an open regression issue and records new job

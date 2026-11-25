@@ -6,9 +6,9 @@ description: Review known limitations of the current RAG service implementation,
 content_type: general_reference
 lifecycle_status: published
 topics: [topic-limitations]
-components: [component-wordpress-connector, component-indexing-pipeline, component-retrieval-service, component-answer-generation-service, component-public-api, component-evaluation-framework]
+components: [component-wordpress-connector, component-indexing-pipeline, component-retrieval-service, component-answer-generation-service, component-public-api, component-evaluation-framework, component-operations-runner, component-n8n-workflows]
 related_pages: [SysArch, RtrvPipe, AnsGenCit, RecEvRes]
-last_modified: 2026-10-22
+last_modified: 2026-11-25
 audience: [primary, secondary]
 ---
 
@@ -44,7 +44,7 @@ searches, wait for the build. A request already searching the previous snapshot 
 are replaced or closed during refresh. Invalid, missing, unreadable, or continuously changing corpora return the existing controlled
 configuration error instead of serving stale lexical results. A later request retries, allowing recovery after a valid publication.
 
-Keep the public API and operations runner as separate processes with access to the same corpus path. Every API worker refreshes
+Keep the public API and [operations runner](/docs/operations/run-operations-runner) as separate processes with access to the same corpus path. Every API worker refreshes
 independently; there is no background watcher or cross-process notification. Publish complete files with atomic replacement, as the
 WordPress indexer does. Qdrant updates and lexical publication aren't one transaction, so requests during indexing can still observe
 different vector and lexical generations. File metadata checks avoid hashing the whole corpus on each request.
@@ -110,6 +110,84 @@ or the lexical corpus.
 
 Use authenticated search and answer requests to check those workflows.
 See [API reference](/reference/overview) for the endpoint references.
+
+## Operations runner
+
+### Only one runner job can be active
+
+The runner accepts one active job and rejects another submission with HTTP 409 while
+that job is queued or running. It doesn't keep a waiting queue. Run one process and
+one worker without automatic reload. The runner locks its job database so another
+runner can't use it at the same time. This requires a Unix-compatible operating system,
+such as macOS or Linux. Keep the database on the computer running the runner.
+
+This lock doesn't coordinate manual indexing or evaluation commands, or runners with
+separate databases. Don't run those operations at the same time against the same index
+and output files.
+
+### Interrupted jobs aren't resumed or retried automatically
+
+Jobs run inside the runner process. The database keeps job history, but it can't keep
+a job running after the process stops. When you restart the runner, it marks unfinished
+jobs as failed with `runner_interrupted`. The job may already have changed the index
+or written files, and the runner doesn't undo those changes. Inspect the outcome
+before submitting a new job with a fresh idempotency key.
+
+The runner saves the lexical corpus before the document checkpoint, the saved document
+snapshot used to detect changes. If saving the checkpoint fails, the new corpus can
+remain alongside the previous checkpoint. The next indexing job still detects pending
+changes. The runner updates Qdrant and the files separately.
+See [Lexical refresh happens on the next request](#lexical-refresh-happens-on-the-next-request).
+
+### Job requests can't override configuration
+
+The operations API supports only incremental WordPress indexing and retrieval evaluation.
+Requests can't select source URLs, datasets, paths, providers, or rebuild flags.
+Configure the runner through its environment and restart it after configuration changes.
+Use the command line for full rebuilds while no runner job is active.
+
+### History and reports require storage management
+
+The runner doesn't automatically delete job history or evaluation reports. Keep the
+job database so you can look up past jobs and retry submissions with the same keys.
+Deleting it also removes the record of previously used submission keys. Report paths
+refer to files on the runner's computer. The operations API doesn't provide report downloads.
+
+### Runner health and job success don't establish retrieval quality
+
+The runner's health endpoint doesn't require authentication. It checks runner availability
+and access to the job database. It doesn't check the operations key, providers, or lexical corpus.
+An evaluation job can succeed even when test cases fail. Review the report and assess
+quality separately. The runner doesn't apply a retrieval quality policy.
+
+Follow [Run the operations runner](/docs/operations/run-operations-runner) for submission,
+polling, error handling, and recovery procedures.
+
+## n8n automation
+
+### The included workflow evaluates only after content changes
+
+The included n8n workflow skips evaluation when indexing finds no changes. A run
+that skips evaluation doesn't establish current retrieval quality. If indexing
+succeeds but evaluation or later handling fails, restarting the whole workflow
+may skip evaluation because indexing already saved the updated checkpoint.
+Run evaluation independently when needed. See
+[Recover when evaluation is skipped or later handling fails](/docs/operations/set-up-n8n-workflow#recover-when-evaluation-is-skipped-or-later-handling-fails).
+
+### Workflow timeouts don't necessarily cancel runner jobs
+
+The exported workflows have a configurable ten-minute timeout. Stopping an n8n
+execution doesn't necessarily cancel a Python job it already submitted. Check the
+existing job's status and result before retrying to avoid unnecessary replacement
+work. See [Configure settings for both workflows](/docs/operations/set-up-n8n-workflow#configure-settings-for-both-workflows).
+
+### The comparator supports schema 1 and policy version 1
+
+The included comparator supports only schema version 1 and policy version 1.
+Unsupported versions stop the workflow with an error instead of producing a
+quality pass. Use compatible policy and baseline files. Supporting another format
+or policy version requires updating the workflow's validation and comparison code.
+See [Prepare and verify your policy and baseline](/docs/operations/set-up-n8n-workflow#prepare-and-verify-your-policy-and-baseline).
 
 ## Evaluation scope
 

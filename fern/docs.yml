@@ -125,6 +125,19 @@ navigation:
             path: docs/pages/architecture/answer-generation-and-citations.mdx
           - page: Evaluation architecture
             path: docs/pages/architecture/evaluation-architecture.mdx
+      - section: Operations
+        contents:
+          - page: Overview
+            path: docs/pages/operations/overview.mdx
+          - page: Run the operations runner
+            path: docs/pages/operations/run-operations-runner.mdx
+            slug: run-operations-runner
+          - page: Set up n8n workflow
+            path: docs/pages/operations/set-up-n8n-workflow.mdx
+            slug: set-up-n8n-workflow
+          - page: How the n8n workflow works
+            path: docs/pages/operations/how-n8n-workflow-works.mdx
+            slug: how-n8n-workflow-works
       - section: Reference
         contents:
           - page: Known limitations

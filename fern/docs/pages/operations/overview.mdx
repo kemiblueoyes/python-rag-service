@@ -1,0 +1,110 @@
+---
+id: OpsOvrvw
+title: Operations overview
+subtitle: Keep WordPress content current and check retrieval quality after updates.
+description: Understand how the operations runner and optional n8n workflows coordinate indexing, retrieval evaluation, quality checks, and failure reporting.
+content_type: overview
+lifecycle_status: published
+topics: [topic-operational-automation, topic-architecture]
+components: [component-operations-runner, component-n8n-workflows]
+next_steps: [OpsRunr, HowN8nWkflw, StUpN8nWkflw]
+related_pages: [RtrvlEv, RIndxUpdt, SysArch, OpsRunr, StUpN8nWkflw]
+last_modified: 2026-11-25
+audience: [primary, secondary]
+---
+
+The operations runner executes incremental WordPress indexing and retrieval
+evaluation jobs. It runs as a separate application from the [public API](/docs/search-and-answer/overview), which
+serves search and answer requests.
+
+You can submit an individual job and poll for its result from a script or HTTP
+client. For regular updates, you can automate indexing on a schedule and
+evaluate retrieval after WordPress content changes. The project provides an
+optional workflow for [n8n](https://n8n.io/) (a tool for automating tasks across services) to
+coordinate those jobs.
+
+Both paths use the authenticated operations API and require a running
+operations runner.
+
+<figure>
+
+```mermaid
+
+flowchart TD
+    subgraph Automation["Optional n8n automation"]
+        Coordinate["Job coordination<br/>Scheduled or manual workflow trigger"]
+        Quality["Retrieval quality policy checks"]
+        Reporting["Jira regression reporting and failure alerts"]
+        Coordinate --> Quality
+        Quality -->|Qualifying regression| Reporting
+        Coordinate -->|Workflow failure| Reporting
+    end
+
+    Direct["Script or HTTP client"]
+
+    subgraph Operations["Python RAG Service — Operations"]
+        Runner["Operations runner"]
+        Index["Incremental WordPress indexing"]
+        Evaluate["Retrieval evaluation"]
+        Runner --> Index
+        Runner --> Evaluate
+    end
+
+    Coordinate -->|Submit & poll jobs| Runner
+    Direct -->|Submit & poll jobs| Runner
+
+    class Coordinate,Quality,Reporting automation
+    class Direct external
+    class Runner,Index,Evaluate core
+
+```
+
+<figcaption>Python RAG Service operations workflow</figcaption>
+</figure>
+
+## Key capabilities
+
+### Keep WordPress content current
+
+Incremental indexing updates the index when WordPress content is added, edited,
+or removed. The indexing job reports whether it detected changes. The n8n
+workflow submits a retrieval evaluation job only when indexing succeeds and
+reports changes.
+
+### Check retrieval quality
+
+The runner writes reports for each evaluation job and returns a summary and
+any failed case IDs in the job result. A successful job means the evaluation
+finished and its reports were written. n8n makes the quality decision separately.
+
+The n8n workflow compares results with an approved baseline after checking that
+the dataset and retrieval configuration match and the required results are
+available. Comparable results fail the retrieval quality policy if a metric
+falls below its minimum, declines by more than the policy allows, or a case
+that previously passed now fails. Missing evidence or a mismatch between the
+run and the baseline can trigger a review.
+
+### Route failures and regressions
+
+The n8n workflow records a regression in Jira when a metric declines by more
+than the policy allows or a case newly fails. A configured failure-alert
+workflow can send an email notification when the indexing workflow fails, such as when
+a runner job returns a failed status.
+
+## When to use direct HTTP or n8n
+
+- **Use a script or HTTP client** to verify the runner setup, submit a one-off
+  indexing or evaluation job, or call the runner from automation you already
+  maintain.
+- **Use the optional n8n workflow** to schedule indexing and coordinate
+  evaluation, quality checks, and reporting after content changes. You can also
+  start the workflow manually.
+
+## Next steps
+
+- **[Run the operations runner](/docs/operations/run-operations-runner)**. Start the runner and verify that you can
+  submit and poll jobs.
+- **[How the n8n workflow works](/docs/operations/how-n8n-workflow-works)**: Understand
+  job coordination, quality decisions, and regression reporting.
+- **[Set up n8n workflow](/docs/operations/set-up-n8n-workflow)**. Set up scheduling, retrieval quality checks,
+  and reporting.

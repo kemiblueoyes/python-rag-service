@@ -211,25 +211,6 @@
     },
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "triggerAtHour": 14
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.4,
-      "position": [
-        -48,
-        -672
-      ],
-      "id": "f6603867-799d-490f-9561-52da8e1ffae0",
-      "name": "Schedule Trigger1"
-    },
-    {
-      "parameters": {
         "assignments": {
           "assignments": [
             {
@@ -960,6 +941,26 @@
           "name": "Local RAG operations"
         }
       }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 14
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -48,
+        -672
+      ],
+      "id": "f6603867-799d-490f-9561-52da8e1ffae0",
+      "name": "Daily Job Trigger",
+      "disabled": true
     }
   ],
   "pinData": {},
@@ -1041,17 +1042,6 @@
         [
           {
             "node": "Check indexing",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Schedule Trigger1": {
-      "main": [
-        [
-          {
-            "node": "Read policy files",
             "type": "main",
             "index": 0
           }
@@ -1360,6 +1350,17 @@
           }
         ]
       ]
+    },
+    "Daily Job Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read policy files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1375,7 +1376,7 @@
     "saveDataSuccessExecution": "all",
     "saveManualExecutions": true
   },
-  "versionId": "e4e5d156-e84a-44ab-8066-cf69cab800c6",
+  "versionId": "06c14409-9ca3-4260-8648-55ac536d3551",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "ae285777e5e00dbc75bea3e91320d4e67725ff33205dd1c4862fbeffcb9eb5ef"

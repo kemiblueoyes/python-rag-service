@@ -9,7 +9,7 @@ topics: [topic-architecture, topic-evaluation]
 components: [component-evaluation-framework]
 next_steps: [RnEv]
 related_pages: [RtrvlEv, AnsEv, RecEvRes, HowEv, EvalRef]
-last_modified: 2026-11-12
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
@@ -20,12 +20,90 @@ from the saved answer report. Separate retrieval experiments reuse the dataset a
 The diagram shows how the dataset feeds both evaluation paths. The saved answer report supplies the answers, evidence,
 and required points for human review. The dashed line connects the dataset to separate retrieval experiments.
 
-<Frame caption="Python RAG Service evaluation architecture">
+{/*<Frame caption="Python RAG Service evaluation architecture">
   <img
     src="../../assets/images/evaluation-framework-diagram.png"
     alt="Python RAG Service evaluation architecture diagram"
   />
-</Frame>
+</Frame>**/}
+
+<figure>
+
+```mermaid
+
+flowchart TD
+    DATA["`**Gold evaluation dataset**
+    Queries, filters, and expected results
+    Relevant and nonrelevant sources
+    Expected-empty cases
+    Evidence sufficiency and required answer points`"]
+
+    subgraph MAIN[" "]
+        direction LR
+
+        subgraph RET["Retrieval evaluation"]
+            direction TB
+            R1["`**Run live retrieval**
+            Hybrid retrieval and support gate`"]
+            R2["`**Check retrieved chunks**
+            Primary hit
+            Precision and recall
+            Reciprocal rank
+            Expected-empty results`"]
+            R3["`**Save retrieval report**
+            Per-case results and summary metrics`"]
+            R1 --> R2 --> R3
+        end
+
+        subgraph ANS["Answer evaluation"]
+            direction TB
+            A1["`**Run live retrieval**
+            Hybrid retrieval and support gate`"]
+            A2["`**Generate an answer**
+            Context assembly
+            Answer generation
+            Citation validation and normalization`"]
+            A3["`**Automated answer checks**
+            Expected evidence sufficiency
+            Citation behavior`"]
+            A4["`**Save answer report**
+            Generated answers, sources,
+            and automated check results`"]
+            A1 --> A2 --> A3 --> A4
+        end
+    end
+
+    DATA --> R1
+    DATA --> A1
+
+    subgraph HUMAN["Human answer review"]
+        direction LR
+        H1["`**Review saved answers**
+        Support and faithfulness
+        Completeness
+        Unsupported details
+        Focus and relevance`"]
+        H2["`**Save scores and notes**
+        answer_qualitative_review.json`"]
+        H3["`**Validate the review**
+        Run identity and dataset version
+        Generation model and case coverage`"]
+        H4["`**Summarize human scores**
+        answer_qualitative_review.md`"]
+        H1 --> H2 --> H3 --> H4
+    end
+
+    A4 -->|Saved answer run| H1
+
+    class DATA,H1,H2 artifact
+    class R1,R2,A1,A2,A3,H3 core
+    class R3,A4,H4 output
+
+
+```
+
+<figcaption>Python RAG Service evaluation framework</figcaption>
+</figure>
 
 ## The shared dataset
 
@@ -99,6 +177,37 @@ identifies the saved answer run and covers exactly the required cases, then summ
 [Answer evaluation](/docs/evaluate/answer-evaluation) defines how to apply the four scores.
 
 ## Retrieval experiments
+
+<figure>
+
+```mermaid
+
+flowchart TD
+    DATA["`**Gold evaluation dataset**
+    Queries and expected results`"]
+
+    subgraph EXP[" "]
+        direction LR
+        E1["`**Compare retrieval variants**
+        Semantic, BM25, fusion, reranking`"]
+        E2["`**Score retrieval results**
+        Relevance, ranking, expected-empty behavior`"]
+        E3["`**Save experiment reports**
+        Separate from service baseline`"]
+
+        E1 --> E2 --> E3
+    end
+
+    DATA --> EXP
+
+    class DATA artifact
+    class E1,E2 core
+    class E3 output
+
+```
+
+<figcaption>Python RAG Service evaluation retrieval experiements</figcaption>
+</figure>
 
 These commands compare individual retrieval stages and experimental configurations using the same dataset and
 retrieval scoring function. They use the same dataset and the same retrieval scoring function. Each one writes

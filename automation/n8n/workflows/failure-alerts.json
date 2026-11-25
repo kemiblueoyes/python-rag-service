@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "sendTo": "your-email@example.com",
+        "sendTo": "user@gmail.com",
         "subject": "={{ '[RAG alert] ' + ($json.workflow?.name ?? 'Workflow') + ' — ' + ($json.execution?.lastNodeExecuted ?? 'Trigger failure') }}",
         "emailType": "text",
         "message": "={{ [\n  'Workflow: ' + ($json.workflow?.name ?? 'Unavailable'),\n  'Failed step: ' + ($json.execution?.lastNodeExecuted ?? $json.trigger?.error?.node?.name ?? 'Trigger'),\n  'Execution ID: ' + ($json.execution?.id ?? 'Unavailable'),\n  '',\n  'Error:',\n  ($json.execution?.error?.message ?? $json.trigger?.error?.message ?? 'No error message provided'),\n  '',\n  'Execution link:',\n  ($json.execution?.url ?? 'Unavailable — open n8n and check Executions'),\n  '',\n  'Next action: Open the execution and inspect the failed step. For indexing or evaluation errors, also check the operations-server terminal.'\n].join('\\n') }}",
@@ -30,7 +30,13 @@
       "name": "Send a message",
       "webhookId": "d5f3ee8f-193f-42c7-88f4-0a36e7dc187e",
       "retryOnFail": true,
-      "waitBetweenTries": 5000
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "123456",
+          "name": "Gmail RAG alerts"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -61,7 +67,8 @@
   },
   "versionId": "83e0473b-78cb-4458-8280-c4fa68e98528",
   "meta": {
-    "templateCredsSetupCompleted": true
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3e91320d4e67725ff33205ae285777e5e00dbc75bea"
   },
   "nodeGroups": [],
   "id": "8DNOp8zSFfV5phxH",

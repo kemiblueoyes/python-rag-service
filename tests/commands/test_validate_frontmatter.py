@@ -99,8 +99,9 @@ def test_nested_topic_ids_are_loaded() -> None:
     assert "topic-evidence-sufficiency" in model.topics
     assert "topic-job-management" in model.topics
     assert "topic-retrieval-quality-policy" in model.topics
+    assert "topic-release-history" in model.topics
 
-    assert len(model.topics) == 31
+    assert len(model.topics) == 32
 
 
 def test_child_topic_is_valid_in_frontmatter(tmp_path: Path) -> None:
