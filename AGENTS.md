@@ -20,7 +20,7 @@ Use this map to start discovery, then search for additional docs and examples re
 | Public API contract and examples | `fern/openapi.yml`, `fern/docs/pages/api/` | `src/rag_service/api/` routes, models, authentication, and errors; `tests/api/` |
 | Configuration and setup examples | `.env.example`, `fern/docs/pages/get-started/`, `fern/docs/pages/reference/configuration-reference.mdx` | `src/rag_service/config.py`, provider factories, and settings consumers |
 | CLI usage and command examples | Examples throughout the guides; Command-line help text defined in `src/rag_service/commands/` | Command implementations and their tests; inspect side effects before running commands |
-| Operations and automation | `docs/operations/README.md`, `automation/n8n/policies/README.md` | `src/rag_service/operations/`, workflow exports and policies in `automation/n8n/` |
+| Operations and automation | `fern/docs/pages/operations/`, `automation/n8n/policies/README.md` | `src/rag_service/operations/`, workflow exports and policies in `automation/n8n/` |
 | WordPress integration | `fern/docs/pages/integrate/` | `clients/wordpress/` implementation and tests; `src/rag_service/connectors/wordpress/` for content ingestion |
 | Architecture, decisions, and roadmap | `docs/design/`, `docs/design/adr/`, `fern/docs/pages/architecture/` | Current implementation and tests; distinguish planned behavior from implemented behavior |
 | Evaluation methods and results | `fern/docs/pages/evaluate/`, `docs/evaluation/`, `evaluation/datasets/CHANGELOG.md`, `evaluation/reports/` | `src/rag_service/evaluation/`, evaluation commands, datasets, and saved reports |

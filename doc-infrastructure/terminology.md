@@ -136,7 +136,7 @@ Casual use of the following is discouraged:
 
 ## Operations and automation
 
-Use these terms to distinguish work performed by the Python runner from orchestration and quality decisions in n8n. See the [operations guide](../docs/operations/README.md) and [retrieval quality policy guide](../automation/n8n/policies/README.md) for procedures and policy details.
+Use these terms to distinguish work performed by the Python runner from orchestration and quality decisions in n8n. See the [operations guide](../fern/docs/pages/operations/overview.mdx) and [retrieval quality policy guide](../automation/n8n/policies/README.md) for procedures and policy details.
 
 | Concept | Preferred term | Rule |
 | :---- | :---- | :---- |

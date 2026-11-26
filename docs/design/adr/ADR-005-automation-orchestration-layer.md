@@ -63,6 +63,5 @@ atomic replace. A failed publication leaves that checkpoint unchanged, so the
 next run still reports the pending changes. This runner does not refresh the
 public API's BM25 index.
 
-See the [local runner guide](../../operations/README.md) for startup, Docker
-connectivity, submission and polling commands, and recovery details. This guide
+See the [local runner guide](../../../fern/docs/pages/operations/overview.mdx). This guide
 is separate from the public search/answer API reference.

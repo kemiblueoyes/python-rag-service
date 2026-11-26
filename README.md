@@ -37,7 +37,7 @@ Search requires Python 3.12, [uv](https://docs.astral.sh/uv/), a Voyage AI API k
 | Generate answers from indexed content | [Generate grounded answers](https://python-rag-service.docs.buildwithfern.com/docs/search-and-answer/generate-grounded-answers) |
 | Add the WordPress client | [Integrate with WordPress](https://python-rag-service.docs.buildwithfern.com/docs/integrate/integrate-with-wordpress) |
 | Evaluate retrieval and answers | [Run the evaluation](https://python-rag-service.docs.buildwithfern.com/docs/evaluate/run-the-evaluation) |
-| Automate indexing and retrieval evaluation | [Operations guide](docs/operations/README.md) |
+| Automate indexing and retrieval evaluation | [Operations guide](https://python-rag-service.docs.buildwithfern.com/docs/operations/overview) |
 
 ## API
 
@@ -67,7 +67,7 @@ The operations runner runs separately from the public API and uses its own authe
 
 The included n8n workflows schedule WordPress indexing, evaluate retrieval when content changes, compare results with quality policies, report regressions in Jira, and send failure alerts. Configure the runner connection, credentials, and policy files in your n8n environment. After indexing publishes updated chunks, the public API refreshes its in-memory BM25 index on the next search or answer request.
 
-See the [operations guide](docs/operations/README.md) for setup, manual verification, Docker connectivity, and recovery behavior. Workflow exports and quality policies are in [`automation/n8n/`](automation/n8n/).
+See the [operations runner guide](https://python-rag-service.docs.buildwithfern.com/docs/operations/run-operations-runner) for setup, manual verification, Docker connectivity, and recovery behavior. Workflow exports and quality policies are in [`automation/n8n/`](automation/n8n/).
 
 ## Evaluation
 
@@ -127,7 +127,6 @@ bash scripts/audit-locked-dependencies.sh
 | [`doc-infrastructure/`](doc-infrastructure/) | Content model, templates, style guidance, Optional AI prompts for authoring pages and reviewing style, rules for verifying documented behavior, and page registry |
 | [`docs/design/`](docs/design/) | Project design, implementation roadmap, and architecture decisions |
 | [`docs/evaluation/`](docs/evaluation/) | Retrieval experiments, failure analysis, and evaluation findings |
-| [`docs/operations/`](docs/operations/) | Operations runner setup, automation integration, and recovery guidance |
 | [`.agents/skills/`](.agents/skills/) | Agent skills for authoring documentation and auditing docs against code |
 
 ## License
