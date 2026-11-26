@@ -10,12 +10,16 @@ components: [component-evaluation-framework]
 prerequisites: [IndxWP]
 next_steps: [RecEvRes]
 related_pages: [RtrvlEv, AnsEv, EvArch, HowEv, EvalRef]
-last_modified: 2026-11-12
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
 Run retrieval and answer evaluation from the repository root. Each command reads `evaluation/datasets/baseline.json`,
 runs the service’s Python components against the live index, and writes JSON and Markdown reports under `data/evaluation/latest`.
+
+The project ships that dataset file as an example for The Doc Landscape WordPress corpus, with ID
+`doc-landscape-baseline` and version `1.7`. Create your own dataset for your indexed content before evaluating
+your deployment. Those ID and version values identify the bundled example; choose your own for your dataset.
 
 Run retrieval evaluation to see whether the current index returns the expected chunks. Run answer evaluation when
 you also want a generated answer for each case. Answer evaluation retrieves again. It doesn't read the retrieval
@@ -34,6 +38,29 @@ The indexed collection must match `QDRANT_COLLECTION`. The local chunk file used
 <Warning>Each command overwrites its existing report files. Save copies before rerunning if you need to retain earlier results.</Warning>
 
 <Steps toc={true}>
+    ## Prepare your dataset
+
+    Use the bundled example to understand the dataset format, then prepare cases for your own indexed content.
+    Define queries your users ask, relevant and nonrelevant sources from your index, expected-empty cases, and
+    answer expectations with required points for human review. Use chunk IDs from your index for sources that
+    answer evaluation must match to citations.
+
+    Give the dataset its own `dataset_id` and `version`. Keep the version consistent between runs you compare,
+    and update it when you change the cases or judgments.
+    [Evaluation framework reference](/docs/reference/evaluation-framework-reference) defines the required fields.
+
+    Keep a copy of the bundled example if you want to reuse it. Save your dataset at
+    `evaluation/datasets/baseline.json` in your checkout, replacing the example there. Both evaluation commands
+    read this fixed path; they don’t accept a dataset-path command-line option.
+
+    To run the bundled example instead, index The Doc Landscape’s public content into your own service.
+    Its WordPress REST API exposes posts, pages, and glossary entries without a WordPress account or
+    administrator access. You still need your own configured embedding service and vector store.
+
+    Check that the indexed content and chunk IDs match the example dataset’s source judgments. Changes to
+    the live content or chunking can change chunk IDs, so a fresh index may not reproduce the recorded
+    results for example dataset version `1.7`. Its expectations don’t evaluate an unrelated corpus.
+
     ## Run the retrieval evaluation
 
     From the repository root, run:
@@ -95,7 +122,7 @@ The indexed collection must match `QDRANT_COLLECTION`. The local chunk file used
 </Steps>
 
 You now have separate retrieval and answer reports. Both commands read `evaluation/datasets/baseline.json` independently.
-Check the recorded dataset versions before comparing the reports. Git ignores `/data/`, so these files aren’t
+Check the recorded dataset IDs and versions before comparing the reports. Git ignores `/data/`, so these files aren’t
 committed by default.
 
 ## Verification
@@ -132,8 +159,8 @@ dataset in a new folder:
     ```
 
 The command uses the dataset version to name a new folder under `evaluation/reports/`. It copies
-the dataset and the reports from data/evaluation/latest/ into that folder. For the Doc Landscape
-dataset, the folder name is `doc-landscape-v<version>-<UTC-date>`. It contains the dataset, the
+the dataset and the reports from data/evaluation/latest/ into that folder. For the bundled Doc Landscape
+example dataset, the folder name is `doc-landscape-v<version>-<UTC-date>`. It contains the dataset, the
 JSON and Markdown reports, a manifest with file checksums, and a README.
 
 To include a completed human review, add `--include-review`. The command validates
@@ -145,8 +172,9 @@ you want to publish it.
 
 ## Next steps
 
-**[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Compare this run with the recorded
-results.
+**[Recorded evaluation results](/docs/evaluate/recorded-evaluation-results)**: Compare this run with the recorded
+results when the dataset and indexed content match. For a different dataset, use the snapshots as examples
+of how to interpret reports.
 
 ## Related pages
 

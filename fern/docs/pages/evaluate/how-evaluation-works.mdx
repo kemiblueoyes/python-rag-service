@@ -1,7 +1,7 @@
 ---
 id: HowEv
 title: How evaluation works
-subtitle: What the versioned evaluation dataset measures, and why retrieval checks, answer checks, and human review stay separate.
+subtitle: What evaluation datasets measure, and why retrieval checks, answer checks, and human review stay separate.
 description: Learn what the RAG service evaluates and why, including retrieval and answer evaluation, automated and human review, and expected-empty cases.
 content_type: explanation
 lifecycle_status: published
@@ -9,7 +9,7 @@ topics: [topic-evaluation]
 components: [component-evaluation-framework]
 next_steps: [RtrvlEv, AnsEv, RnEv, EvalRef]
 related_pages: [EvArch, RecEvRes, KnLmt]
-last_modified: 2026-11-12
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
@@ -39,18 +39,21 @@ Run the evaluation again after a change that can affect retrieval or answer qual
 
 ## The versioned evaluation dataset
 
-The evaluation dataset is the maintained collection of test cases. The project stores it at `evaluation/datasets/baseline.json`.
+The project includes an example dataset at `evaluation/datasets/baseline.json`. Its ID is
+<code>{evaluationDatasetId}</code>, and its version is <code>{evaluationDatasetVersion}</code>. These values identify
+the bundled example, a human-labeled set of 22 cases for The Doc Landscape WordPress index.
 
-The current dataset ID is <code>{evaluationDatasetId}</code>, and the version is <code>{evaluationDatasetVersion}</code>. It's the human-labeled set for The Doc Landscape
-WordPress index and contains 22 cases.
+Create your own dataset to evaluate your indexed content and the questions your users ask. Use the example
+to understand the format, then define your own queries, source judgments, and answer expectations. Give your
+dataset its own ID and version. [Run the evaluation](/docs/evaluate/run-the-evaluation) explains how to prepare it.
 
-Reports and the human review record the dataset version they used. Both runs in a comparison need the same dataset version.
+Reports and the human review record the dataset version they used. Both runs in a direct comparison need the same dataset ID and version.
 
 ### Test-case fields
 
 Each test case has a unique ID, a category, and a query. It can also include metadata filters and notes.
 
-Every case in the current dataset filters retrieval to `source: wordpress` and includes both a retrieval expectation and
+Every case in the bundled example dataset filters retrieval to `source: wordpress` and includes both a retrieval expectation and
 an answer expectation.
 
 ### Retrieval expectations
@@ -58,7 +61,7 @@ an answer expectation.
 The retrieval expectation lists relevant sources, nonrelevant sources, and the expected-empty flag.
 
 A **relevant source** is a chunk judged useful for the query. It records a document ID, a title, a heading path, and,
-in this dataset, a chunk ID. Its role is:
+in the bundled example, a chunk ID. Its role is:
 
 - **`primary`:** Content the case treats as answer-bearing.
 - **`supporting`:** Relevant content that doesn't have to carry the answer on its own.
@@ -97,8 +100,8 @@ Each test case expects one of two retrieval outcomes: relevant chunks or no chun
 | Retrieval outcome | Relevant chunks. | No chunks. |
 | `expect_empty` | `false` | `true` |
 | Relevant sources | Includes at least one primary source. | Empty list. |
-| Answer expectation in the current dataset | Sufficient evidence, with required points for review. | Insufficient evidence. |
-| Number of cases in the current dataset | 14 | 8 |
+| Answer expectation in the bundled example dataset | Sufficient evidence, with required points for review. | Insufficient evidence. |
+| Number of cases in the bundled example dataset | 14 | 8 |
 
 Expected-empty cases use the category `unanswerable`. They can list nonrelevant sources for chunks close to the query's topic.
 
@@ -114,7 +117,7 @@ The support gate returns no chunks when:
 Expected-empty cases test whether this rule rejects questions the indexed documentation can't answer. See
 [Retrieval pipeline](/docs/architecture/retrieval-pipeline) for how that decision works.
 
-These cases cover two kinds of questions:
+The bundled example covers two kinds of questions:
 
 - **Questions unrelated to the indexed content:** For example, how long to roast a chicken.
 - **Questions related to the topic but unanswered by the indexed content:** For example, choosing between Qdrant and
@@ -126,7 +129,7 @@ Both kinds check that retrieval returns no chunks when the indexed content doesn
 
 Each category identifies the behavior the case tests.
 
-| Category | Role in the current dataset |
+| Category | Role in the bundled example dataset |
 | --- | --- |
 | `exact_answer` | A question about a specific documented point. Includes 8 answerable cases. |
 | `synonym` | A question that tests meaning-based retrieval. `synonym-001` asks how search recognizes differently worded questions. Its primary sources cover embeddings and semantic search. |
@@ -178,7 +181,7 @@ Citation checks happen at two stages:
 A retrieval gap and a weak answer are different failures. The returned chunks can miss part of the expected retrieval result
 while still providing enough evidence for an answer.
 
-In the recorded dataset <code>{evaluationDatasetVersion}</code> run, `multi-section-001` doesn't retrieve every primary section in the top five chunks. Its
+In the recorded run using version <code>{evaluationDatasetVersion}</code> of the bundled example dataset, `multi-section-001` doesn't retrieve every primary section in the top five chunks. Its
 generated answer nevertheless covers the required points. See [Known limitations](/docs/reference/known-limitations) for that
 retrieval-coverage gap.
 
@@ -219,7 +222,7 @@ The project stores review scores in `data/evaluation/latest/answer_qualitative_r
 - Generation model.
 
 The report command checks that these values match the answer run. It also checks that the reviewed cases match the cases
-expecting sufficient evidence: the 14 answerable cases in the current dataset.
+expecting sufficient evidence: the 14 answerable cases in the bundled example dataset.
 
 ### Generated reports
 
@@ -227,7 +230,7 @@ Retrieval and answer evaluation runs write JSON and Markdown reports under `data
 
 These are local files. Git ignores `/data/`, so the reports aren't included in the repository. See
 [Recorded evaluation reports](/docs/evaluate/recorded-evaluation-results) for a published snapshot on how the
-Python RAG Service performed on The Doc Landscape's WordPress corpus using dataset version <code>{evaluationDatasetVersion}</code>.
+Python RAG Service performed on The Doc Landscape's WordPress corpus using version <code>{evaluationDatasetVersion}</code> of the bundled example dataset.
 
 See [Evaluation architecture](/docs/architecture/evaluation-architecture) for how the dataset, commands, and generated
 files fit together.
@@ -239,14 +242,14 @@ files fit together.
 - **[Answer evaluation](/docs/evaluate/answer-evaluation)**: Read the structural citation checks and the four
   qualitative review dimensions in detail.
 - **[Run the evaluation](/docs/evaluate/run-the-evaluation)**: Produce a new retrieval run, answer run, or
-  qualitative report from the evaluation dataset.
+  qualitative report from your evaluation dataset.
 
 ## Related pages
 
 - **[Evaluation architecture](/docs/architecture/evaluation-architecture)**: See how the dataset, evaluation
   commands, and result artifacts connect.
 - **[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Read the recorded results for this
-  dataset.
+  example dataset.
 - **[Known limitations](/docs/reference/known-limitations)**: See the retrieval and answer limitations the evaluation
   has already identified.
 - **[Evaluation framework reference](/docs/reference/evaluation-framework-reference)**: Look up the dataset,

@@ -9,13 +9,16 @@ topics: [topic-answer-evaluation, topic-evidence-sufficiency, topic-citations]
 components: [component-evaluation-framework, component-answer-generation-service]
 next_steps: [RecEvRes]
 related_pages: [AnsGenCit, EvArch, RtrvlEv, HowEv, EvalRef]
-last_modified: 2026-11-12
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
 Answer evaluation checks the model-reported evidence-sufficiency flag and cited sources for each generated answer.
 Human review separately scores support, completeness, unsupported details, and focus. This page defines both sets
 of checks and their pass rules.
+
+Apply these checks to a dataset you create for your own indexed content. The project includes an example
+dataset for The Doc Landscape WordPress corpus; its recorded results describe that example.
 
 To generate an answer report, run `rag_service.commands.evaluate_answers`. See [Run the evaluation](/docs/evaluate/run-the-evaluation).
 
@@ -86,7 +89,7 @@ The answer summary groups cases by `expected_sufficient_evidence`:
 
 It doesn't use `expect_empty` or `category` to choose these groups.
 
-In the current dataset, cases expecting sufficient evidence have `expect_empty: false`, and expected-empty cases
+In the bundled example dataset, cases expecting sufficient evidence have `expect_empty: false`, and expected-empty cases
 expect insufficient evidence. However, the dataset model doesn't require these fields to agree.
 
 See [Evaluation framework reference](/docs/reference/evaluation-framework-reference) for the definitions of

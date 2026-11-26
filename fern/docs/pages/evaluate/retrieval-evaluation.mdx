@@ -9,13 +9,16 @@ topics: [topic-retrieval-evaluation, topic-support-detection]
 components: [component-evaluation-framework, component-retrieval-service]
 next_steps: [RecEvRes]
 related_pages: [RtrvPipe, EvArch, KnLmt, HowEv, EvalRef]
-last_modified: 2026-10-22
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
 Retrieval evaluation scores the chunks the current retrieval pipeline returns for each test case. This page
 defines the relevance judgments, the metrics for the top 5 chunks, how expected-empty cases test the support gate,
 and the rule that marks a case passed.
+
+Apply these checks to a dataset you create for your own indexed content. The project includes an example
+dataset for The Doc Landscape WordPress corpus; its recorded results describe that example.
 
 To generate a retrieval report, run `rag_service.commands.evaluate_retrieval`. See [Run the evaluation](/docs/evaluate/run-the-evaluation).
 

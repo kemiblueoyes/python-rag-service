@@ -8,15 +8,21 @@ lifecycle_status: published
 topics: [topic-evaluation]
 components: [component-evaluation-framework]
 related_pages: [EvArch, HowEv, RtrvlEv, AnsEv]
-last_modified: 2026-11-12
+last_modified: 2026-11-25
 audience: [secondary]
 ---
 
 Use this reference to look up the fields and labels used in evaluation datasets, generated reports, and human reviews.
 It defines case categories, source judgments, and the metadata used to match a human review to a saved answer run.
 
-Retrieval and answer evaluation read test cases from `evaluation/datasets/baseline.json`. The sections on this page distinguish the
-expectations stored in that dataset from the results recorded in reports.
+Retrieval and answer evaluation read test cases from `evaluation/datasets/baseline.json`. The project ships this file
+as an example for The Doc Landscape WordPress corpus, with dataset ID `doc-landscape-baseline` and version `1.7`.
+These values identify the bundled example; they aren't required values for your own dataset.
+
+Create your own dataset for your indexed content and user questions, with its own ID, version, source judgments,
+and answer expectations. [Run the evaluation](/docs/evaluate/run-the-evaluation#prepare-your-dataset) explains how
+to prepare it. The fields on this page apply to both your dataset and the bundled example, and distinguish
+stored expectations from recorded results.
 
 ## Dataset and case fields
 
@@ -27,7 +33,7 @@ The evaluation dataset is one JSON object. These fields identify the dataset and
 | Field | Type | Required | Default | Accepted values | Description |
 | --- | --- | --- | --- | --- | --- |
 | `dataset_id` | string | Yes | none | Any string | Identifies the evaluation dataset. Reports and human reviews copy this value. |
-| `version` | string | Yes | none | Any string | Identifies the dataset version. Reports store it as `dataset_version`. A comparison uses the same version. |
+| `version` | string | Yes | none | Any string | Identifies the dataset version. Reports store it as `dataset_version`. A direct comparison uses the same dataset ID and version. |
 | `description` | string or null | No | `null` | Any string, or `null` | Describes the dataset. The commands don't copy this field into reports. |
 | `cases` | array of objects | Yes | none | An array of test-case objects, including an empty array | Holds the test cases. See [Evaluation test-case fields](#evaluation-test-case-fields) table for those fields. |
 
@@ -134,8 +140,9 @@ The answer report stores it as `actual_sufficient_evidence`. `sufficiency_correc
 expected_sufficient_evidence.
 
 The dataset model doesn't require `expect_empty` and `expected_sufficient_evidence` to agree.
+The bundled example dataset pairs them as shown in this table.
 
-| Baseline case | `expect_empty` | `expected_sufficient_evidence` |
+| Example dataset case | `expect_empty` | `expected_sufficient_evidence` |
 |---|---|---|
 | Answerable | `false` | `true` |
 | Expected-empty | `true` | `false` |

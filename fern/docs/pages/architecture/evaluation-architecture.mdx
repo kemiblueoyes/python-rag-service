@@ -107,8 +107,15 @@ flowchart TD
 
 ## The shared dataset
 
-Both live evaluations load `evaluation/datasets/baseline.json`. The file is one versioned dataset. Each test case
-has a query, optional filters, retrieval expectations, and, in the current dataset, an answer expectation.
+Both live evaluations load `evaluation/datasets/baseline.json`. The project ships this file as an example dataset
+for The Doc Landscape WordPress corpus, with ID `doc-landscape-baseline` and version `1.7`. These values identify
+the bundled example. Each test case has a query, optional filters, retrieval expectations, and, in the bundled
+example, an answer expectation.
+
+Create your own dataset for your indexed content and user questions, with its own ID and version. Use the example
+to understand the format, then define your own queries, source judgments, and answer expectations.
+[Run the evaluation](/docs/evaluate/run-the-evaluation#prepare-your-dataset) explains how to place your dataset
+at the path the commands read, or use the bundled example with an index of The Doc Landscape’s public content.
 
 The retrieval expectation names relevant and nonrelevant sources and sets `expect_empty`. The answer expectation
 sets `expected_sufficient_evidence` and lists required points for human review. Reports copy the dataset ID and
@@ -152,7 +159,7 @@ Separate reports make these outcomes visible.
 
 ## Expected-empty cases
 
-An expected-empty case sets `expect_empty` to `true` and lists no relevant sources. The current dataset pairs that
+An expected-empty case sets `expect_empty` to `true` and lists no relevant sources. The bundled example dataset pairs that
 flag with `expected_sufficient_evidence` set to `false`. The dataset model doesn't require the two fields to match.
 
 Retrieval evaluation runs the case through the current retrieval pipeline, including the support gate. The case passes
@@ -229,7 +236,7 @@ service's support gate.
 
 Both baseline reports record the dataset ID and version, run timestamp, Qdrant collection, embedding model,
 support cutoff, and requested chunk count. The answer report also records the generation model. Separate runs
-can use different dataset versions. When comparing runs, use the same dataset version and account for changes
+can use different dataset versions. When comparing runs, use the same dataset ID and version and account for changes
 to the indexed content, models, and retrieval settings.
 
 Each baseline command overwrites its report files. Save copies before rerunning if you need to retain an earlier
@@ -240,12 +247,12 @@ under `data/evaluation/latest/`. Git ignores `/data/`, so these files aren’t c
 ## Next steps
 
 **[Run the evaluation](/docs/evaluate/run-the-evaluation)**: Produce a retrieval run, an answer run, or the
-qualitative report.
+qualitative report using your own dataset or the bundled example.
 
 ## Related pages
 
 - **[Retrieval evaluation](/docs/evaluate/retrieval-evaluation)**: Look up retrieval metrics and the case success rule.
 - **[Answer evaluation](/docs/evaluate/answer-evaluation)**: Look up the structural checks and the qualitative scores.
-- **[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Read the recorded results for the current dataset version.
+- **[Current evaluation results](/docs/evaluate/recorded-evaluation-results)**: Read the recorded results for the bundled example dataset.
 - **[How evaluation works](/docs/evaluate/how-evaluation-works)**: See what the dataset measures and why the checks stay separate.
 - **[Evaluation framework reference](/docs/reference/evaluation-framework-reference)**: Look up the dataset, report, and human-review fields for this architecture.

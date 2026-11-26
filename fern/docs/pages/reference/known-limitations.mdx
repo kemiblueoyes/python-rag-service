@@ -191,12 +191,14 @@ See [Prepare and verify your policy and baseline](/docs/operations/set-up-n8n-wo
 
 ## Evaluation scope
 
-The recorded benchmark covers 22 cases on The Doc Landscape corpus. Its results don't establish quality for other corpora or query patterns.
+The recorded benchmark uses the bundled example dataset, `doc-landscape-baseline` version `1.7`, which covers
+22 cases on The Doc Landscape corpus. Its results don't establish quality for other corpora or query patterns.
 
 Retrieval and answer evaluation were recorded in separate runs. The snapshots don't establish that both used identical indexed content.
 Human review covers one set of 14 answers and doesn't measure consistency across repeated generation runs.
 
-Evaluate your own corpus and representative queries before relying on the recorded rates.
+Create your own dataset with representative queries and source judgments for your indexed content, then evaluate
+your deployment. Use the recorded rates as examples of results for the bundled dataset.
 See [Recorded evaluation results](/docs/evaluate/recorded-evaluation-results) for run conditions and comparison limits,
 and [Run the evaluation](/docs/evaluate/run-the-evaluation) to generate your own reports.
 
