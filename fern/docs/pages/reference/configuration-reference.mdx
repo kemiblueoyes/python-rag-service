@@ -9,7 +9,7 @@ topics: [topic-configuration]
 components: [component-wordpress-connector, component-retrieval-service, component-vector-database, component-embedding-provider, component-language-model-provider]
 next_steps: [IndxWP]
 related_pages: [ConfSrv, Auth, RtrvPipe, TmeOutRtr, IntWP]
-last_modified: 2026-11-25
+last_modified: 2026-11-27
 audience: [primary, secondary]
 ---
 
@@ -145,6 +145,14 @@ The WordPress client calls the Python service from PHP. Define these constants i
 | `RAG_SERVICE_SEARCH_REQUESTS_PER_MINUTE` | PHP integer constant | No | `30` | An integer of 1 or greater | Sets how many Search requests this WordPress site forwards to Python per minute. All visitors share that allowance. An invalid value stops Search from calling Python. |
 | `RAG_SERVICE_ANSWER_REQUESTS_PER_MINUTE` | PHP integer constant | No | `10` | An integer of 1 or greater | Sets how many Ask requests this WordPress site forwards to Python per minute. All visitors share that allowance. An invalid value stops Ask from calling Python. |
 
+## Operations and automation
+
+The operations runner uses the application settings listed above. The optional n8n workflows require additional configuration in
+Docker Compose, n8n, and retrieval quality policy files.
+
+- **[Run the operations runner](/docs/operations/run-operations-runner)**: Configure authentication and start the operations runner.
+- **[Set up n8n workflow](/docs/operations/set-up-n8n-workflow)**: Configure scheduling, retrieval quality policies, credentials, and failure notifications.
+
 ## Constraints and notes
 
 ### Settings load
@@ -153,6 +161,7 @@ The process reads environment variables and `.env` before it accepts traffic.
 A value of the wrong type, an unsupported provider, or an unreadable `.env` line stops the process.
 The diagnostic names the setting, or the `.env` line when the process can't read that line, and it states the correction.
 It doesn't include the supplied value, the settings dictionary, or the parser exception.
+
 Missing credentials and a missing chunk file don't prevent importing the application or generating OpenAPI.
 Those gaps fail the later startup check. Invalid values aren't replaced with defaults.
 
@@ -211,8 +220,9 @@ The other route keeps its own limit.
 Each route has one row in `{prefix}rag_service_rate_limits` in the WordPress database. The stored
 minute only moves forward. A reservation for an earlier minute is rejected, including after cleanup
 on either route. Admission uses the stored count, so a connection that reports an unchanged row as
-a match still rejects a full minute. The plugin doesn't change that connection's flags. Concurrent
-PHP workers share the row. The window is one minute. A new minute can admit a full allowance
+a match still rejects a full minute. The plugin doesn't change that connection's flags.
+
+Concurrent PHP workers share the row. The window is one minute. A new minute can admit a full allowance
 immediately, so traffic across that boundary can reach twice the configured limit. See
 [Integrate with WordPress](/docs/integrate/integrate-with-wordpress) for storage setup on an
 already-active plugin, the visitor error messages, and what these limits don't cover.

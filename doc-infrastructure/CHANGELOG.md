@@ -1,5 +1,10 @@
 # Doc infrastructure changelog
 
+## Flowchart colors publish from CI (2026-11-27)
+
+- On `main`, CI runs `python doc-infrastructure/scripts/fern_mermaid.py prepare` before it publishes documentation.
+The command stages `.generated/fern/` with shared flowchart colors, and CI publishes that copy.
+
 ## Changelog and glossary skills added (2026-11-27)
 
 - The `add-changelog-entry` skill adds a release note in `fern/docs/pages/changelog/` from pull requests, commits, diffs, or supplied context. It follows the release-note template and the documentation style guide.

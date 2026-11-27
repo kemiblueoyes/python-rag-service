@@ -2,7 +2,7 @@
 
 `doc-infrastructure/scripts/fern_mermaid.py` adds shared colors to flowchart diagrams. You assign a class to each node. The script reads the colors from [`mermaid-theme.json`](mermaid-theme.json) and writes them into a copy of the site. Files under `fern/` stay as you wrote them.
 
-The copy is `.generated/fern/`. Preview and publish the copy when you want these colors. The folder is gitignored.
+The copy is `.generated/fern/`. Use it to preview colors locally. The folder is gitignored. Diagram edits, new diagrams, and palette changes publish through git: commit them, integrate into `main`, and push. CI stages this copy and publishes it. Do not publish with `python3 doc-infrastructure/scripts/fern_mermaid.py publish`.
 
 ## Assign a class in the diagram
 
@@ -66,14 +66,15 @@ python3 doc-infrastructure/scripts/fern_mermaid.py prepare
 # Rebuild the copy about every 0.75 seconds, then run fern docs dev inside it
 python3 doc-infrastructure/scripts/fern_mermaid.py dev
 
-# Check, preview, or publish that copy
+# Check the copy, or create a hosted preview
 python3 doc-infrastructure/scripts/fern_mermaid.py check
 python3 doc-infrastructure/scripts/fern_mermaid.py preview
-python3 doc-infrastructure/scripts/fern_mermaid.py publish
 ```
 
-`dev` re-reads `mermaid-theme.json` and the pages on each pass. Stop it with Ctrl+C. `check` runs `fern check`. `preview` runs `fern generate --docs --preview`. `publish` runs `fern generate --docs`.
+`dev` re-reads `mermaid-theme.json` and the pages on each pass. Stop it with Ctrl+C. `check` runs `fern check`. `preview` runs `fern generate --docs --preview`.
 
-For any other Fern command, run `prepare`, then run that command with `.generated/fern` as the working directory.
+Publish through git. Commit page changes under `fern/` and palette changes in `mermaid-theme.json`, then integrate them into `main` and push. On that push, CI runs `prepare` and publishes `.generated/fern/`. The same publication runs when CI is started manually on `main`.
+
+For any other local Fern command, run `prepare`, then run that command with `.generated/fern` as the working directory.
 
 Check the result in Fern light mode and dark mode.

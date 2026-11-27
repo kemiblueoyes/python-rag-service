@@ -298,33 +298,17 @@ For the authored site directly:
 fern docs dev
 ```
 
-For shared flowchart colors, use the Mermaid wrapper instead:
+### Mermaid wrapper
+
+Preview shared flowchart colors with the wrapper instead of `fern docs dev`:
 
 ```bash
 python3 doc-infrastructure/scripts/fern_mermaid.py dev
 ```
 
-The wrapper copies `fern/` into `.generated/fern/`, injects palette definitions
-into `flowchart` and `graph` blocks, and refreshes the copy as sources or the
-palette change. It preserves authored sources and leaves other diagram types
-unchanged. Stop the preview with Ctrl+C.
-
-Assign semantic classes such as `core`, `artifact`, or `external` to diagram
-nodes. Keep colors in the palette; see the style guide's diagram conventions
-and [Mermaid guide](diagram-styles/README.md) for commands and limitations.
-
-Review navigation, links, tables, components, code examples, and diagrams in
-light and dark modes. For a styled copy without starting a server:
-
-```bash
-python3 doc-infrastructure/scripts/fern_mermaid.py prepare
-python3 doc-infrastructure/scripts/fern_mermaid.py check
-```
-
-These commands write the ignored `.generated/fern/` directory. The wrapper's
-`preview` creates a hosted preview and `publish` publishes documentation; they
-are external actions, not local validation. Current CI publishes `fern/`
-directly and does not invoke the Mermaid wrapper.
+Stop it with Ctrl+C. Review navigation, links, tables, components, code
+examples, and diagrams in light and dark modes. Classes, other commands, and
+publication infromation are in the [Mermaid guide](diagram-styles/README.md).
 
 ## Validate changes
 

@@ -9,23 +9,26 @@ topics: [topic-architecture]
 components: [component-wordpress-connector, component-indexing-pipeline, component-retrieval-service, component-answer-generation-service, component-public-api, component-wordpress-client]
 next_steps: [IndxPipe]
 related_pages: [IntApp, IntWP]
-last_modified: 2026-10-07
+last_modified: 2026-11-27
 audience: [secondary]
 ---
 
-The Python RAG Service indexes documentation, retrieves relevant chunks, and generates grounded answers. This page
-explains the major components, the boundaries between them, and how content and requests move through the system.
+The Python RAG Service indexes documentation, retrieves relevant chunks, and generates grounded answers. It also
+supports incremental indexing and retrieval evaluation through a separate operations runner.
 
-WordPress is the first content source and the first client. Indexing, retrieval, and answer generation work from a
-platform-neutral document model, so another content source or client can use the same core later.
+WordPress is the first content source and the first client. The platform-neutral design allows other content sources
+and clients to use the same core capabilities.
 
-The system architecture diagram shows the two main flows through the system. Indexing writes retrieval-ready data. A later search or
-answer request reads that data. An answer request also calls a language model. Solid arrows stay inside the service or
-between the service and a client. Dashed arrows are calls to Voyage AI or OpenAI.
+The system architecture diagram shows three main flows:
+
+- **Content flow:** Source documentation moves through indexing and into the stores used for retrieval.
+- **Request flow:** Search and answer requests move through retrieval, answer generation when applicable, and the public API.
+- **Operations flow:** The operations runner executes indexing and retrieval evaluation jobs. The optional n8n
+workflow coordinates these jobs, checks retrieval quality, and handles reporting.
 
 <Frame caption="Python RAG Service system architecture">
   <img
-    src="../../assets/images/system-architecture-diagram.png"
+    src="../../assets/images/system-architecture-diagram-11-27-26.png"
     alt="Python RAG Service system architecture diagram"
   />
 </Frame>
@@ -69,6 +72,7 @@ response formats.
 
 The WordPress connector handles source ingestion. The WordPress client is a
 separate component that sends search and answer requests through the public API.
+The public API refreshes its lexical index on the next request after the chunk file changes.
 
 ## Retrieval service
 
@@ -131,6 +135,19 @@ responsibilities of the RAG service.
 Other applications can use the same public API without WordPress. The plugin is
 one example of a client built on that boundary.
 
+## Operations and automation
+
+The operations runner executes incremental WordPress indexing and retrieval evaluation jobs. It runs separately
+from the public API and uses its own authentication key. Scripts and HTTP clients can submit jobs and poll their status.
+
+The optional n8n automation layer schedules indexing, triggers retrieval evaluation after content changes, compares
+evaluation results against an approved baseline, and coordinates regression reporting and failure alerts.
+
+The operations runner and automation layer reuse the existing indexing and evaluation components without becoming
+part of the search and answer request flow.
+
+See [Operations overview](/docs/operations/overview) for the component relationships and operations workflow.
+
 ## What each component owns
 
 The sections on this page follow content and requests through the system. This table names the components responsible for each part of that work.
@@ -144,6 +161,8 @@ The sections on this page follow content and requests through the system. This t
 | **Public API** | Exposing search, answer, and health endpoints; authentication; request validation; and public error responses. |
 | **WordPress client** | Sending search and answer requests from WordPress and rendering results, answers, links, and citations for users. |
 | **External providers** | Supplying embeddings and reranking through Voyage AI, vector storage through Qdrant, and language-model generation through OpenAI. |
+| **Operations runner** | Executing indexing and retrieval evaluation jobs, managing job status, and storing job results.|
+| **Automation layer (n8n)** | Scheduling, job coordination, retrieval quality policy checks, regression reporting, and failure notifications.|
 
 These boundaries keep source-specific and client-specific behavior outside the core retrieval and answer-generation logic.
 Provider interfaces also let the service change embeddings, vector storage, reranking, or language-model implementations without

@@ -203,9 +203,22 @@ jobs:
           FERN_VERSION=$(node -p "require('./fern/fern.config.json').version")
           npm install -g "fern-api@${FERN_VERSION}"
 
+      # Install Python for the Mermaid preprocessor (stdlib only, no project deps)
+      - name: Set up Python for Mermaid preprocessing
+        if: steps.current-commit.outputs.current == 'true'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      # Stage .generated/fern and inject shared flowchart class colors
+      - name: Prepare Fern documentation with Mermaid styles
+        if: steps.current-commit.outputs.current == 'true'
+        run: python doc-infrastructure/scripts/fern_mermaid.py prepare
+
       - name: Publish production documentation
         id: publish
         if: steps.current-commit.outputs.current == 'true'
+        working-directory: .generated/fern
         env:
           FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
         run: |

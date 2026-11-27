@@ -6,7 +6,7 @@ This review is advisory. Report meaningful style issues, not personal writing pr
 
 ## Before reviewing
 
-1. Read the project style guide at `doc-infrastructure/style-guide.md`.
+1. Read the project style guide and technical accuracy guide at `doc-infrastructure/style-guide.md` and `doc-infrastructure/technical-accuracy-rules.md`.
 2. Read the project terminology guidance at `doc-infrastructure/terminology.md`.
 3. Read the documentation page being reviewed.
 4. Read the relevant content-type template to understand the page's purpose and expected kind of content.

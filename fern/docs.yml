@@ -113,18 +113,6 @@ navigation:
             path: docs/pages/evaluate/answer-evaluation.mdx
           - page: Recorded evaluation results
             path: docs/pages/evaluate/recorded-evaluation-results.mdx
-      - section: Architecture
-        contents:
-          - page: System architecture
-            path: docs/pages/architecture/system-architecture.mdx
-          - page: Indexing pipeline
-            path: docs/pages/architecture/indexing-pipeline.mdx
-          - page: Retrieval pipeline
-            path: docs/pages/architecture/retrieval-pipeline.mdx
-          - page: Answer generation and citations
-            path: docs/pages/architecture/answer-generation-and-citations.mdx
-          - page: Evaluation architecture
-            path: docs/pages/architecture/evaluation-architecture.mdx
       - section: Operations
         contents:
           - page: Overview
@@ -138,6 +126,18 @@ navigation:
           - page: How the n8n workflow works
             path: docs/pages/operations/how-n8n-workflow-works.mdx
             slug: how-n8n-workflow-works
+      - section: Architecture
+        contents:
+          - page: System architecture
+            path: docs/pages/architecture/system-architecture.mdx
+          - page: Indexing pipeline
+            path: docs/pages/architecture/indexing-pipeline.mdx
+          - page: Retrieval pipeline
+            path: docs/pages/architecture/retrieval-pipeline.mdx
+          - page: Answer generation and citations
+            path: docs/pages/architecture/answer-generation-and-citations.mdx
+          - page: Evaluation architecture
+            path: docs/pages/architecture/evaluation-architecture.mdx
       - section: Reference
         contents:
           - page: Known limitations

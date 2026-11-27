@@ -7,7 +7,7 @@ such as `content_type` and `subtitle`. Do not invent missing metadata. `last_mod
 
 Before writing:
 
-1. Read the project style guide at `doc-infrastructure/style-guide.md`.
+1. Read the project style guide and technical accuracy guide at `doc-infrastructure/style-guide.md` and `doc-infrastructure/technical-accuracy-rules.md`
 2. Read the content-type template specified in the request.
 3. Read the Fern/platform rules at `doc-infrastructure/fern-platform-rules.md`.
 4. Review the product sources provided in the request.

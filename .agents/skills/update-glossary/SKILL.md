@@ -41,9 +41,12 @@ concepts readers need to understand the capabilities, rather than listing every
 class, setting, command, or implementation detail.
 
 At the end of Step 3, recommend additions or revisions with a brief reason and
-supporting file references to the relevant help documentation. Include implementation references only when the documentation is missing, insufficient, or inconsistent with the implementation, or when a technical claim requires additional evidence. Identify existing entry IDs for revisions and note
-relevant concepts already adequately covered. Do not force additions when the
-existing glossary is sufficient. State any limits on the sources reviewed.
+supporting file references to the relevant help documentation. Include implementation
+references only when the documentation is missing, insufficient, or inconsistent with
+the implementation, or when a technical claim requires additional evidence. Identify
+existing entry IDs for revisions and note relevant concepts already adequately covered.
+Do not force additions when the existing glossary is sufficient. State any limits on the
+sources reviewed.
 
 Continue to Step 4 to draft the recommended changes and Step 5 to present them
 for approval. Keep recommendations and drafts read-only until the user approves
