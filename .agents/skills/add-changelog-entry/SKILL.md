@@ -9,124 +9,134 @@ description: >
 
 # Add a changelog entry
 
-Create a concise, evidence-backed release note using
-`doc-infrastructure/templates/release-note.mdx`. Read the current template
-when invoked; do not substitute a generic changelog format or copy an older
-entry's structure over the template.
+Create a concise, evidence-backed release note that follows the repository's
+release-note template and documentation style guide.
 
-## Establish the change and its evidence
+Include changes that affect consumers of the Python RAG Service or significantly
+improve their documentation experience. Exclude internal documentation tooling, agent skills,
+authoring workflows, and infrastructure changes unless they directly affect users.
 
-Follow the checkout and preservation instructions in `AGENTS.md`. Verify the
-repository path, branch, and existing changes before editing.
+## Step 1: Review repository instructions and guides
 
-Read:
+Follow `AGENTS.md`. Verify the repository path, branch, and existing changes
+before editing. Preserve pre-existing work.
+
+Read the current versions of:
 
 - `doc-infrastructure/README.md` for page creation, generation, and validation.
 - `doc-infrastructure/content-model.yml` for metadata and relationship rules.
 - `doc-infrastructure/templates/release-note.mdx` for structure.
-- The style, technical accuracy, terminology, and Fern platform guides in
-  `doc-infrastructure/`.
-- Existing entries in `fern/docs/pages/changelog/`, the page registry, and
-  relevant navigation in `fern/docs.yml`.
+- The style guide (`style-guide`), technical accuracy, terminology, and Fern
+  platform guides in `doc-infrastructure/`.
+- Existing changelog entries, the page registry, and the changelog configuration
+  in `fern/docs.yml`.
 
-Use the supplied PRs, commits, diffs, or narrative to establish the intended
-scope. For PRs, inspect their descriptions, status, and changed code using
-available GitHub tools or local evidence. For commits or ranges, inspect the
-actual diff and relevant tests, not just commit subjects. Combine overlapping
-PR and commit evidence without counting the same change twice. Do not expand
-to unrelated recent commits unless the user requests a broader release summary.
+Read the full style guide before drafting. Apply its applicable rules to the
+frontmatter text, headings, body, lists, links, and terminology. Use existing
+entries for context, not as substitutes for the template or style guide. If
+required guidance is missing or inaccessible, report the blocker rather than
+silently substituting generic guidance.
 
-Check behavior claims against the relevant implementation at the target
-revision. Separate implemented changes from proposed or unmerged work. A merged
-PR or commit alone does not prove deployment or establish a release version.
-For narrative-only input, draft the supported claims and identify any details
-that cannot be verified. Ask only for missing facts that materially affect the
-entry, such as an ambiguous release scope, date, or contradictory behavior.
-Do not invent version numbers, performance gains, compatibility guarantees,
-migration steps, or resolved issues.
+## Step 2: Establish the change and its evidence
 
-Keep a compact mapping of substantive claims to source PRs, commits, files,
-or supplied context for the review summary. Public prose should explain user
-impact; include source links only where they help readers.
+Use the supplied PRs, commits, diffs, or narrative to establish the scope.
+Inspect PR descriptions, status, changed code, and relevant tests, or the
+actual commit diff. Deduplicate overlapping evidence and exclude unrelated
+changes unless the user requests a broader release summary.
 
-## Choose the entry and metadata
+Verify behavior against the implementation at the target revision. Distinguish
+implemented changes from proposed work. A merged PR or commit does not prove
+deployment or establish a release version.
 
-Use `fern/docs/pages/changelog/YYYY-MM-DD.mdx`, following the existing dated
-entry convention. Use the supplied release date when available. Otherwise use
-the user's current date for a new draft and state that assumption; do not
-present it as a verified historical release date. The filename's release date
-and the generated `last_modified` date serve different purposes.
+For narrative-only input, use supported claims and flag unverified details.
+Ask only for missing facts that materially affect the entry. Do not invent
+versions, performance gains, compatibility guarantees, migration steps, or
+resolved issues. Keep a compact mapping of substantive claims to evidence for
+the review summary.
 
-Inspect any entry already at that path before writing. Extend it only when it
-covers the same release and the requested addition belongs there. Preserve its
-ID and existing content. If it represents a different release, resolve the
-intended date or grouping with the user rather than overwriting it or inventing
-a filename suffix that Fern may not recognize.
+## Step 3: Choose the entry and metadata
 
-Choose a unique stable page ID, a specific title, a brief impact-focused
-subtitle, and a searchable description. Set `content_type: release_note` and
-include the required `tags`. Select controlled `topics`, `components`, and
-`audience` from the content model based on substantive content. Consider
-`topic-release-history` when it remains an approved value. Tags are release
-labels; do not assume they use the topic vocabulary. Include `version` only
-when the change is tied to a verified application version.
+Use `fern/docs/pages/changelog/YYYY-MM-DD.mdx`. Use the supplied release date
+or, for a new draft, the user's current date and disclose that assumption.
+The release date and generated `last_modified` date serve different purposes.
 
-For a new file, use the documented `create_doc_page` command with the selected
-metadata and path. It creates frontmatter and updates the registry; add the
-subtitle, tags, and template body yourself. Do not rerun it for an existing
-entry. Start new entries with `lifecycle_status: draft`; preserve the lifecycle
-of existing entries unless the requested work calls for changing it. Complete
-the requested draft in one pass unless the user requests staged review.
+Inspect any existing entry at that path. Extend it only if it covers the same
+release, preserving its ID and unrelated content. If it covers a different
+release, clarify the date or grouping rather than overwriting it.
 
-## Write the release note
+Choose a unique stable page ID, specific title, brief impact-focused subtitle,
+and searchable description. Set `content_type: release_note` and include the
+required `tags`. Select `topics`, `components`, and `audience` from the content
+model. Consider `topic-release-history` if approved. Tags are release labels,
+not necessarily topic values. Include `version` only if verified.
 
-Start with a short summary of what changed and why it matters. Fern supplies
-the H1. Follow the current template's H2 sections and order:
+For a new entry, use the documented `create_doc_page` command to create the
+frontmatter and update the registry. Add the subtitle, tags, and template body.
+Do not rerun the command for an existing entry. Set new entries to
+`lifecycle_status: draft` and preserve the lifecycle status of existing entries
+unless a status change is requested and approved in Step 6.
 
-1. **What's changed** — required. Explain new behavior, fixes, or improvements
-   in terms of observable user impact. Group related changes; avoid a raw
-   commit list. Where useful, describe the previous and new behavior.
-2. **Breaking changes** — include only for supported compatibility changes.
-3. **Upgrade or migration** — include only when adoption requires action.
-   Verify commands, configuration names, defaults, and sequencing.
-4. **Known issues** — include only for relevant unresolved limitations or
-   workarounds supported by the evidence.
-5. **Related documentation** — required. Link to useful existing pages using
-   published site paths, with the template's bold linked title and one-sentence
-   explanation. Use a bullet list when there is more than one link.
+## Step 4: Write the release note
 
-Remove template placeholders and the literal optional markers from headings.
-Omit inapplicable optional sections rather than filling them with boilerplate.
-Use registered page IDs for `related_pages` and verify that the linked pages
-actually explain the changed behavior. Flag stale related documentation in the
-handoff without silently expanding into a documentation rewrite. Keep recorded
-evaluation results scoped to their specific runs and configurations.
+Follow the current release-note template and apply the style guide throughout
+writing. Start with a short summary of what changed and why it matters. Fern
+supplies the H1. Use the template's H2 sections in order:
 
-## Integrate and validate
+1. **What's changed** — required. Explain observable user impact. Group related
+   changes rather than listing commits. Contrast previous and new behavior
+   where useful.
+2. **Breaking changes** — include only verified compatibility changes.
+3. **Upgrade or migration** — include only when users must take action. Verify
+   commands, configuration names, defaults, and sequencing.
+4. **Known issues** — include only supported unresolved limitations or
+   workarounds.
+5. **Related documentation** — required. Use published site paths, bold linked
+   titles, and one-sentence explanations. Use a list for multiple links.
 
-Fern already reads the changelog directory through the changelog tab in
-`fern/docs.yml`. Confirm that configuration; do not add an ordinary navigation
-entry for each release note.
+Remove placeholders and optional markers. Omit inapplicable sections. Use
+registered page IDs for `related_pages` and verify related links. Flag stale
+related documentation without expanding the task into a documentation rewrite.
+Keep evaluation results scoped to the specific runs and configurations. Include
+source links in public prose only where useful to readers.
 
-Regenerate the page registry if it was not already updated by page creation or
-if IDs or content types changed. Generate `last_modified` with the documented
-command; do not hand-edit generated metadata or registry output. Review generator
-diffs for unrelated changes and preserve pre-existing work.
+## Step 5: Review and validate the draft
 
-Run the checks documented in `doc-infrastructure/README.md`:
+Re-read the style guide and review the written entry against its applicable
+rules. Correct violations before presenting the entry for review. Do not rely
+on linting alone to establish style-guide compliance.
+
+Check technical claims against the evidence, and verify template structure,
+metadata, and related links.
+
+Confirm the changelog configuration in `fern/docs.yml`. Do not add an ordinary
+navigation entry for each release note. Regenerate the registry if needed and
+generate `last_modified` using the documented commands. Do not hand-edit
+generated output. Inspect generator diffs for unrelated changes.
+
+Run:
 
 - `npm run lint:docs`
 - `uv run python -m rag_service.commands.documentation.validate_docs`
 
-When the user requests a publication-ready entry, resolve outstanding factual
-questions, set the completed entry to `published`, and run documentation
-validation with `--production`. Drafts may remain for local review but must be
-finalized or moved outside the published pages directory before merging, as
-specified in the repository guide. Do not equate lifecycle metadata with an
-actual deployment.
+Fix failures introduced by the change. Inspect Git status and diff. Report the
+checkout, branch, changed files, source scope, date assumptions, style-guide
+review, validation results, and any unresolved evidence gaps or unavailable
+checks. Leave changes unstaged and uncommitted unless requested otherwise.
 
-Resolve failures introduced by the change and report any remaining failures or
-checks unavailable in the environment. Inspect Git status and diff in the
-intended checkout. Leave changes unstaged and uncommitted unless requested
-otherwise. Report the checkout, branch, changed files, source scope, date
-assumptions, validation results, and any unresolved evidence gaps.
+## Step 6: Obtain approval and finalize
+
+Present the reviewed entry and ask the user to approve it for publication.
+Keep new entries in `draft` until the user approves. If revisions are requested,
+make them and repeat Step 5 before requesting approval again.
+
+After approval, resolve any outstanding factual or validation issues, set
+`lifecycle_status: published`, regenerate metadata as required by the repository
+guide, and run:
+
+- `uv run python -m rag_service.commands.documentation.validate_docs --production`
+
+Report the final lifecycle status and validation results. Do not report the
+entry as publication-ready if production validation fails. Drafts must be
+finalized or moved outside the published pages directory before merging, as
+specified in the repository guide. A `published` lifecycle status does not
+mean the entry has been deployed.
