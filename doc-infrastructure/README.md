@@ -1,64 +1,153 @@
 # Maintain the documentation
 
-Use this guide to create, update, validate, and publish the Python RAG Service documentation.
+Use this guide to choose a documentation workflow, find the project standards,
+and prepare changes for review and publication. Run commands from the repository
+root. Links in this README are relative to `doc-infrastructure/`.
 
-Run every command from the repository root. This README belongs in `doc-infrastructure/`; its file links are relative to that directory.
+## Choose a workflow
 
-## Where to make changes
-
-| Location | What it owns |
+| What you need to do | Start here |
 | --- | --- |
-| [`fern/docs/pages/`](../fern/docs/pages/) | Authored MDX pages, release notes, and the generated glossary |
-| [`fern/docs.yml`](../fern/docs.yml) | Site navigation, URL structure, branding, and publishing instance |
-| [`fern/docs/snippets/`](../fern/docs/snippets/) | Content reused across pages |
-| [`templates/`](templates/) | Expected structure for each content type |
-| [`prompts/`](prompts/) | Optional AI prompts for authoring pages and reviewing style, plus starter input lists |
-| [`content-model.yml`](content-model.yml) | Required metadata and allowed values |
-| [`style-guide.md`](style-guide.md), [`terminology.md`](terminology.md), and [`fern-platform-rules.md`](fern-platform-rules.md) | Writing, terminology, and Fern authoring conventions |
-| [`technical-accuracy-rules.md`](technical-accuracy-rules.md) | Rules for verifying documented behavior, requirements, examples, and limitations |
-| [`docs/data/glossary.yml`](../docs/data/glossary.yml) | Glossary definitions and aliases |
-| [`styles/`](../styles/) and [`.vale.ini`](../.vale.ini) | Vale prose rules and configuration |
-| [`diagram-styles/mermaid-theme.json`](diagram-styles/mermaid-theme.json) | Shared Mermaid class colors for flowcharts |
-| [`scripts/fern_mermaid.py`](scripts/fern_mermaid.py) | Copies `fern/` and inserts those colors into the staged site |
-| [Documentation commands](../src/rag_service/commands/documentation/) | Page creation, metadata updates, and validation |
+| Create a guide, tutorial, explanation, or reference page | [Create a page](#create-a-page) |
+| Correct or extend an existing page | [Update an existing page](#update-an-existing-page) |
+| Document a release or user-facing change | [Add a changelog entry](#add-a-changelog-entry) |
+| Define a term or review glossary coverage for a feature | [Update terminology and the glossary](#update-terminology-and-the-glossary) |
+| Check documentation after a code or configuration change | [Review drift](#review-drift-docs-sync-audit) |
+| Refresh generated documentation | [Regenerate derived files](#regenerate-derived-files) |
+| Preview diagrams and pages | [Preview the site](#preview-the-site) |
+| Check publication readiness | [Validate changes](#validate-changes), then [Publish and verify](#publish-and-verify) |
+
+## Find the standards and sources
+
+Use the documentation map in [AGENTS.md](../AGENTS.md) to locate implementation
+and tests for the behavior being documented. Existing prose provides context;
+verify behavior claims against the relevant implementation or recorded evidence.
+
+### Writing and page design
+
+- [Content model](content-model.yml): content types, required metadata,
+  controlled vocabularies, and guidance for selecting page relationships.
+- [Style guide](style-guide.md): structure, voice, readability, cross-references,
+  acronyms, diagrams, and editorial review.
+- [Technical accuracy rules](technical-accuracy-rules.md): verification of
+  behavior, examples, configuration, limitations, and evaluation results.
+- [Terminology](terminology.md): preferred names and distinctions between
+  concepts, including operations and automation.
+- [Fern platform rules](fern-platform-rules.md): MDX, links, components, and
+  navigation conventions.
+- [Templates](templates/): content-type structures used when authoring pages.
+  The files in [test-templates](templates/test-templates/) are validator fixtures,
+  not alternative authoring templates or published pages.
+
+### Content and configuration
+
+| Location | Purpose |
+| --- | --- |
+| [Page sources](../fern/docs/pages/) | Authored MDX, changelog entries, and the generated glossary |
+| [Site configuration](../fern/docs.yml) | Navigation, URLs, tabs, branding, and publishing instance |
+| [Shared snippets](../fern/docs/snippets/) | Reusable content included by pages |
+| [Page registry](page-registry.yml) | Generated page IDs and content types for metadata relationships |
+| [Glossary source](../docs/data/glossary.yml) | Definitions, examples, aliases, and related terms |
+| [OpenAPI specification](../fern/openapi.yml) | Generated API contract used by Fern |
+| [Vale styles](../styles/) and [configuration](../.vale.ini) | Automated prose and terminology checks |
+| [Mermaid palette](diagram-styles/mermaid-theme.json) | Shared flowchart class colors |
+| [Site CSS](../fern/styles.css) | Site presentation, including Mermaid styling |
+| [Documentation commands](../src/rag_service/commands/documentation/) | Page initialization, metadata, registry generation, and validation |
+
+## Work with an agent
+
+The repository skills live in [.agents/skills](../.agents/skills/). Their
+`SKILL.md` files define the current workflow and approval checkpoints. The
+commands and source ownership described here apply whether you work manually
+or with an agent.
+
+### Create new pages: author-doc-page
+
+Use [author-doc-page](../.agents/skills/author-doc-page/SKILL.md) for a new page,
+including a page already initialized with frontmatter only. It does not apply
+to updates to existing authored documentation.
+
+The skill proceeds through outline, draft, final draft, and metadata and
+relationship finalization. It requests approval at the checkpoints defined in
+the skill. Pages remain `draft` through final-draft review, then move to `review`;
+final approval moves them to `published` and triggers production validation.
+It also requests approval before changing relationships on other pages.
+
+### Review drift: docs-sync-audit
+
+Use [docs-sync-audit](../.agents/skills/docs-sync-audit/SKILL.md) to compare docs
+with a feature, PR, branch, release, API, configuration, command, or repository
+area. It reports evidence from both documentation and implementation and states
+coverage limits. The audit is read-only unless updates are requested.
+
+### Maintain definitions: update-glossary
+
+Use [update-glossary](../.agents/skills/update-glossary/SKILL.md) for named terms
+or a feature area that may need glossary additions or revisions. It reviews
+terminology, existing definitions, documentation, and relevant implementation;
+then presents proposed YAML entries and terminology issues together for review.
+It applies only approved entries and runs the glossary generator and checks.
+
+### Document releases: add-changelog-entry
+
+Use [add-changelog-entry](../.agents/skills/add-changelog-entry/SKILL.md) for
+release notes based on PRs, commits, diffs, or supplied context. It follows the
+release-note template, verifies user-facing claims, and normally completes a
+draft in one pass unless staged review is requested. Publication-ready entries
+also require production validation. It does not invent release versions or
+assume that merged code has been deployed.
+
+### Use a prompt for a narrower task
+
+The [prompts directory](prompts/) provides helpers without the skills' staged
+workflows. These prompts are transitional and will eventually be replaced
+entirely by skills. Use an existing skill when it covers the task.
+
+The current prompts are:
+
+- [Author documentation](prompts/author-doc-page.md): create or substantially
+  update a page using supplied metadata, a template, and product sources.
+- [Review documentation style](prompts/review-doc-style.md): advisory review of
+  clarity, audience fit, technical depth, duplication, and unsupported claims.
+- [Input lists](prompts/copy-paste-inputs.md): prepare context for those prompts.
+
+Provide the page goal, relevant source material, template, and metadata requested
+by the prompt. Review the result and run the applicable checks; prompts do not
+replace technical verification or validation.
 
 ## Set up the tools
 
-Use a Git checkout with its history available; date generation reads Git history.
-
-Install Python 3.12, uv, Node.js 22, and npm. Then install the locked project dependencies:
+Use a Git checkout with history available; date generation reads that history.
+Match the versions installed by [CI](../.github/workflows/ci.yml): Python 3.12,
+Node.js 22, the pinned Fern CLI, and Vale 3.22.0. Install uv and npm, then run:
 
 ```bash
 uv sync --dev --locked
 npm ci
-```
-
-Install the Fern CLI version recorded in `fern/fern.config.json`:
-
-```bash
 FERN_VERSION=$(node -p "require('./fern/fern.config.json').version")
 npm install -g "fern-api@${FERN_VERSION}"
 ```
 
-Install Vale to match the version in the [CI workflow](../.github/workflows/ci.yml), currently `3.22.0`. The repository already includes the Microsoft and project style files. Check that the CLI is available:
+Install Vale from the [Vale 3.22.0 release](https://github.com/vale-cli/vale/releases/tag/v3.22.0)
+and confirm `vale --version`. The repository includes its Microsoft and project
+styles. Local Fern preview also uses pnpm; make it available on your `PATH`.
 
-```bash
-vale --version
-```
-
-For installation options, see the [Vale releases](https://github.com/vale-cli/vale/releases/tag/v3.22.0).
-
-Local preview also requires pnpm on your `PATH`. See [Fern's preview prerequisites](https://buildwithfern.com/learn/docs/preview-publish/preview-changes) for setup.
+`npm test` is a placeholder that fails. Use the named documentation checks in
+[Validate changes](#validate-changes).
 
 ## Create a page
 
-To have an agent create a new page, use the [author-doc-page skill](../.agents/skills/author-doc-page/SKILL.md). It follows the templates and guides in this directory through an outline, a draft, a final draft, and metadata finalization, and it waits for approval before each stage. The steps below are the same work when you create the page directly.
+This section explains what a new page needs, how to choose its template, and how
+to create and connect it to the documentation site. Use it to understand the
+process or create a page manually; for guided authoring with review checkpoints,
+use the [author-doc-page skill](../.agents/skills/author-doc-page/SKILL.md).
 
-### 1. Choose the goal and template
+### Choose the purpose and template
 
-Check the documentation IA before adding a page. Define its user goal, stable page ID, content type, audience, and relationships to existing pages.
-
-Read the [style guide](style-guide.md), [technical accuracy rules](technical-accuracy-rules.md) ,[terminology](terminology.md), [Fern rules](fern-platform-rules.md), and appropriate template:
+Check navigation and existing coverage before adding a page. Establish its
+reader goal, stable ID, content type, audience, and relevant product sources.
+Use the content model to select metadata based on substantive coverage, not
+passing mentions. Distinguish prerequisites, next steps, and related reading.
 
 | Content type | Template |
 | --- | --- |
@@ -70,11 +159,13 @@ Read the [style guide](style-guide.md), [technical accuracy rules](technical-acc
 | `eval_results` | [Evaluation results](templates/evaluation-results.mdx) |
 | `release_note` | [Release note](templates/release-note.mdx) |
 
-API endpoint reference pages are generated from OpenAPI. Use the API update procedure below for those pages.
+API endpoint reference pages come from OpenAPI. Glossary entries come from
+YAML; [glossary-term.mdx](templates/glossary-term.mdx) illustrates their display
+structure rather than serving as a page to edit directly.
 
-### 2. Create the draft metadata
+### Initialize the page
 
-Adapt this example to the planned page:
+Create the page and add basic metadata. Adapt this example to the selected metadata:
 
 ```bash
 uv run python -m rag_service.commands.documentation.create_doc_page \
@@ -87,219 +178,230 @@ uv run python -m rag_service.commands.documentation.create_doc_page \
   --path fern/docs/pages/architecture/example-documentation-page.mdx
 ```
 
-The command creates a new file with `lifecycle_status: draft` and updates `page-registry.yml`. It rejects an existing file, a reused page ID, an unknown controlled value, or a path outside `fern/docs/pages/`. Filenames must use lowercase kebab-case and end in `.mdx`.
+This creates frontmatter with `lifecycle_status: draft` and updates the page
+registry. It does not insert a subtitle, date, template body, or navigation entry.
+It rejects existing files, reused IDs, unsupported controlled values, and paths
+outside `fern/docs/pages/`. Filenames use lowercase kebab-case and `.mdx`.
 
-It creates frontmatter only. It does **not** insert the selected template's body or a `subtitle`.
-
-Optional flags add `--components`, `--prerequisites`, `--next-steps`, and `--related-pages`. List flags take space-separated values. Page relationships use page IDs from the registry.
-
-For all flags:
+Optional flags include `--components`, `--prerequisites`, `--next-steps`, and
+`--related-pages`. List flags accept space-separated values; relationships use
+page IDs. Inspect all flags with:
 
 ```bash
 uv run python -m rag_service.commands.documentation.create_doc_page --help
 ```
 
-### 3. Write and connect the page
+### Write and connect the page
 
-1. Add the required `subtitle` and write the body using the selected template.
-2. Add type-specific metadata: `dataset_version` for evaluation results or `tags` for release notes.
-3. Check descriptions, commands, configuration, and examples against the implementation.
-4. Add an ordinary page to the appropriate section of `fern/docs.yml`. Release notes belong in `fern/docs/pages/changelog/`, which Fern reads through the changelog tab.
-5. Add or update relevant links and metadata relationships on other pages.
-6. Generate `last_modified` and validate using the procedures below.
+1. Add the required `subtitle` and the selected template's body.
+2. Add type-specific metadata, such as `dataset_version` for evaluation results
+   or `tags` for release notes.
+3. Verify behavior and examples against authoritative sources. Keep evaluation
+   findings tied to the specific dataset, configuration, and recorded run.
+4. Add ordinary pages to `fern/docs.yml`. Changelog entries use the existing
+   changelog tab instead of individual navigation entries.
+5. Add useful links and page relationships. Keep page IDs stable.
+6. Generate dates, preview, and validate using the procedures in this guide.
 
-Fern creates the page's H1 from its title; start the MDX body at H2. Use published site paths for links between MDX pages. Use snippets when multiple pages need identical content.
-
-Regular validation allows draft and review pages. Before merging into `main`, finish the page and set its status to `published`, or move unfinished work outside `fern/docs/pages/` and remove its navigation entries and incoming links. Production validation checks every page in that directory, even pages omitted from navigation.
+Fern supplies the H1; start MDX bodies at H2. Use published site paths for
+inter-page links and snippets for content that needs a shared source.
 
 ## Update an existing page
 
-Edit the MDX source and check the relevant product code or configuration before changing a behavior claim. Keep its page ID stable so metadata relationships continue to resolve.
+Edit the authored source and verify changed claims. Keep its ID stable. If a
+filename, URL, or navigation location changes, update navigation and incoming
+links. If an ID changes, update metadata references and regenerate the registry.
 
-After a code or configuration change, an agent can compare the documentation with the implementation using the [docs-sync-audit skill](../.agents/skills/docs-sync-audit/SKILL.md). That audit reports drift and does not edit files unless you ask it to.
+Reassess the description, subtitle, metadata, and related reading when scope
+changes. Use the writing guides and applicable template; the new-page authoring
+skill is not an existing-page editing workflow.
 
-If you change a filename, navigation location, or URL, update `fern/docs.yml` and affected links. If you change a page ID, update references to that ID as well.
-
-After editing, regenerate date metadata:
+Regenerate dates after substantive edits:
 
 ```bash
 uv run python -m rag_service.commands.documentation.update_last_modified
 ```
 
-This updates authored pages under `fern/docs/pages/`. New pages and pages with substantive uncommitted changes use today's date. Otherwise, the date comes from the latest substantive Git change. Changes only to `last_modified` are ignored.
+New authored pages and pages with substantive uncommitted changes use today's
+date; otherwise the date comes from the latest substantive Git change. Changes
+only to `last_modified` are ignored. The glossary has its own generator-owned
+date. Review all generated diffs and rerun date generation if edits or the
+relevant date change before publication.
 
-The glossary generator owns the glossary page's date. Rerun date generation if you make further edits or commit on a later date.
+## Add a changelog entry
 
-## Work with an agent
+Use `fern/docs/pages/changelog/YYYY-MM-DD.mdx` and the release-note template.
+Inspect an existing entry for that date before deciding whether to extend it.
+Preserve existing content and IDs; do not combine unrelated releases merely
+because their dates match.
 
-These skills live in `.agents/skills/` and use the guides, templates, and commands in this directory. This guide remains the source for those commands, validation, and publishing.
+Explain user impact under **What's changed**, include applicable breaking
+changes, migration steps, or known issues, and finish with **Related
+documentation**. Add required `tags`; include an application version only when
+verified. The release date in the filename and generated `last_modified` date
+serve different purposes.
 
-| Skill | When to use it |
-| --- | --- |
-| [`author-doc-page`](../.agents/skills/author-doc-page/SKILL.md) | Create a new page in `fern/docs/pages/`. The agent works through an outline, draft, final draft, and metadata finalization, and waits for approval before each stage. |
-| [`docs-sync-audit`](../.agents/skills/docs-sync-audit/SKILL.md) | Check whether documentation still matches the code, configuration, API, commands, or examples. The audit is read-only unless you ask the agent to update the docs. |
+For a new entry, initialize it with `create_doc_page`, then add the subtitle,
+tags, and template body. Fern already reads the directory through its changelog
+tab. Generate dates and validate as for other authored pages.
 
-## Optional AI authoring and review prompts
+## Update terminology and the glossary
 
-The [prompts directory](prompts/) contains shorter helpers for a single assistant request. Use them when you do not need a full skill workflow.
+Use [terminology.md](terminology.md) for naming decisions and distinctions.
+Use [glossary.yml](../docs/data/glossary.yml) for reader-facing definitions.
+Resolve conflicting terminology before applying an affected definition.
 
-| File | When to use it |
-| --- | --- |
-| [`author-doc-page.md`](prompts/author-doc-page.md) | Create or substantially update a page in one request, using its template, project writing guidance, planned metadata, and relevant product sources. For a new page with review at each stage, use the author-doc-page skill instead. |
-| [`review-doc-style.md`](prompts/review-doc-style.md) | Request an advisory review of issues that need editorial judgment, such as clarity, audience fit, technical depth, unsupported guarantees, and duplication. |
-| [`copy-paste-inputs.md`](prompts/copy-paste-inputs.md) | Start an authoring or review request with reusable input lists. Adapt them to the page and the selected prompt. |
+Check where readers encounter a candidate term in `fern/docs/pages/`, as well as
+other relevant documentation. Compare existing names, aliases, and concepts to
+avoid duplicates. Verify project-specific meaning against implementation where
+needed. Define useful concepts rather than every technical word or code symbol.
 
-Give the assistant the selected prompt, page or draft, content-type template, page goal, and relevant product sources. For authoring, also provide the planned metadata listed in the prompt.
-
-The style-review prompt complements Vale and the documentation validators by focusing on editorial judgment. Review the assistant's suggestions against the project guidance and implementation, then run the validation commands below.
-
-## Update generated files
-
-Edit each source, then run its generator. Include changed generated files in the same commit as their source changes.
-
-### Page registry
-
-After adding or removing pages, changing page IDs or content types, or archiving pages:
-
-```bash
-uv run python -m rag_service.commands.documentation.update_page_registry
-```
-
-The registry records page IDs and content types from active MDX pages, plus the generated API page IDs defined in the command. It does not control navigation. The page-creation command already updates it.
-
-### Glossary and Vale vocabulary
-
-Edit `docs/data/glossary.yml` for definitions and aliases.
-
-To allow a word in Vale without adding a glossary definition, edit `styles/config/vocabularies/RAGService/manual-accept.txt`.
-
-After either change:
+Edit the YAML source, then regenerate both the glossary and Vale vocabulary:
 
 ```bash
 uv run python scripts/generate_glossary.py
 ```
 
-This generates:
+The generator validates entries and relationships, renders
+`fern/docs/pages/reference/glossary.mdx`, and builds
+`styles/config/vocabularies/RAGService/accept.txt`. Its date is based on changes
+to parsed term data; comments and top-level metadata do not advance the date.
 
-- `fern/docs/pages/reference/glossary.mdx`
-- `styles/config/vocabularies/RAGService/accept.txt`
+For a spelling allowance without a glossary definition, edit
+[manual-accept.txt](../styles/config/vocabularies/RAGService/manual-accept.txt)
+and run the same generator. Vocabulary allowances do not override separate
+terminology rules. Edit prose rules under `styles/RAGService/` and their
+activation in `.vale.ini` when an authorized rule change is needed.
 
-Edit project prose rules in `styles/RAGService/`. Enable or disable individual rules in `.vale.ini`. Vocabulary entries allow spellings; they do not override separate terminology or substitution rules.
+## Regenerate derived files
 
-### API reference
+Edit the source of a generated file, then run its generator. Review source and
+output changes together; do not patch generated outputs by hand.
 
-Update request models, response models, route descriptions, and examples in the FastAPI source, then regenerate the specification:
+| Output | Source or trigger | Command |
+| --- | --- | --- |
+| `page-registry.yml` | Add/remove pages; change IDs, content types, or archive status | `uv run python -m rag_service.commands.documentation.update_page_registry` |
+| Authored-page `last_modified` | Substantive MDX edits and Git history | `uv run python -m rag_service.commands.documentation.update_last_modified` |
+| Glossary and Vale vocabulary | `docs/data/glossary.yml` and `styles/config/vocabularies/RAGService/manual-accept.txt` | `uv run python scripts/generate_glossary.py` |
+| `fern/openapi.yml` | FastAPI app, routes, models, and their descriptions | `uv run python -m rag_service.commands.generate_openapi` |
 
-```bash
-uv run python -m rag_service.commands.generate_openapi
-```
+All four commands support `--check`. The registry records active MDX page IDs
+and content types plus generated API page IDs; it does not control navigation.
+Page initialization already regenerates it. OpenAPI changes may also require
+updates to prose guides and request/response examples.
 
-This writes `fern/openapi.yml`, which Fern uses to generate endpoint reference pages. Update related guides and error documentation when the API behavior changes.
+## Preview the site
 
-## Style Mermaid diagrams
-
-Flowchart colors come from [`diagram-styles/mermaid-theme.json`](diagram-styles/mermaid-theme.json). [`scripts/fern_mermaid.py`](scripts/fern_mermaid.py) copies `fern/` to `.generated/fern/` and inserts `classDef` rules from that file. Pages under `fern/` stay as authored. `.generated/` is gitignored.
-
-Assign a theme class in the diagram and leave the color values in the JSON. The [style guide](style-guide.md#mermaid-diagram-color-conventions) describes which role each class represents. The class names are `core`, `vector`, `lexical`, `artifact`, `output`, `external`, `failure`, and `automation`.
-
-````mdx
-```mermaid
-flowchart TD
-    A["`**Gold evaluation dataset**`"] --> B["`**Run retrieval evaluation**`"]
-    class A artifact
-    class B core
-```
-````
-
-The script adds class definitions only to `flowchart` and `graph` blocks. Sequence diagrams and other Mermaid types are copied unchanged. A `class` line stays in the source. An existing palette `classDef` in a page is removed from the staged copy and replaced with the theme. Edit the JSON to change a color.
-
-The dashed border for `external` nodes comes from the `.node.external` rule in [`fern/styles.css`](../fern/styles.css).
-
-From the repository root:
-
-```bash
-# Styled copy for inspection
-python3 doc-infrastructure/scripts/fern_mermaid.py prepare
-
-# Local preview; syncs MDX and theme edits until Ctrl+C
-python3 doc-infrastructure/scripts/fern_mermaid.py dev
-
-# Styled publish, hosted preview, or fern check
-python3 doc-infrastructure/scripts/fern_mermaid.py publish
-python3 doc-infrastructure/scripts/fern_mermaid.py preview
-python3 doc-infrastructure/scripts/fern_mermaid.py check
-```
-
-`prepare` writes `.generated/fern/`. The other commands run Fern from that copy. For any other Fern command, run `prepare`, then run the command inside `.generated/fern`. Review styled diagrams in Fern light and dark modes.
-
-## Preview and validate
-
-Start the local preview:
+For the authored site directly:
 
 ```bash
 fern docs dev
 ```
 
-Open the URL printed in the terminal. Review navigation, layout, tables, components, code examples, and links. This previews `fern/` directly. Use the commands in [Style Mermaid diagrams](#style-mermaid-diagrams) when the page should show shared flowchart colors.
+For shared flowchart colors, use the Mermaid wrapper instead:
 
-Run the complete validation command:
+```bash
+python3 doc-infrastructure/scripts/fern_mermaid.py dev
+```
+
+The wrapper copies `fern/` into `.generated/fern/`, injects palette definitions
+into `flowchart` and `graph` blocks, and refreshes the copy as sources or the
+palette change. It preserves authored sources and leaves other diagram types
+unchanged. Stop the preview with Ctrl+C.
+
+Assign semantic classes such as `core`, `artifact`, or `external` to diagram
+nodes. Keep colors in the palette; see the style guide's diagram conventions
+and [Mermaid guide](diagram-styles/README.md) for commands and limitations.
+
+Review navigation, links, tables, components, code examples, and diagrams in
+light and dark modes. For a styled copy without starting a server:
+
+```bash
+python3 doc-infrastructure/scripts/fern_mermaid.py prepare
+python3 doc-infrastructure/scripts/fern_mermaid.py check
+```
+
+These commands write the ignored `.generated/fern/` directory. The wrapper's
+`preview` creates a hosted preview and `publish` publishes documentation; they
+are external actions, not local validation. Current CI publishes `fern/`
+directly and does not invoke the Mermaid wrapper.
+
+## Validate changes
+
+Run the complete check from the repository root:
 
 ```bash
 uv run python -m rag_service.commands.documentation.validate_docs
 ```
 
-It checks the page registry, required metadata, content-type structure, Fern authoring rules, Markdown lint, generated dates, glossary outputs, Vale, OpenAPI, and Fern configuration. It stops at a failing stage; fix that stage and rerun.
+It checks the registry, frontmatter, content-type structure, Fern authoring
+rules, MDX lint, generated dates, glossary outputs, Vale, OpenAPI freshness,
+and Fern configuration. It stops at a failing stage.
 
-Before merging or publishing:
+Before merging into `main` or publishing, run:
 
 ```bash
 uv run python -m rag_service.commands.documentation.validate_docs --production
 ```
 
-Production validation requires every MDX page under `fern/docs/pages/` to use `lifecycle_status: published` or `deprecated`. It rejects draft, review, and archived pages, and a Fern `draft` field unless absent or explicitly `false`.
+Regular validation permits draft and review pages. Production requires every
+MDX page under `fern/docs/pages/` to be `published` or `deprecated`, even when
+omitted from navigation. It rejects archived pages and a Fern `draft` value
+unless absent or explicitly `false`. Finalize unfinished pages or move them
+outside that directory and remove their navigation and incoming references.
 
-For focused checks while editing:
+### Focused checks and coverage limits
 
 | Check | Command |
 | --- | --- |
-| Markdown and MDX formatting | `npm run lint:docs` |
-| Page registry freshness | `uv run python -m rag_service.commands.documentation.update_page_registry --check` |
-| Date metadata freshness | `uv run python -m rag_service.commands.documentation.update_last_modified --check` |
+| MDX page and template formatting | `npm run lint:docs` |
+| Registry freshness | `uv run python -m rag_service.commands.documentation.update_page_registry --check` |
+| Authored dates | `uv run python -m rag_service.commands.documentation.update_last_modified --check` |
 | Glossary and vocabulary freshness | `uv run python scripts/generate_glossary.py --check` |
 | OpenAPI freshness | `uv run python -m rag_service.commands.generate_openapi --check` |
-| Prose on one page | `vale fern/docs/pages/get-started/quickstart.mdx` |
-| Fern configuration and API definition | `fern check` |
+| Prose on one help page | `vale fern/docs/pages/get-started/quickstart.mdx` |
+| Source Fern configuration and API definition | `fern check` |
 
-Use the full command before merging. A passing check does not establish that a product description is correct; verify changed behavior and runnable examples against the service.
+`lint:docs` collects only `.mdx` files in `fern/docs/pages/` and
+`doc-infrastructure/templates/`, including the template fixtures. It does not
+lint Markdown READMEs, guides, prompts, or skill files. The full validator's
+Vale pass targets `fern/docs/pages/`; it is not a review of every repository
+document. Review changed Markdown separately, including its links and commands.
+Passing validation also does not prove technical accuracy or deployed behavior.
 
-## Fix common validation failures
+### Resolve failures
 
 | Failure | Action |
 | --- | --- |
-| Missing or invalid metadata | Add required fields and use allowed values from `content-model.yml`. Check type-specific requirements. |
-| Unknown page relationship or duplicate ID | Correct the source page IDs or relationships, then regenerate the registry. |
-| Stale generated output | Run the corresponding generator above and review its diff. |
-| Content-type structure failure | Compare the page with its template and the validator's required sections. |
-| Vale finding | Follow the named rule's message. For an intentional exception, change the relevant vocabulary or rule configuration. |
-| Fern configuration or link failure | Check navigation paths, published URLs, snippet paths, and the API definition. |
-| Production lifecycle failure | Publish completed content or move unfinished and archived files outside `fern/docs/pages/`; update navigation and links. |
-| Missing CLI or dependency | Complete the tool setup above. |
+| Invalid metadata or page relationship | Check the content model and registry; correct source IDs and regenerate when necessary. |
+| Stale generated output | Run its generator and inspect the diff. |
+| Missing or misplaced sections | Compare the page with its content-type template. |
+| Vale error | Follow the named rule; make source or authorized rule changes rather than editing generated prose. |
+| Fern configuration or link failure | Check navigation, published URLs, snippet paths, and API definitions. |
+| Production lifecycle failure | Finalize the page or remove unfinished content from the published page tree. |
+| Missing command or dependency | Complete the tool setup before rerunning validation. |
 
 ## Publish and verify
 
-Publishing is handled by [GitHub Actions CI](../.github/workflows/ci.yml).
+[GitHub Actions CI](../.github/workflows/ci.yml) publishes on pushes to `main`
+and manual CI runs on `main`, after the test, WordPress MySQL rate-limit, and
+dependency-audit jobs succeed. The test job uses production documentation
+validation on `main` and regular validation on other refs.
 
-1. Review the source and generated-file changes, preview the pages, and pass production validation.
-2. Commit and merge the changes into `main`.
-3. Open **Actions > CI** and check the run for that commit.
-4. Confirm that the test job, WordPress MySQL rate-limit job, and dependency audit succeed. The test job includes production documentation validation.
-5. Confirm that **Publish Fern documentation** succeeds, then review the changed pages on the [published site](https://python-rag-service.docs.buildwithfern.com/).
-6. Check **Check published documentation links** for broken links.
+1. Review source and generated changes, preview the site, and pass production
+   validation.
+2. Follow the repository's approval process to commit and integrate changes
+   into `main`, then push when authorized.
+3. Check the CI run for that commit and **Publish Fern documentation**.
+4. Review the [published site](https://python-rag-service.docs.buildwithfern.com/)
+   and the subsequent **Check published documentation links** job.
 
-Other branches and pull requests run checks without publishing. A successful code-only change on `main` also triggers publication. Publication skips a commit if `main` already has a newer one.
+Publication skips a validated commit when remote `main` already has a newer
+commit. Code-only changes can also trigger publication. To republish without a
+new commit, run **Actions > CI > Run workflow** on `main`; the same checks apply.
 
-To republish without a new commit, open **Actions > CI > Run workflow** and select `main`. The same checks run before publication.
-
-The publish job needs the repository secret `FERN_TOKEN` for the `doc-landscape` organization. If it is missing, create a Fern token with `fern token` and store it under **Settings > Secrets and variables > Actions**.
-
-The [Documentation link check workflow](../.github/workflows/docs-link-check.yml) also runs every Monday and can be started manually. A link-check failure occurs after publication and does not roll it back; fix the reported links and push the correction.
+CI needs the repository secret `FERN_TOKEN` for the organization configured in
+`fern/fern.config.json`. The
+[documentation link check](../.github/workflows/docs-link-check.yml) also runs
+weekly on Monday and can be started manually. A link-check failure occurs after
+publication and does not roll it back.

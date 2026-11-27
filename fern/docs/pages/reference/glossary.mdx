@@ -7,7 +7,7 @@ description: Look up concise definitions for RAG, retrieval, indexing, evaluatio
 lifecycle_status: published
 topics: [topic-terminology]
 max-toc-depth: 3
-last_modified: 2026-10-11
+last_modified: 2026-11-27
 audience: [primary, secondary]
 ---
 
@@ -22,6 +22,14 @@ The glossary defines terms used throughout the Python RAG Service and its docume
 Evaluation of generated answers against expected answer behavior. In the Python RAG Service, automated checks evaluate evidence sufficiency and citation behavior, while human review evaluates support, completeness, unsupported details, and focus.
 
 **Related terms:** [Citation validation](#citation-validation), [Evaluation dataset](#evaluation-dataset), [Generated answer](#generated-answer), [Grounded answer](#grounded-answer), [Sufficient evidence](#sufficient-evidence), [Unsupported claim](#unsupported-claim)
+
+### Approved baseline
+
+A reviewed set of retrieval evaluation results selected as the reference for quality comparisons. The automation workflow uses this fixed reference to assess later results. New results don't replace it automatically, even when quality improves.
+
+**Also known as:** Approved retrieval baseline
+
+**Related terms:** [Confirmed regression](#confirmed-regression), [Retrieval evaluation](#retrieval-evaluation), [Retrieval quality policy](#retrieval-quality-policy)
 
 ## B
 
@@ -88,6 +96,16 @@ An application that sends requests to the Python RAG Service API and uses the re
 The included WordPress client sends Search and Ask requests to the RAG service and displays the returned search results, answers, and sources.
 
 **Related terms:** [Connector](#connector)
+
+### Confirmed regression
+
+Deterioration relative to the approved baseline that qualifies for Jira reporting under the retrieval quality policy. A complete, comparable evaluation establishes a confirmed regression when a metric decline exceeds its allowed limit or a case fails that wasn't recorded as failed in the approved baseline.
+
+#### Example
+
+A metric below its required minimum can fail the quality policy without establishing a confirmed regression if its decline stays within the allowed limit and no new cases fail.
+
+**Related terms:** [Approved baseline](#approved-baseline), [Retrieval quality policy](#retrieval-quality-policy)
 
 ### Connector
 
@@ -193,6 +211,16 @@ A chunk missed by vector retrieval can still become a candidate through BM25 ret
 
 ## I
 
+### Idempotency key
+
+A client-supplied identifier for one intended job submission. The operations runner returns the existing job when the same key and operation are submitted again, rather than starting another job. An idempotency key is distinct from an API key or a job ID.
+
+#### Example
+
+If a submission response is lost, retrying with the same Idempotency-Key retrieves the existing job. A new intended run requires a new key.
+
+**Related terms:** [Job](#job), [Retry](#retry)
+
 ### Indexing
 
 The process of turning source content into retrieval-ready data. In the Python RAG Service, indexing includes retrieving source content, mapping it to canonical documents, creating chunks and embeddings, and storing the data used by retrieval.
@@ -213,6 +241,18 @@ Retrieval may find documentation about the right topic while still missing the i
 
 **Related terms:** [Evidence](#evidence), [Relevance](#relevance), [Sufficient evidence](#sufficient-evidence), [Support](#support)
 
+## J
+
+### Job
+
+One recorded instance of an operation submitted to the operations runner. Each job has an identifier and a status: queued, running, succeeded, or failed. A succeeded status means execution and required output writes completed; it doesn't mean retrieval quality passed.
+
+#### Example
+
+A retrieval evaluation job can succeed while reporting failed evaluation cases.
+
+**Related terms:** [Operations runner](#operations-runner), [Retrieval evaluation](#retrieval-evaluation), [Retrieval quality policy](#retrieval-quality-policy)
+
 ## L
 
 ### Lexical corpus
@@ -224,6 +264,14 @@ The collection of indexed chunk text used for lexical retrieval. In the Python R
 After indexing WordPress content, the service writes the current chunks to the lexical corpus so BM25 retrieval can search them by words and other textual matches.
 
 **Related terms:** [BM25 retrieval](#bm25-retrieval), [Chunk](#chunk), [Indexing](#indexing)
+
+## O
+
+### Operations runner
+
+A separate application that accepts authenticated requests to run WordPress indexing and retrieval evaluation. The Python RAG Service operations runner executes one job at a time and stores job records for later status checks.
+
+**Related terms:** [Indexing](#indexing), [Job](#job), [Retrieval evaluation](#retrieval-evaluation)
 
 ## P
 
@@ -324,6 +372,12 @@ The process of finding content that's relevant to a query. In the Python RAG Ser
 Evaluation of whether the retrieval pipeline returns the expected chunks for a set of test cases. The Python RAG Service measures retrieval quality using relevance judgments, expected-empty behavior, precision, recall, and reciprocal rank.
 
 **Related terms:** [Evaluation dataset](#evaluation-dataset), [Expected-empty](#expected-empty), [Precision](#precision), [Recall](#recall), [Reciprocal rank](#reciprocal-rank), [Retrieval](#retrieval)
+
+### Retrieval quality policy
+
+Versioned rules for comparing retrieval evaluation results with an approved baseline. The rules specify required evidence, minimum metric values, permitted declines, and how newly failed cases affect the quality decision. The automation workflow checks completeness and comparability before judging retrieval quality.
+
+**Related terms:** [Approved baseline](#approved-baseline), [Confirmed regression](#confirmed-regression), [Retrieval evaluation](#retrieval-evaluation)
 
 ### Retrieval-augmented generation (RAG)
 

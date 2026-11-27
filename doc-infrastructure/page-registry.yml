@@ -94,6 +94,9 @@ pages:
   - id: RNInitialSnapshot
     content_type: release_note
 
+  - id: RNOperationsAutomation
+    content_type: release_note
+
   - id: RecEvRes
     content_type: eval_results
 

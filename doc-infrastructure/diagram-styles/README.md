@@ -1,82 +1,79 @@
-# Shared Mermaid styling for Fern
+# Flowchart colors
 
-This package provides a Python preprocessor that inserts shared Mermaid `classDef` rules into **generated copies** of MDX pages. Authored files under `fern/` stay unchanged. Python's standard library is sufficient.
+`doc-infrastructure/scripts/fern_mermaid.py` adds shared colors to flowchart diagrams. You assign a class to each node. The script reads the colors from [`mermaid-theme.json`](mermaid-theme.json) and writes them into a copy of the site. Files under `fern/` stay as you wrote them.
 
-## Install
+The copy is `.generated/fern/`. Preview and publish the copy when you want these colors. The folder is gitignored.
 
-Copy `doc-infrastructure/scripts/fern_mermaid.py` into your repo. Keep your **existing, updated** `doc-infrastructure/diagram-styles/mermaid-theme.json` as the authoritative palette; the JSON included in this ZIP is the original example and should **not overwrite** your newer version.
+## Assign a class in the diagram
 
-Your repository should look like:
-
-```text
-python-rag-service/
-├── fern/
-│   ├── docs.yml
-│   └── docs/
-└── doc-infrastructure/
-    ├── diagram-styles/
-    │   └── mermaid-theme.json
-    └── scripts/
-        └── fern_mermaid.py
-```
-
-Add this to the repository's `.gitignore`:
-
-```gitignore
-.generated/
-```
-
-## Author diagrams without colors
+In a `flowchart` or `graph` block, label each node and assign one palette class:
 
 ````mdx
 ```mermaid
 flowchart TD
-    A["`**Gold evaluation dataset**`"] --> B["`**Run retrieval evaluation**`"]
+    A["Gold evaluation dataset"] --> B["Run retrieval evaluation"]
     class A artifact
     class B core
 ```
 ````
 
-Remove any existing palette-managed `classDef` declarations from authored diagrams when convenient. The preprocessor also removes and replaces them in staged copies, so existing pages continue to work during the transition.
+One `class` line can name several nodes: `class A,B,F core`.
 
-## Commands (from the repository root)
+Leave color definitions out of the page. If a diagram still has a `classDef` for a palette class, the script drops that line in the copy and writes the palette definition instead. A `classDef` for any other name is left as written.
 
-```bash
-# Create a styled copy for inspection
-python doc-infrastructure/scripts/fern_mermaid.py prepare
+## Classes
 
-# Run Fern's local dev server, continuously syncing your edits
-python doc-infrastructure/scripts/fern_mermaid.py dev
+| Class | Use for |
+| --- | --- |
+| `core` | Processing steps, service components, and workflow actions |
+| `vector` | Qdrant and vector storage |
+| `lexical` | Lexical corpus and lexical data |
+| `artifact` | Retrieved chunks, datasets, proposed answers, and other intermediate results |
+| `output` | Generated answers, reports, and successful outcomes |
+| `external` | OpenAI, Voyage AI, and other external services |
+| `failure` | Failed operations, rejected results, and alerts |
+| `automation` | n8n workflows, job coordination, and automation |
 
-# Publish with styled copies (same idea as fern generate --docs)
-python doc-infrastructure/scripts/fern_mermaid.py publish
+The same class means the same role on every page. Add a class in `mermaid-theme.json` when none of these fits. See the style guide for when to use a diagram.
 
-# Create a hosted preview with styled copies
-python doc-infrastructure/scripts/fern_mermaid.py preview
+## What the script writes
 
-# Validate the staged Fern site
-python doc-infrastructure/scripts/fern_mermaid.py check
+For each `.md` and `.mdx` file, the script finds ` ```mermaid ` blocks. A block that contains `flowchart` or `graph` gets one `classDef` line per palette class, appended at the end. Each line includes these properties when the class defines them:
+
+- `fill`, `stroke`, and `color` — each a 6-digit hex color, such as `#EAF4FF`
+- `stroke-width` — optional, written like `2px`
+
+Any other key in the JSON is skipped. `external` has `stroke-dasharray`, and that value doesn't appear in the copy.
+
+A styled `core` node looks like this in the copy:
+
+```text
+classDef core fill:#EAF4FF,stroke:#79BCEB,color:#123A75
 ```
 
-The output goes to `.generated/fern/`. Use the wrapper commands **instead of** invoking Fern directly when you need injected styles. During `dev`, edits to source MDX and `mermaid-theme.json` are propagated to the staged directory automatically. Stop the dev server with Ctrl+C.
+Sequence diagrams and other Mermaid types are copied unchanged. Files that aren't Markdown are copied unchanged. A file removed from `fern/` is removed from the copy on the next run.
 
-To run a different Fern CLI command, first run `prepare` and then execute that command from inside `.generated/fern`.
+The theme file must have `"version": 1` and a `classes` object. Each class name starts with a letter and may contain letters, numbers, `_`, and `-`.
 
-## Production integration
+## Commands
 
-If CI currently runs `fern generate --docs` directly, replace that step with:
+Run these from the repository root. They need the Fern CLI. They don't need extra Python packages.
 
 ```bash
-python doc-infrastructure/scripts/fern_mermaid.py publish
+# Build the colored copy and leave it in .generated/fern/
+python3 doc-infrastructure/scripts/fern_mermaid.py prepare
+
+# Rebuild the copy about every 0.75 seconds, then run fern docs dev inside it
+python3 doc-infrastructure/scripts/fern_mermaid.py dev
+
+# Check, preview, or publish that copy
+python3 doc-infrastructure/scripts/fern_mermaid.py check
+python3 doc-infrastructure/scripts/fern_mermaid.py preview
+python3 doc-infrastructure/scripts/fern_mermaid.py publish
 ```
 
-This wrapper has not been tested against your actual Fern repository or deployment pipeline. Check whether your `fern/docs.yml` or build config references files **outside** the `fern/` directory; if it does, the staging approach may need to copy or adjust those paths. Confirm the generated site looks correct locally before changing CI. Also verify that your Fern CSS is applied to staged builds.
+`dev` re-reads `mermaid-theme.json` and the pages on each pass. Stop it with Ctrl+C. `check` runs `fern check`. `preview` runs `fern generate --docs --preview`. `publish` runs `fern generate --docs`.
 
-## Notes
+For any other Fern command, run `prepare`, then run that command with `.generated/fern` as the working directory.
 
-- Only flowchart blocks (`flowchart` or `graph`) get generated class definitions. Other Mermaid diagram types are left unchanged.
-- A class assignment like `class A core` is still needed on individual diagrams; only the color definitions are centralized.
-- The script validates hex values and recognized styling properties. To change the palette, edit the JSON, not every diagram.
-- The script doesn't edit source files, nor does it require installing third-party Python packages.
-- It doesn't hook into `fern docs dev` automatically; use the `dev` wrapper command above.
-- Styling should be tested in both Fern light and dark modes.
+Check the result in Fern light mode and dark mode.

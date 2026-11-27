@@ -638,3 +638,88 @@ terms:
       - timeout
       - retry
       - startup-validation
+
+  - id: operations-runner
+    term: Operations runner
+    definition: >
+      A separate application that accepts authenticated requests to run
+      WordPress indexing and retrieval evaluation. The Python RAG Service
+      operations runner executes one job at a time and stores job records
+      for later status checks.
+    related_terms:
+      - job
+      - indexing
+      - retrieval-evaluation
+
+  - id: job
+    term: Job
+    definition: >
+      One recorded instance of an operation submitted to the operations
+      runner. Each job has an identifier and a status: queued, running,
+      succeeded, or failed. A succeeded status means execution and required
+      output writes completed; it doesn't mean retrieval quality passed.
+    example: >
+      A retrieval evaluation job can succeed while reporting failed
+      evaluation cases.
+    related_terms:
+      - operations-runner
+      - retrieval-evaluation
+      - retrieval-quality-policy
+
+  - id: idempotency-key
+    term: Idempotency key
+    definition: >
+      A client-supplied identifier for one intended job submission.
+      The operations runner returns the existing job when the same key
+      and operation are submitted again, rather than starting another job.
+      An idempotency key is distinct from an API key or a job ID.
+    example: >
+      If a submission response is lost, retrying with the same
+      Idempotency-Key retrieves the existing job. A new intended run
+      requires a new key.
+    related_terms:
+      - job
+      - retry
+
+  - id: approved-baseline
+    term: Approved baseline
+    definition: >
+      A reviewed set of retrieval evaluation results selected as the
+      reference for quality comparisons. The automation workflow uses
+      this fixed reference to assess later results. New results don't
+      replace it automatically, even when quality improves.
+    aliases:
+      - Approved retrieval baseline
+    related_terms:
+      - retrieval-evaluation
+      - retrieval-quality-policy
+      - confirmed-regression
+
+  - id: retrieval-quality-policy
+    term: Retrieval quality policy
+    definition: >
+      Versioned rules for comparing retrieval evaluation results with
+      an approved baseline. The rules specify required evidence,
+      minimum metric values, permitted declines, and how newly failed
+      cases affect the quality decision. The automation workflow checks
+      completeness and comparability before judging retrieval quality.
+    related_terms:
+      - retrieval-evaluation
+      - approved-baseline
+      - confirmed-regression
+
+  - id: confirmed-regression
+    term: Confirmed regression
+    definition: >
+      Deterioration relative to the approved baseline that qualifies for
+      Jira reporting under the retrieval quality policy. A complete,
+      comparable evaluation establishes a confirmed regression when a
+      metric decline exceeds its allowed limit or a case fails that wasn't
+      recorded as failed in the approved baseline.
+    example: >
+      A metric below its required minimum can fail the quality policy
+      without establishing a confirmed regression if its decline stays
+      within the allowed limit and no new cases fail.
+    related_terms:
+      - approved-baseline
+      - retrieval-quality-policy

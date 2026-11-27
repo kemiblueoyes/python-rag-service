@@ -1,0 +1,63 @@
+---
+id: RNOperationsAutomation
+title: Operations and automation added
+description: Keep WordPress content indexed, check retrieval quality after updates, and use n8n to schedule jobs and report regressions.
+content_type: release_note
+lifecycle_status: draft
+topics: [topic-release-history, topic-operational-automation, topic-job-management, topic-retrieval-quality-policy, topic-workflow-automation]
+components: [component-operations-runner, component-n8n-workflows]
+related_pages: [OpsOvrvw, OpsRunr, StUpN8nWkflw, HowN8nWkflw]
+audience: [primary, secondary]
+subtitle: Keep content current and check retrieval quality after updates.
+tags: [operations, automation, indexing, evaluation]
+last_modified: 2026-11-27
+---
+
+You can now run WordPress indexing and retrieval evaluation through the
+operations runner. Use it from a script, or add the optional n8n workflow to
+schedule updates, check retrieval quality, and report regressions in Jira.
+
+## What's changed
+
+- The operations API lets you start jobs, check their status, and read saved
+  results. Each submission uses an idempotency key: reuse the key to retry the
+  same request without starting another job.
+- Each evaluation job saves its own reports, with scores, failed cases, and
+  retrieval settings. A successful job means the reports are ready. It doesn't
+  mean retrieval quality passed the checks.
+- The n8n workflow runs indexing manually or on a schedule. When indexing
+  succeeds and finds content changes, the workflow starts a retrieval evaluation.
+- The workflow compares results with an approved baseline, a saved set of
+  results used as a reference. It checks that the dataset and settings match,
+  then checks scores and newly failed cases against the quality policy.
+  Missing information or mismatched settings require review.
+- When a score drops more than the policy allows or a previously passing case
+  fails, the workflow reports a regression in Jira. It creates an issue or adds
+  findings to an open issue for that baseline. A score below the policy minimum
+  alone doesn't trigger Jira reporting.
+- Indexing replaces each output file only after writing it in full, so readers
+  don't see partially written files. It saves the document snapshot last, after
+  updating the vector index and chunk file. If saving fails, a later run can
+  still detect the pending content changes.
+
+## Upgrade or migration
+
+Set a separate `OPERATIONS_API_KEY` and start the operations runner with one
+worker. To use n8n, import the workflow, set up the runner and Jira credentials,
+and give n8n access to the policy and approved baseline files. Check the schedule
+before enabling the workflow. The setup guides explain these steps.
+
+## Known limitations
+
+The runner handles one job at a time and doesn't queue additional jobs. If it
+stops before a job finishes, it marks that job as failed when it restarts.
+It doesn't retry the job automatically. Check what the job changed before
+starting another, and don't run manual indexing commands while runner jobs
+are active.
+
+## Related documentation
+
+- **[Operations overview](/docs/operations/overview)**: Choose between direct job submission and optional n8n automation.
+- **[Run the operations runner](/docs/operations/run-operations-runner)**: Configure the runner, submit jobs, and inspect their results.
+- **[Set up n8n workflow](/docs/operations/set-up-n8n-workflow)**: Configure scheduling, policy files, credentials, and reporting.
+- **[How the n8n workflow works](/docs/operations/how-n8n-workflow-works)**: Understand job coordination, quality decisions, and regression reporting.

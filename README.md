@@ -8,7 +8,7 @@ The first implementation uses WordPress as both the content source and reference
 
 ## Project status
 
-The core indexing, search, grounded-answer, WordPress integration, and evaluation workflows are implemented and tested. Developer documentation is published. A separate operations runner and n8n workflows support scheduled indexing, retrieval evaluation, quality checks, Jira regression reporting, and failure alerts (**Documentation pending for this new feature**).
+The core indexing, search, grounded-answer, WordPress integration, and evaluation workflows are implemented and tested. Developer documentation is published. A separate operations runner and n8n workflows support scheduled indexing, retrieval evaluation, quality checks, Jira regression reporting, and failure alerts.
 
 See the [implementation roadmap](docs/design/004-implementation-roadmap.md) for the remaining work and planned extensions.
 
@@ -37,7 +37,7 @@ Search requires Python 3.12, [uv](https://docs.astral.sh/uv/), a Voyage AI API k
 | Generate answers from indexed content | [Generate grounded answers](https://python-rag-service.docs.buildwithfern.com/docs/search-and-answer/generate-grounded-answers) |
 | Add the WordPress client | [Integrate with WordPress](https://python-rag-service.docs.buildwithfern.com/docs/integrate/integrate-with-wordpress) |
 | Evaluate retrieval and answers | [Run the evaluation](https://python-rag-service.docs.buildwithfern.com/docs/evaluate/run-the-evaluation) |
-| Automate indexing and retrieval evaluation | [Operations guide](https://python-rag-service.docs.buildwithfern.com/docs/operations/overview) |
+| Automate indexing and retrieval evaluation | [Operations overview](https://python-rag-service.docs.buildwithfern.com/docs/operations/overview) · [Run the operations runner](https://python-rag-service.docs.buildwithfern.com/docs/operations/run-operations-runner) · [Set up the n8n workflow](https://python-rag-service.docs.buildwithfern.com/docs/operations/set-up-n8n-workflow) · [How the n8n workflow works](https://python-rag-service.docs.buildwithfern.com/docs/operations/how-n8n-workflow-works) |
 
 ## API
 
@@ -63,11 +63,11 @@ Read the [system architecture](https://python-rag-service.docs.buildwithfern.com
 
 ## Operations and automation
 
-The operations runner runs separately from the public API and uses its own authentication key. It accepts indexing and retrieval-evaluation jobs, tracks their status, and preserves job results for polling and recovery.
+The operations runner in [`src/rag_service/operations/`](src/rag_service/operations/) runs separately from the public API and uses its own authentication key. It accepts indexing and retrieval-evaluation jobs, tracks their status, and preserves job results for polling and recovery.
 
 The included n8n workflows schedule WordPress indexing, evaluate retrieval when content changes, compare results with quality policies, report regressions in Jira, and send failure alerts. Configure the runner connection, credentials, and policy files in your n8n environment. After indexing publishes updated chunks, the public API refreshes its in-memory BM25 index on the next search or answer request.
 
-See the [operations runner guide](https://python-rag-service.docs.buildwithfern.com/docs/operations/run-operations-runner) for setup, manual verification, Docker connectivity, and recovery behavior. Workflow exports and quality policies are in [`automation/n8n/`](automation/n8n/).
+See the [operations runner guide](https://python-rag-service.docs.buildwithfern.com/docs/operations/run-operations-runner) for setup, manual verification, Docker connectivity, and recovery behavior. [Set up the n8n workflow](https://python-rag-service.docs.buildwithfern.com/docs/operations/set-up-n8n-workflow) and [How the n8n workflow works](https://python-rag-service.docs.buildwithfern.com/docs/operations/how-n8n-workflow-works) cover scheduling, quality routing, Jira reporting, and alerts. Workflow exports are in [`automation/n8n/`](automation/n8n/). The [retrieval quality policy](automation/n8n/policies/README.md) records the approved baseline and how to mount the policy files for n8n.
 
 ## Evaluation
 
@@ -88,7 +88,9 @@ The documentation is maintained as part of the repository, with an explicit cont
 - **Quality checks:** Validation for page structure, frontmatter, Fern rules, links, OpenAPI, and project terminology. Vale checks prose against Microsoft and project-specific style rules.
 - **Publishing:** GitHub Actions validates documentation and runs service tests, WordPress tests, and dependency audits before publishing from `main`. A separate workflow checks published links.
 
-Explore the [documentation standards and templates](doc-infrastructure/), [authoring and validation commands](src/rag_service/commands/documentation/), and [CI workflow](.github/workflows/ci.yml).
+Start with the [documentation maintainer guide](doc-infrastructure/README.md) for page creation, glossary generation, preview, and validation. Standards in [`doc-infrastructure/`](doc-infrastructure/) include the content model, templates, style guide, terminology, technical-accuracy rules, Fern platform rules, and the Mermaid palette. Authoring and validation commands live in [`src/rag_service/commands/documentation/`](src/rag_service/commands/documentation/).
+
+Agent workflows for new pages, drift audits, glossary updates, and changelog entries are in [`.agents/skills/`](.agents/skills/). The maintainer guide explains when to use each skill. Prompts in `doc-infrastructure/prompts/` cover narrower tasks and are transitional. The [CI workflow](.github/workflows/ci.yml) records the checks used for publication.
 
 ## Development
 
@@ -118,16 +120,17 @@ bash scripts/audit-locked-dependencies.sh
 
 | Path | Contents |
 | --- | --- |
-| [`src/rag_service/`](src/rag_service/) | Connectors, indexing, retrieval, generation, API, and command implementations |
+| [`src/rag_service/`](src/rag_service/) | Connectors, indexing, retrieval, generation, API, operations runner, and command implementations |
+| [`src/rag_service/operations/`](src/rag_service/operations/) | Authenticated runner for indexing and retrieval-evaluation jobs |
 | [`clients/wordpress/`](clients/wordpress/) | WordPress reference client and its tests |
 | [`tests/`](tests/) | Python service and documentation-tool tests |
-| [`automation/n8n/`](automation/n8n/) | Indexing, retrieval-quality, Jira regression, and failure-alert workflows and policies |
+| [`automation/n8n/`](automation/n8n/) | Indexing, retrieval-quality, Jira regression, and failure-alert workflows. [`policies/README.md`](automation/n8n/policies/README.md) explains the quality policy and approved baseline |
 | [`evaluation/`](evaluation/) | Evaluation datasets and recorded report snapshots |
 | [`fern/`](fern/) | Published documentation source and Fern configuration |
-| [`doc-infrastructure/`](doc-infrastructure/) | Content model, templates, style guidance, Optional AI prompts for authoring pages and reviewing style, rules for verifying documented behavior, and page registry |
+| [`doc-infrastructure/`](doc-infrastructure/) | [Maintainer guide](doc-infrastructure/README.md), content model, templates, style, terminology, technical-accuracy and Fern platform rules, Mermaid palette, and page registry |
 | [`docs/design/`](docs/design/) | Project design, implementation roadmap, and architecture decisions |
 | [`docs/evaluation/`](docs/evaluation/) | Retrieval experiments, failure analysis, and evaluation findings |
-| [`.agents/skills/`](.agents/skills/) | Agent skills for authoring documentation and auditing docs against code |
+| [`.agents/skills/`](.agents/skills/) | Agent skills for authoring pages, auditing docs against code, updating the glossary, and adding changelog entries. The maintainer guide explains when to use each skill |
 
 ## License
 

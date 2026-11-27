@@ -1,4 +1,6 @@
 Answer evaluation
+Approved baseline
+Approved retrieval baseline
 BM25 retrieval
 Candidate chunk
 Canonical document
@@ -6,6 +8,7 @@ Chunk
 Chunking
 Citation validation
 Client
+Confirmed regression
 Connector
 Content source
 Context
@@ -18,9 +21,12 @@ Generated answer
 Grounded answer
 Health check
 Hybrid retrieval
+Idempotency key
 Indexing
 Insufficient evidence
+Job
 Lexical corpus
+Operations runner
 Precision
 Prompt injection
 Provider client
@@ -35,6 +41,7 @@ Relevance
 Reranking
 Retrieval
 Retrieval evaluation
+Retrieval quality policy
 Retrieval-augmented generation (RAG)
 Retrieved chunk
 Retry
